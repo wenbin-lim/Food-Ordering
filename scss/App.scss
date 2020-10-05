@@ -1,0 +1,126 @@
+@import '_functions';
+@import '_variables';
+
+:root {
+  --background: #{$background-light-color};
+  --on-background: #{$on-background-light-color};
+
+  --surface1: #{$surface1-light-color};
+  --surface2: #{$surface2-light-color};
+  --surface3: #{$surface3-light-color};
+  --on-surface: #{$on-surface-light-color};
+
+  --scrim: #{$scrim-light-color};
+
+  --primary: #{$primary-color};
+  --on-primary: #{$on-primary-color};
+  --primary-variant: #{$primary-variant-color};
+  --on-primary-variant: #{$on-primary-variant-color};
+
+  --secondary: #{$secondary-color};
+  --secondary-variant: #{$secondary-variant-color};
+  --on-secondary: #{$on-secondary-color};
+  --on-secondary-variant: #{$on-secondary-variant-color};
+
+  --focus: #{$focus-color};
+  --on-focus: #{$on-focus-color};
+
+  --error: #{$error-color};
+  --on-error: #{$on-error-color};
+
+  --success: #{$success-color};
+  --on-success: #{$on-success-color};
+
+  --warning: #{$warning-color};
+  --on-warning: #{$on-warning-color};
+
+  --disabled: #{$disabled-color};
+  --on-disabled: #{$on-disabled-color};
+
+  // height
+  --vh: 1vh;
+  --container-bottom-padding: env(safe-area-inset-bottom);
+}
+
+// Media queries
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #{$background-dark-color};
+    --on-background: #{$on-background-dark-color};
+
+    --surface1: #{$surface1-dark-color};
+    --surface2: #{$surface2-dark-color};
+    --surface3: #{$surface3-dark-color};
+    --on-surface: #{$on-surface-dark-color};
+
+    --scrim: #{$scrim-dark-color};
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--on-background) transparent;
+
+  position: relative;
+}
+
+html {
+  background-color: var(--background);
+  color: var(--on-background);
+
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+}
+
+body {
+  touch-action: manipulation;
+  margin: 0;
+  padding: 0;
+}
+
+.app-wrapper {
+  width: 100vw;
+  height: calc(100 * var(--vh));
+
+  display: flex;
+  flex-direction: column;
+}
+
+// Typography
+@import '_typography';
+
+// utilities
+@import '_utilities';
+
+// Overrides
+@import '_overrides';
+
+// Layout
+@import '_layout.scss';
+
+// components
+@import 'components/_alert';
+@import 'components/_actionsheet';
+@import 'components/_badge';
+@import 'components/_button';
+@import 'components/_checkbox';
+@import 'components/_chip';
+@import 'components/_datetimepicker';
+@import 'components/_dialog';
+@import 'components/_dropdown';
+@import 'components/_icon';
+@import 'components/_inputs';
+@import 'components/_list';
+@import 'components/_menudropdown';
+@import 'components/_navbar';
+@import 'components/_preloader';
+@import 'components/_radio';
+@import 'components/_range';
+@import 'components/_snackbar';
+@import 'components/_switch';
+@import 'components/_tabs';

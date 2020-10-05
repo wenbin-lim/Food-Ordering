@@ -1,0 +1,139 @@
+/* Variables */
+$dialog-border-radius: 36px;
+
+.dialog-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: calc(var(--vh) * 100);
+
+  z-index: $dialog-elevation;
+
+  background-color: var(--scrim);
+
+  display: grid;
+  place-items: center;
+
+  // before animation state
+  opacity: 0;
+
+  // after animation state
+  // opacity: 1;
+
+  .dialog {
+    background: var(--background);
+    max-height: calc(var(--vh) * 75);
+
+    border-radius: $dialog-border-radius;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    // before animation state
+    transform: scale(0.3);
+
+    // after animation state
+    // transform: scale(1);
+
+    .dialog-header,
+    .dialog-content,
+    .dialog-footer {
+      padding: $dialog-border-radius;
+    }
+
+    .dialog-header {
+      border-bottom: 1px solid var(--surface3);
+    }
+
+    .dialog-footer {
+      border-top: 1px solid var(--surface3);
+    }
+
+    .dialog-content {
+      overflow-y: auto;
+    }
+
+    &.dialog-fullscreen {
+      // reset original min-max-width
+      max-width: 100vw;
+      max-height: calc(var(--vh) * 100);
+
+      width: 100vw;
+      height: 100vh;
+
+      border-radius: 0;
+
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+
+      // before animation state
+      transform: translateX(100%);
+
+      .dialog-header,
+      .dialog-content,
+      .dialog-footer {
+        padding-left: Max(#{$dialog-border-radius}, env(safe-area-inset-left));
+        padding-right: Max(
+          #{$dialog-border-radius},
+          env(safe-area-inset-right)
+        );
+      }
+
+      .dialog-header {
+        background-color: var(--primary);
+        color: var(--on-primary);
+
+        border-bottom: none;
+      }
+
+      .dialog-footer {
+        background-color: var(--surface1);
+        color: var(--on-surface);
+      }
+    }
+  }
+}
+
+// Media queries
+@media only screen and (orientation: portrait) {
+  .dialog-scrim {
+    .dialog {
+      min-width: 60vw;
+      max-width: 90vw;
+    }
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .dialog-scrim {
+    .dialog {
+      min-width: $min-dialog-size;
+      max-width: $max-dialog-size;
+
+      .dialog-header,
+      .dialog-content,
+      .dialog-footer {
+        padding-left: $dialog-border-radius * 1.5;
+        padding-right: $dialog-border-radius * 1.5;
+      }
+
+      &.dialog-fullscreen {
+        .dialog-header,
+        .dialog-content,
+        .dialog-footer {
+          padding-left: Max(
+            #{$dialog-border-radius * 1.5},
+            env(safe-area-inset-left)
+          );
+          padding-right: Max(
+            #{$dialog-border-radius * 1.5},
+            env(safe-area-inset-right)
+          );
+        }
+      }
+    }
+  }
+}

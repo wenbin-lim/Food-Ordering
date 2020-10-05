@@ -1,0 +1,368 @@
+/* datepicker group variables */
+$datepicker-group-margin: 1rem 0;
+
+/* Variables */
+$datepicker-padding: 0.5rem 1rem;
+$datepicker-border-radius: 2rem;
+$datepicker-border-size: 2px;
+
+.datepicker-group {
+  margin: $datepicker-group-margin;
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    @include caption;
+
+    .required-input {
+      color: var(--error);
+      text-transform: none;
+    }
+  }
+
+  .datepicker-input-field {
+    width: 100%;
+    padding: $datepicker-padding;
+    margin: $datepicker-border-size;
+
+    border-radius: $datepicker-border-radius;
+
+    background-color: var(--surface1);
+    color: var(--on-surface);
+
+    cursor: pointer;
+    user-select: none;
+
+    &.invalid {
+      box-shadow: 0px 0px 0px $datepicker-border-size var(--error) !important;
+    }
+  }
+
+  .datepicker-scrim {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: $sheet-elevation;
+    width: 100vw;
+    height: calc(100 * var(--vh));
+
+    background-color: var(--scrim);
+
+    display: grid;
+    place-items: center;
+
+    .datepicker {
+      padding: $datepicker-border-radius / 2;
+      border-radius: $datepicker-border-radius;
+
+      background-color: var(--background);
+
+      user-select: none;
+
+      display: grid;
+      grid-template-rows: auto 1fr;
+      grid-row-gap: 8px;
+
+      .datepicker-header {
+        display: flex;
+        justify-content: space-evenly;
+
+        .datepicker-month,
+        .datepicker-year {
+          flex-basis: 40%;
+          padding: 4px 0;
+
+          text-align: center;
+
+          border-radius: 12px;
+
+          background-color: var(--surface1);
+          color: var(--on-surface);
+
+          cursor: pointer;
+        }
+
+        .months,
+        .years {
+          position: absolute;
+          z-index: 1;
+          top: 0;
+          width: 100%;
+
+          border-radius: 12px;
+
+          background-color: var(--surface1);
+          color: var(--on-surface);
+
+          .month,
+          .year {
+            padding: 4px 0;
+
+            &:active {
+              background-color: var(--surface3);
+            }
+          }
+        }
+      }
+
+      .datepicker-calendar {
+        .days-header {
+          font-size: 0.8em;
+
+          display: grid;
+          place-items: center;
+        }
+
+        .days {
+          display: grid;
+          place-items: center;
+
+          background-color: var(--surface1);
+          color: var(--on-surface);
+          border-radius: 10px;
+
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--surface3);
+          }
+
+          &.disabled {
+            background-color: var(--background) !important;
+            cursor: default !important;
+          }
+
+          &.selected {
+            background-color: var(--secondary) !important;
+            color: var(--on-secondary) !important;
+            font-weight: bold !important;
+          }
+        }
+      }
+    }
+  }
+
+  .datepicker-input-message {
+    @include body-2;
+
+    &.error-message {
+      color: var(--error);
+    }
+  }
+}
+
+// Media queries
+@media only screen and (orientation: portrait) {
+  .datepicker-group {
+    .datepicker-scrim {
+      .datepicker {
+        width: 90vw;
+        height: 90vw;
+      }
+    }
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .datepicker-group {
+    .datepicker-scrim {
+      .datepicker {
+        width: 400px;
+        height: 400px;
+      }
+    }
+  }
+}
+
+/* timepicker Group Variables */
+$timepicker-group-margin: 1rem 0;
+
+/* timepicker Field Variables */
+$timepicker-padding: 0.5rem 1rem;
+$timepicker-border-radius: 2rem;
+$timepicker-border-size: 2px;
+$timepicker-content-item-height: 32px;
+
+.timepicker-group {
+  display: flex;
+  flex-direction: column;
+
+  margin: $timepicker-group-margin;
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    @include caption;
+
+    .required-input {
+      color: var(--error);
+      text-transform: none;
+    }
+  }
+
+  .timepicker-input-field {
+    width: 100%;
+    padding: $timepicker-padding;
+    margin: $timepicker-border-size;
+
+    border-radius: $timepicker-border-radius;
+
+    background-color: var(--surface1);
+    color: var(--on-surface);
+
+    cursor: pointer;
+    user-select: none;
+
+    &.invalid {
+      box-shadow: 0px 0px 0px $timepicker-border-size var(--error) !important;
+    }
+  }
+
+  .timepicker-scrim {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: $sheet-elevation;
+    width: 100vw;
+    height: calc(100 * var(--vh));
+
+    background-color: var(--scrim);
+
+    .timepicker {
+      top: 20vh;
+      left: 50%;
+      transform: translateX(-50%);
+
+      border-radius: $timepicker-border-radius;
+
+      background-color: var(--background);
+
+      user-select: none;
+
+      display: grid;
+      grid-template-rows: 1fr 1fr auto;
+
+      .timepicker-header {
+        padding: $timepicker-border-radius / 2;
+        padding-bottom: 0;
+
+        display: flex;
+        justify-content: space-evenly;
+
+        .timepicker-header-item {
+          flex-basis: 30%;
+          text-transform: uppercase;
+
+          @include heading-3;
+
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+        }
+      }
+
+      .timepicker-content {
+        padding: $timepicker-border-radius / 2;
+        padding-top: 8px;
+
+        display: flex;
+        justify-content: space-evenly;
+
+        .timepicker-content-item {
+          flex-basis: 30%;
+          text-align: center;
+
+          height: $timepicker-content-item-height;
+
+          border-radius: 12px;
+
+          background-color: var(--surface1);
+          color: var(--on-surface);
+
+          display: grid;
+          place-items: center;
+
+          &.timepicker-content-item-hour,
+          &.timepicker-content-item-min,
+          &.timepicker-content-item-sec {
+            .hours,
+            .mins,
+            .secs {
+              position: absolute;
+              z-index: 1;
+              top: 100%;
+              width: 100%;
+
+              transform: translateY(5px);
+
+              height: $timepicker-content-item-height * 10;
+              overflow-y: scroll;
+
+              background-color: var(--surface1);
+
+              border-radius: 12px;
+
+              .hour,
+              .min,
+              .sec {
+                height: $timepicker-content-item-height;
+
+                display: grid;
+                place-items: center;
+
+                &:active,
+                &:hover {
+                  background-color: var(--surface3);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .timepicker-footer {
+        .btn-block-bottom {
+          height: $icon-size;
+          padding-bottom: 0;
+          border-bottom-left-radius: $timepicker-border-radius;
+          border-bottom-right-radius: $timepicker-border-radius;
+        }
+      }
+    }
+  }
+
+  .timepicker-message {
+    @include body-2;
+
+    &.error-message {
+      color: var(--error);
+    }
+  }
+}
+
+// Media queries
+@media only screen and (orientation: portrait) {
+  .timepicker-group {
+    .timepicker-scrim {
+      .timepicker {
+        width: 90vw;
+        height: 60vw;
+      }
+    }
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .timepicker-group {
+    .timepicker-scrim {
+      .timepicker {
+        width: 400px;
+        height: 300px;
+      }
+    }
+  }
+}

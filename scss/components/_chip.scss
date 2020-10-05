@@ -1,0 +1,79 @@
+/* Variables */
+$chip-y-padding: 4px;
+$chip-x-padding: 16px;
+$chip-height: 32px;
+$chip-large-factor: 2;
+
+/*
+  Boilerplate
+
+  <div className='chip'>
+    chip
+    <img src='https://source.unsplash.com/random' alt='' />
+  </div>
+
+  <div className='chip chip-large img-right'>
+    chip
+    <img src='https://source.unsplash.com/random' alt='' />
+  </div>
+*/
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+
+  height: $chip-height;
+  padding-left: $chip-height + $chip-x-padding / 2;
+  padding-right: $chip-x-padding;
+
+  border-radius: $chip-x-padding;
+
+  background-color: var(--surface3);
+  color: var(--on-surface);
+
+  img {
+    position: absolute;
+    left: 0;
+
+    width: $chip-height;
+    height: $chip-height;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  &.img-right {
+    padding-right: $chip-height + $chip-x-padding / 2;
+    padding-left: $chip-x-padding;
+
+    img {
+      left: auto;
+      right: 0;
+    }
+  }
+
+  &.chip-large {
+    height: $chip-height * $chip-large-factor;
+    padding-left: $chip-height * $chip-large-factor +
+      ($chip-x-padding * $chip-large-factor) / 2;
+
+    padding-right: $chip-x-padding * $chip-large-factor;
+
+    border-radius: $chip-x-padding * $chip-large-factor;
+
+    img {
+      width: $chip-height * $chip-large-factor;
+      height: $chip-height * $chip-large-factor;
+    }
+
+    &.img-right {
+      padding-right: $chip-height * $chip-large-factor +
+        ($chip-x-padding * $chip-large-factor) / 2;
+      padding-left: $chip-x-padding * $chip-large-factor;
+
+      img {
+        left: auto;
+        right: 0;
+      }
+    }
+  }
+}

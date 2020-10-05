@@ -1,0 +1,20 @@
+.preloader {
+  fill: $primary-color;
+  margin: auto;
+  display: block;
+  shape-rendering: auto;
+}
+
+.spinner {
+  fill: $primary-color;
+  margin: auto;
+  display: block;
+  shape-rendering: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  .preloader,
+  .spinner {
+    filter: brightness(0) invert(1);
+  }
+}

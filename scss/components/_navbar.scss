@@ -1,0 +1,244 @@
+/* Variables */
+// navbar
+$navbar-y-inner-padding: 8px;
+$navbar-x-inner-padding: 16px;
+
+// nav-item
+$nav-item-size: 48px;
+$nav-item-gap: 16px;
+
+// sidebar-toggle
+$sidebar-toggle-color: var(--primary);
+$on-sidebar-toggle-color: var(--on-primary);
+
+.navbar {
+  padding: $navbar-y-inner-padding 0;
+  padding-left: Max(#{$navbar-x-inner-padding}, env(safe-area-inset-left));
+  padding-right: Max(#{$navbar-x-inner-padding}, env(safe-area-inset-right));
+
+  background-color: var(--background);
+  color: var(--on-background);
+
+  display: flex;
+  align-items: center;
+
+  user-select: none;
+
+  .sidebar-toggle {
+    /* special styles for my own sidebar toggle */
+
+    // move sidebar toggle to the most left of the sidebar
+    margin-left: calc(
+      Max(#{$navbar-x-inner-padding}, env(safe-area-inset-left)) * -1
+    );
+
+    width: calc(env(safe-area-inset-left) + #{$nav-item-size * 1.25});
+    // padding-left: calc(env(safe-area-inset-left) + #{$nav-item-size * 0.5});
+    padding-left: calc(env(safe-area-inset-left));
+
+    border-radius: 0 16px 16px 0;
+
+    background: $sidebar-toggle-color;
+    color: $on-sidebar-toggle-color;
+
+    /* special styles for my own sidebar toggle */
+
+    order: -1;
+  }
+
+  .navbar-left {
+    flex: 1;
+
+    display: flex;
+    place-items: center;
+    flex-wrap: wrap;
+
+    & > *:not(:first-child) {
+      margin-left: $nav-item-gap;
+    }
+  }
+
+  .navbar-right {
+    flex: 1;
+
+    display: flex;
+    place-items: center;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+
+    & > *:not(:first-child) {
+      margin-right: $nav-item-gap;
+    }
+  }
+
+  .navbar-center {
+    display: flex;
+    place-items: center;
+  }
+
+  .nav-link {
+    // root element is a tag
+    min-width: $nav-item-size;
+    height: $nav-item-size;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .nav-logo {
+    height: $nav-item-size;
+    min-width: $nav-item-size;
+
+    display: inline-grid;
+    place-items: center;
+
+    cursor: pointer;
+
+    .logo {
+      height: $nav-item-size * 0.75;
+      max-width: 100%;
+    }
+  }
+}
+
+// Media queries
+/* default CSS will target portrait screens */
+@media only screen and (orientation: landscape) {
+  .navbar {
+    .navbar-left {
+      & > *:not(:first-child) {
+        margin-left: $nav-item-gap * 1.5;
+      }
+    }
+
+    .navbar-right {
+      & > *:not(:first-child) {
+        margin-right: $nav-item-gap * 1.5;
+      }
+    }
+  }
+}
+
+/* Variables */
+// sidebar
+$sidebar-y-padding: 16px;
+$sidebar-x-padding: 16px;
+
+.sidebar-scrim {
+  position: fixed;
+  width: 100vw;
+  height: calc(var(--vh) * 100);
+  z-index: $sidebar-elevation;
+
+  // original
+  // background-color: var(--scrim);
+
+  // before animation
+  background-color: rgba(0, 0, 0, 0);
+
+  .sidebar {
+    user-select: none;
+    z-index: $sidebar-elevation;
+
+    height: calc(var(--vh) * 100);
+    width: calc(30vmax + env(safe-area-inset-left));
+
+    padding-top: $sidebar-y-padding;
+    padding-bottom: Max(#{$sidebar-y-padding}, env(safe-area-inset-bottom));
+
+    background-color: var(--background);
+    color: var(--on-background);
+
+    @include box-shadow($sidebar-elevation);
+
+    // before animation state
+    transform: translateX(-100%);
+
+    // after animation state
+    // transform: translateX(0);
+
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+
+    .sidebar-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 $sidebar-x-padding;
+
+      .logo {
+        max-width: 60%;
+      }
+    }
+
+    .sidebar-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 $sidebar-x-padding;
+
+      overflow-y: auto;
+
+      .sidebar-link {
+        flex-basis: $icon-size;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+
+        &.active {
+          color: var(--secondary);
+        }
+      }
+    }
+
+    .sidebar-footer {
+      display: flex;
+      flex-direction: column;
+      place-items: center;
+    }
+  }
+}
+
+.bottom-nav {
+  padding: 8px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+
+  background-color: var(--surface1);
+  color: var(--on-surface);
+
+  display: flex;
+  justify-content: center;
+
+  user-select: none;
+
+  .bottom-nav-items {
+    width: 100%;
+    max-width: $max-container-size;
+
+    display: flex;
+
+    .nav-item {
+      flex: 1;
+      flex-shrink: 0;
+      flex-basis: auto;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      cursor: pointer;
+
+      .nav-item-desc {
+        font-size: 0.7em;
+        text-align: center;
+
+        width: 75%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}

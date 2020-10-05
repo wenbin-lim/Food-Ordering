@@ -1,0 +1,75 @@
+/* Variables */
+$switch-input-size: $icon-size;
+
+.switch-group {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+
+  label {
+    align-self: center;
+
+    @include body-1();
+    text-transform: capitalize;
+  }
+
+  .switch-wrapper {
+    width: $switch-input-size;
+    height: $switch-input-size;
+
+    display: grid;
+    place-items: center;
+
+    cursor: pointer;
+
+    .switch {
+      position: relative;
+
+      width: $switch-input-size;
+      height: $switch-input-size * 0.6;
+
+      padding: $switch-input-size * 0.05;
+
+      border-radius: $switch-input-size;
+
+      // before animation state
+      background-color: var(--surface2);
+
+      transition: all 0.3s;
+
+      .switch-toggle {
+        position: absolute;
+        top: $switch-input-size * 0.05;
+        width: $switch-input-size * 0.5;
+        height: $switch-input-size * 0.5;
+
+        border-radius: 50%;
+
+        // before animation state
+        left: $switch-input-size * 0.05;
+        background-color: var(--surface3);
+
+        transition: all 0.3s;
+      }
+
+      &.checked {
+        // after animation state
+        background-color: var(--secondary);
+
+        .switch-toggle {
+          // after animation state
+          left: $switch-input-size * 0.45;
+          background-color: var(--on-secondary);
+        }
+      }
+    }
+  }
+
+  .switch-input-message {
+    @include body-2();
+
+    &.error-message {
+      color: var(--error);
+    }
+  }
+}

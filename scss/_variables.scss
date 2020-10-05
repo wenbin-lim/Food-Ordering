@@ -1,0 +1,75 @@
+/* Colors */
+// background colors
+$background-light-color: #f8f8f8;
+$on-background-light-color: text-contrast($background-light-color);
+
+$background-dark-color: #121212;
+$on-background-dark-color: text-contrast($background-dark-color);
+
+// surface colors
+// surface2 is main surface
+// other colors shld take surface1 and surface3
+// Eg input, list  and dropdown
+$surface1-light-color: #e5e5e5;
+$surface2-light-color: #d8d8d8;
+$surface3-light-color: #c2c2c2;
+$on-surface-light-color: text-contrast($surface1-light-color);
+
+$surface1-dark-color: #1e1e1e;
+$surface2-dark-color: #323232;
+$surface3-dark-color: #464646;
+$on-surface-dark-color: text-contrast($surface1-dark-color);
+
+// primary and secondary colors
+$primary-color: #202646;
+$on-primary-color: text-contrast($primary-color);
+
+$primary-variant-color: get-variant-color($primary-color, 10%);
+$on-primary-variant-color: text-contrast($primary-variant-color);
+
+$secondary-color: #e91e63;
+$on-secondary-color: text-contrast($secondary-color);
+
+$secondary-variant-color: get-variant-color($secondary-color, 10%);
+$on-secondary-variant-color: text-contrast($secondary-variant-color);
+
+$focus-color: #1e88e5;
+$on-focus-color: text-contrast($focus-color);
+
+$error-color: #c62828;
+$on-error-color: text-contrast($error-color);
+
+$success-color: #2e7d32;
+$on-success-color: text-contrast($success-color);
+
+$warning-color: #ff8f00;
+$on-warning-color: text-contrast($warning-color);
+
+$disabled-color: #757575;
+$on-disabled-color: text-contrast($disabled-color);
+
+// scrim colors
+$scrim-light-color: rgba(0, 0, 0, 0.5);
+$scrim-dark-color: rgba(0, 0, 0, 0.7);
+
+/* Font */
+$primary-font-family: 'Poppins', sans-serif;
+
+/* Sizes */
+$icon-size: 48px;
+$max-container-size: 1200px;
+$min-dialog-size: 400px;
+$max-dialog-size: 800px;
+$scrollbar-size: 8px;
+
+/* Layout Heights */
+
+/* Components */
+
+/* Elevation */
+$navbar-elevation: 4;
+$sidebar-elevation: 8;
+$sheet-elevation: 12;
+$dialog-elevation: 16;
+$actionsheet-elevation: 20;
+$snackbar-elevation: 28;

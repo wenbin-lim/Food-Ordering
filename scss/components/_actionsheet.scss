@@ -1,0 +1,92 @@
+/* Variables */
+// colors
+$actionsheet-color: var(--primary);
+$on-actionsheet-color: var(--on-primary);
+
+// border-radius
+$actionsheet-action-border-radius: 16px;
+
+.actionsheet-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background-color: var(--scrim);
+
+  z-index: $actionsheet-elevation;
+
+  // Before animation state
+  opacity: 0;
+
+  .actionsheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: 0 auto;
+
+    overflow: hidden;
+
+    // Before animation state
+    transform: translateY(110%);
+
+    .action {
+      // using <button> as html element
+      position: relative;
+      width: 100%;
+
+      display: block;
+
+      padding: 1rem 0;
+
+      background-color: $actionsheet-color;
+      color: $on-actionsheet-color;
+
+      &:first-child {
+        border-radius: $actionsheet-action-border-radius
+          $actionsheet-action-border-radius 0 0;
+      }
+
+      &:not(:last-child):not(:nth-last-child(2)) {
+        margin-bottom: 1px;
+      }
+
+      &:nth-last-child(2) {
+        border-radius: 0 0 $actionsheet-action-border-radius
+          $actionsheet-action-border-radius;
+      }
+
+      &:last-child {
+        margin-top: 16px;
+        margin-bottom: Max(env(safe-area-inset-bottom), 24px);
+        border-radius: $actionsheet-action-border-radius;
+      }
+
+      // Highlight button on tap
+      &:hover,
+      &:active {
+        filter: brightness(1.5);
+      }
+    }
+  }
+}
+
+// Media queries
+@media only screen and (orientation: portrait) {
+  .actionsheet-scrim {
+    .actionsheet {
+      width: 90vw;
+    }
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .actionsheet-scrim {
+    .actionsheet {
+      width: 400px;
+    }
+  }
+}

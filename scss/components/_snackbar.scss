@@ -1,0 +1,72 @@
+/* Variables */
+$snackbar-padding: 0.5rem;
+$snackbar-border-radius: 0.5rem;
+
+$snackbar-colors: 'primary', 'secondary', 'error', 'success', 'warning';
+
+/* Animation */
+@keyframes snackbarAnimationIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.snackbar-wrapper {
+  position: fixed;
+  bottom: 2vh;
+
+  width: 100vw;
+
+  z-index: $snackbar-elevation;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  pointer-events: none;
+
+  .snackbar {
+    min-width: 95vw;
+    max-width: 95vw;
+
+    background-color: var(--surface3);
+    color: var(--on-surface);
+
+    padding: ($snackbar-padding) ($snackbar-padding * 2);
+
+    border-radius: $snackbar-border-radius;
+
+    opacity: 1;
+    animation: snackbarAnimationIn 0.5s ease-in-out;
+
+    cursor: pointer;
+    pointer-events: auto;
+
+    transition: transform 0.3s;
+
+    &:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    @each $i in $snackbar-colors {
+      &.snackbar-#{$i} {
+        background-color: var(--#{$i});
+        color: var(--on-#{$i});
+      }
+    }
+  }
+}
+
+// Media queries
+/* default CSS will target portrait screens */
+@media only screen and (orientation: landscape) {
+  .snackbar-wrapper {
+    .snackbar {
+      min-width: 40vw;
+    }
+  }
+}

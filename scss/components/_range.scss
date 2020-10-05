@@ -1,0 +1,135 @@
+/* range group variables */
+$range-group-margin: 1rem 0;
+
+/* Variables */
+$range-input-size: $icon-size;
+$range-margin: 16px;
+$range-track-height: 5px;
+
+.range-group {
+  user-select: none;
+
+  margin: $range-group-margin;
+
+  label {
+    @include caption();
+
+    display: flex;
+    align-items: center;
+
+    .required-input {
+      margin-left: 0.5rem;
+      color: var(--error);
+      text-transform: none;
+    }
+  }
+
+  .range-input {
+    input {
+      appearance: none;
+      outline: none;
+
+      width: 100%;
+      height: $range-track-height;
+      margin: $range-margin 0;
+
+      border-radius: 10px;
+
+      background-color: var(--surface3);
+
+      &::-webkit-slider-thumb {
+        appearance: none;
+        width: $icon-size * 1.5;
+        height: $icon-size * 1.5;
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+      }
+
+      &::-moz-range-thumb {
+        // dont know why if i stack both webkit and moz tgt, webkit styling disappears
+        appearance: none;
+        width: $icon-size * 1.5;
+        height: $icon-size * 1.5;
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+      }
+
+      &:active ~ .range-progress-indicator {
+        opacity: 1;
+      }
+    }
+
+    .range-progress {
+      position: absolute;
+      top: $range-margin;
+      width: 0;
+      left: 0;
+      height: $range-track-height;
+      background-color: var(--secondary);
+
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .range-thumb {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+
+      width: $icon-size / 2;
+      height: $icon-size / 2;
+
+      border-radius: 50%;
+
+      background-color: var(--secondary);
+
+      pointer-events: none;
+    }
+
+    .range-progress-indicator {
+      position: absolute;
+      bottom: 110%;
+      z-index: 99;
+      width: $icon-size;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transform: translateX(-50%);
+
+      font-size: 0.7em;
+      text-align: center;
+
+      background-color: var(--secondary);
+      color: var(--on-secondary);
+
+      opacity: 0;
+      pointer-events: none;
+
+      transition: opacity 1s;
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+
+        width: 0;
+        height: 0;
+        border-left: ($icon-size / 10) solid transparent;
+        border-right: ($icon-size / 10) solid transparent;
+
+        border-top: ($icon-size / 10) solid var(--secondary);
+      }
+    }
+  }
+
+  .range-input-message {
+    @include body-2;
+
+    &.error-message {
+      color: var(--error);
+    }
+  }
+}

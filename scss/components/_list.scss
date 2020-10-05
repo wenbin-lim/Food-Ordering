@@ -1,0 +1,77 @@
+/* Variables */
+$list-item-x-padding: 16px;
+$list-item-y-padding: 12px;
+$list-item-border-radius: 8px;
+$list-item-gap: 16px;
+
+.list-item-wrapper {
+  &:not(:last-child) {
+    margin-bottom: $list-item-gap;
+  }
+
+  .list-item-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 80%;
+    max-width: 400px;
+
+    opacity: 0;
+    pointer-events: none;
+
+    border-radius: $list-item-border-radius;
+    overflow: hidden;
+
+    display: flex;
+
+    .list-item-action {
+      flex: 1;
+
+      background-color: var(--surface1);
+      color: var(--on-surface);
+
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      cursor: pointer;
+
+      &:not(:last-child) {
+        margin-right: 2px;
+      }
+
+      .list-item-action-name {
+        padding: 0 16px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .list-item {
+    padding: $list-item-y-padding $list-item-x-padding;
+
+    background-color: var(--surface1);
+    color: var(--on-surface);
+
+    border-radius: $list-item-border-radius;
+
+    display: flex;
+    align-items: center;
+
+    .before-list-content {
+      margin-right: $list-item-x-padding;
+    }
+
+    .list-content {
+      flex: 1;
+    }
+
+    .after-list-content {
+      margin-left: $list-item-x-padding;
+    }
+  }
+}

@@ -1,0 +1,26 @@
+/* Variables */
+$alert-padding: 0.5rem 1rem;
+$alert-small-padding: 0.3rem 1rem;
+$alert-y-margin: 0.5rem;
+$alert-border-radius: 0.5rem;
+
+$alert-colors: 'primary', 'secondary', 'error', 'success', 'warning';
+
+// use div as root element
+.alert {
+  padding: $alert-padding;
+  margin: $alert-y-margin 0;
+  border-radius: $alert-border-radius;
+
+  &.alert-small {
+    font-size: 0.75rem;
+    padding: $alert-small-padding;
+  }
+
+  @each $i in $alert-colors {
+    &.alert-#{$i} {
+      background-color: var(--#{$i});
+      color: var(--on-#{$i});
+    }
+  }
+}

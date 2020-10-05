@@ -1,0 +1,97 @@
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
+
+@mixin heading-1 {
+  font-size: 3rem;
+  font-weight: $font-weight-light;
+  letter-spacing: -3px;
+  line-height: 110%;
+  margin-bottom: 0.5rem;
+}
+
+@mixin heading-2 {
+  font-size: 1.5rem;
+  font-weight: $font-weight-medium;
+  line-height: 110%;
+  margin-bottom: 0.25rem;
+}
+
+@mixin heading-3 {
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+  line-height: 130%;
+  letter-spacing: 0.15px;
+  margin-bottom: 0.25rem;
+}
+
+@mixin body-1 {
+  font-size: 1rem;
+  font-weight: $font-weight-regular;
+  letter-spacing: 0.5px;
+}
+
+@mixin body-2 {
+  font-size: 0.8rem;
+  font-weight: $font-weight-regular;
+  letter-spacing: 0.25px;
+}
+
+@mixin button-text {
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+
+@mixin caption {
+  font-size: 0.8rem;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.heading-1 {
+  @include heading-1;
+}
+
+.heading-2 {
+  @include heading-2;
+}
+
+.heading-3 {
+  @include heading-3;
+}
+
+.body-1 {
+  @include body-1;
+}
+
+.body-2 {
+  @include body-2;
+}
+
+.button-text {
+  @include button-text;
+}
+
+.caption {
+  @include caption;
+}
+
+// Media queries
+/* default CSS will target portrait screens */
+@media only screen and (orientation: landscape) {
+  .heading-1 {
+    font-size: 4rem;
+  }
+
+  .heading-2 {
+    font-size: 2rem;
+  }
+
+  .heading-2 {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,119 @@
+/* Variables */
+// size
+$btn-height: 48px;
+$btn-x-padding: 16px;
+$btn-border-radius: 8px;
+$btn-small-factor: 0.7;
+
+$btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
+
+.btn {
+  height: $btn-height;
+  padding: 0 $btn-x-padding;
+
+  border-radius: $btn-border-radius;
+
+  // to accomodate additionalText
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+
+  // typography
+  @extend .button-text;
+
+  // Styles
+  &.btn-contained {
+    @each $i in $btn-colors {
+      &.btn-#{$i} {
+        background-color: var(--#{$i});
+        color: var(--on-#{$i});
+      }
+    }
+  }
+
+  &.btn-outline {
+    @each $i in $btn-colors {
+      &.btn-#{$i} {
+        background-color: transparent;
+        color: var(--#{$i});
+        border: 2px solid currentColor;
+      }
+    }
+  }
+
+  &.btn-small {
+    height: $btn-height * $btn-small-factor;
+    padding: 0 $btn-x-padding * $btn-small-factor;
+  }
+
+  // if text and icon is present
+  .btn-content {
+    display: grid;
+    place-items: center;
+
+    &.append-icon {
+      grid-template-columns: auto auto;
+      grid-gap: $btn-x-padding / 2;
+    }
+  }
+
+  &.btn-block {
+    width: 100%;
+    padding: 0 ($btn-x-padding * 2);
+
+    &.btn-block-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: calc(
+        #{$btn-height} + Max(#{$btn-height / 2}, env(safe-area-inset-bottom))
+      );
+      border-top-left-radius: $btn-border-radius * 2;
+      border-top-right-radius: $btn-border-radius * 2;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  &.btn-disabled {
+    filter: opacity(0.2) !important;
+    cursor: default;
+  }
+
+  .btn-ripple-effect {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: $btn-height / 2;
+    height: $btn-height / 2;
+    border-radius: 50%;
+    background-color: var(--background);
+    filter: invert(1) opacity(0.2);
+    opacity: 0;
+
+    transform: scale(0);
+  }
+
+  &.btn-icon {
+    width: $btn-height;
+    padding: 0;
+    border-radius: 50%;
+
+    color: inherit;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .btn-ripple-effect {
+      width: $btn-height;
+      height: $btn-height;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+  }
+}

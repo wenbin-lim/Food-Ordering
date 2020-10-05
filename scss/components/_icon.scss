@@ -1,0 +1,19 @@
+.icon {
+  &.arrow-icon {
+    &.arrow-icon-left {
+      // default
+    }
+
+    &.arrow-icon-right {
+      transform: rotate(180deg);
+    }
+
+    &.arrow-icon-top {
+      transform: rotate(90deg);
+    }
+
+    &.arrow-icon-bottom {
+      transform: rotate(-90deg);
+    }
+  }
+}

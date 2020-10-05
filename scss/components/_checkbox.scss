@@ -1,0 +1,82 @@
+/* Checkbox Group Variables */
+$checkbox-group-margin: 1rem 0;
+
+/* Checkbox Input Variables */
+$checkbox-input-size: $icon-size;
+
+.checkbox-group {
+  user-select: none;
+
+  margin: $checkbox-group-margin;
+
+  label {
+    @include caption();
+
+    display: flex;
+    align-items: center;
+
+    .required-input {
+      margin-left: 0.5rem;
+      color: var(--error);
+      text-transform: none;
+    }
+  }
+
+  .checkbox-input {
+    @include body-1();
+
+    display: flex;
+    align-items: center;
+
+    .checkbox-wrapper {
+      width: $checkbox-input-size;
+      height: $checkbox-input-size;
+
+      display: grid;
+      place-items: center;
+
+      cursor: pointer;
+
+      .checkbox {
+        width: 30%;
+        height: 30%;
+
+        box-shadow: 0px 0px 0px 2px currentColor;
+        border-radius: 10%;
+
+        display: grid;
+        place-items: center;
+
+        .icon {
+          width: 80%;
+          height: 80%;
+          stroke-width: 5;
+
+          opacity: 0;
+        }
+
+        &.checked {
+          box-shadow: 0px 0px 0px 2px var(--secondary);
+          background-color: var(--secondary);
+
+          .icon {
+            stroke: var(--on-secondary);
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .checkbox-input-key {
+      cursor: pointer;
+    }
+  }
+
+  .checkbox-input-message {
+    @include body-2();
+
+    &.error-message {
+      color: var(--error);
+    }
+  }
+}

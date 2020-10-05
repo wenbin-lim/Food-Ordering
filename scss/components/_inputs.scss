@@ -1,0 +1,79 @@
+/* Input Group Variables */
+$input-group-margin: 1rem 0;
+
+/* Input Field Variables */
+$input-field-padding: 0.5rem 1rem;
+$input-field-border-radius: 2rem;
+$input-field-border-size: 2px;
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+
+  margin: $input-group-margin;
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    @include caption;
+
+    .required-input {
+      color: var(--error);
+      text-transform: none;
+    }
+  }
+
+  .input-field {
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: $input-field-padding;
+      margin: $input-field-border-size;
+
+      @include body-1;
+
+      background-color: var(--surface1);
+      color: var(--on-surface);
+
+      border-radius: $input-field-border-radius;
+
+      &:focus {
+        box-shadow: 0px 0px 0px $input-field-border-size var(--focus);
+      }
+
+      &.invalid {
+        box-shadow: 0px 0px 0px $input-field-border-size var(--error) !important;
+      }
+    }
+
+    &.append-icon {
+      input {
+        // prevent input from overflowing/covering icon
+        padding-right: $icon-size;
+      }
+    }
+
+    .input-field-icon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: $icon-size / 4;
+
+      display: grid;
+      place-items: center;
+
+      cursor: pointer;
+    }
+  }
+
+  .input-message {
+    @include body-2;
+
+    &.error-message {
+      color: var(--error);
+    }
+  }
+}

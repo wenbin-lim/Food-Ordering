@@ -1,0 +1,33 @@
+.menudropdown {
+  position: absolute;
+  z-index: 99;
+
+  opacity: 0;
+
+  border-radius: 8px;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  @include box-shadow(1);
+
+  .menudropdown-item {
+    min-width: 150px;
+
+    padding: 16px;
+
+    background-color: var(--surface2);
+    color: var(--on-surface);
+
+    &.menudropdown-item-disabled {
+      filter: brightness(0.5) !important;
+      cursor: default;
+    }
+
+    &:hover,
+    &:active {
+      filter: brightness(1.5);
+    }
+  }
+}

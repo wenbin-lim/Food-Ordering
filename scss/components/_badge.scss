@@ -1,0 +1,29 @@
+/* Variables */
+$badge-padding: 4px 8px;
+$badge-small-padding: 2px 8px;
+$badge-border-radius: 4px;
+
+$badge-colors: 'primary', 'secondary', 'error', 'success', 'warning';
+
+// use span as root element
+.badge {
+  padding: $badge-padding;
+
+  letter-spacing: 0.5px;
+  font-size: 0.8em;
+  font-weight: $font-weight-regular;
+
+  border-radius: $badge-border-radius;
+
+  &.badge-small {
+    font-size: 0.6em;
+    padding: $badge-small-padding;
+  }
+
+  @each $i in $badge-colors {
+    &.badge-#{$i} {
+      background-color: var(--#{$i});
+      color: var(--on-#{$i});
+    }
+  }
+}

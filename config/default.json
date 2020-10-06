@@ -1,5 +1,4 @@
 {
-  "mongoDevURI": "REDACTED",
-  "mongoProdURI": "REDACTED",
+  "mongoURI": "REDACTED",
   "jwtSecret": "REDACTED"
 }

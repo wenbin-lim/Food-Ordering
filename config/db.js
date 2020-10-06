@@ -10,45 +10,25 @@ const config = require('config');
 // ====================================================================================================
 // Variables
 // ====================================================================================================
-const developmentDB = config.get('mongoDevURI');
-const productionDB = config.get('mongoProdURI');
+const db = config.get('mongoURI');
 
 // ====================================================================================================
 // Setup
 // ====================================================================================================
-const connectDevelopmentDB = async () => {
+const connectDB = async () => {
   try {
-    await mongoose.connect(developmentDB, {
+    await mongoose.connect(db, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useFindAndModify: false,
       useUnifiedTopology: true,
     });
 
-    console.log('Development Database connected');
+    console.log('MongoDB connected');
   } catch (err) {
     console.log(err.message);
     process.exit(1);
   }
 };
 
-const connectProductionDB = async () => {
-  try {
-    await mongoose.connect(productionDB, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-      useUnifiedTopology: true,
-    });
-
-    console.log('Production Database connected');
-  } catch (err) {
-    console.log(err.message);
-    process.exit(1);
-  }
-};
-
-module.exports = {
-  connectDevelopmentDB,
-  connectProductionDB,
-};
+module.exports = connectDB;

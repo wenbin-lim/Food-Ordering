@@ -13,16 +13,8 @@ const PORT = process.env.PORT || 5000;
 // ====================================================================================================
 // Database setup
 // ====================================================================================================
-const db = require('./config/db');
-
-// Note:
-// Please remember to create 2 database (development & production) inside MongoDB Atlas
-// Change the production and development URI inside default.json as well
-if (process.env.PORT) {
-  db.connectProductionDB();
-} else {
-  db.connectDevelopmentDB();
-}
+const connectDB = require('./config/db');
+connectDB();
 
 // ====================================================================================================
 // Init Middlewares

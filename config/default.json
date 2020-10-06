@@ -1,5 +1,4 @@
 {
-  "mongoDevURI": "mongodb+srv://wawaya:11feb25aug@wawayafood.s8w7h.mongodb.net/development?retryWrites=true&w=majority",
-  "mongoProdURI": "mongodb+srv://wawaya:11feb25aug@wawayafood.s8w7h.mongodb.net/production?retryWrites=true&w=majority",
+  "mongoURI": "mongodb+srv://wawaya:11feb25aug@wawayafood.s8w7h.mongodb.net/development?retryWrites=true&w=majority",
   "jwtSecret": "wawaya"
 }

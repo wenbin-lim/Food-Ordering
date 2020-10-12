@@ -13,7 +13,7 @@ import { TweenMax } from 'gsap';
   @required   false
 
   @name       type 
-  @type       string of ['primary', 'secondary', 'error', 'success', 'warning']
+  @type       string of ['background', 'primary', 'secondary', 'error', 'success', 'warning']
   @desc       type/color of button
   @required   false
   @default    'primary'
@@ -68,11 +68,16 @@ import { TweenMax } from 'gsap';
   @desc       additional text that is used in conjunction with btn-block
   @required   false
 
+  @name       showAlert 
+  @type       boolean
+  @desc       determines if btn-alert is shown
+  @required   false
+
   @name       ripple 
   @type       boolean
   @desc       determines if ripple effect is on
   @required   false
-  @required   true
+  @default    true
 
   @name       additionalClasses
   @type       string
@@ -101,8 +106,8 @@ import { TweenMax } from 'gsap';
   @required   false
 */
 const Button = ({
-  style,
-  type = 'primary',
+  btnStyle,
+  type,
   backgroundColor,
   color,
   disabled = false,
@@ -113,6 +118,7 @@ const Button = ({
   icon,
   leadingIcon = false,
   additionalText,
+  showAlert,
   ripple = true,
   additionalClasses,
   additionalStyles,
@@ -120,8 +126,8 @@ const Button = ({
   submit = false,
   form,
 }) => {
-  const styleClassName = style ? `btn-${style}` : '';
-  const typeClassName = type && `btn-${type}`;
+  const styleClassName = btnStyle ? `btn-${btnStyle}` : '';
+  const typeClassName = type ? `btn-${type}` : '';
   const smallClassName = small ? 'btn-small' : '';
   const blockClassName = block
     ? fixBlockBtnBottom
@@ -232,19 +238,24 @@ const Button = ({
         backgroundColor: backgroundColor ? backgroundColor : null,
         color: color ? color : null,
         overflow: iconOnly ? null : 'hidden',
+        justifyContent: additionalText ? 'space-between' : null,
       }}
       ref={buttonRef}
     >
-      {ripple && <div className='btn-ripple-effect' ref={rippleRef} />}
+      {ripple && !iconOnly && (
+        <div className='btn-ripple-effect' ref={rippleRef} />
+      )}
       {content}
       {additionalText && <div className='btn-content'>{additionalText}</div>}
+      {iconOnly && showAlert && <div className='btn-alert'></div>}
     </button>
   );
 };
 
 Button.propTypes = {
-  style: PropTypes.string,
+  btnStyle: PropTypes.string,
   type: PropTypes.oneOf([
+    'background',
     'primary',
     'secondary',
     'error',
@@ -261,6 +272,7 @@ Button.propTypes = {
   icon: PropTypes.element,
   leadingIcon: PropTypes.bool,
   additionalText: PropTypes.element,
+  showAlert: PropTypes.bool,
   ripple: PropTypes.bool,
   additionalClasses: PropTypes.string,
   additionalStyles: PropTypes.object,

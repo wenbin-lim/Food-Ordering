@@ -4,16 +4,16 @@ import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 // Actions
-import { getUser, updateUser } from '../../actions/users';
+import { getUser, updateUser } from '../../../actions/users';
 
 // Components
-import Header from '../layout/Header';
-import Spinner from '../layout/Spinner';
-import TextInput from '../layout/TextInput';
-import Button from '../layout/Button';
+import Header from '../../../components/layout/Header';
+import Spinner from '../../../components/layout/Spinner';
+import TextInput from '../../../components/layout/TextInput';
+import Button from '../../../components/layout/Button';
 
 // Icons
-import ArrowIcon from '../icons/ArrowIcon';
+import ArrowIcon from '../../../components/icons/ArrowIcon';
 
 /* 
   =====

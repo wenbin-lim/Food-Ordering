@@ -67,6 +67,8 @@
   scrollbar-color: var(--on-background) transparent;
 
   position: relative;
+
+  user-select: none;
 }
 
 html {
@@ -84,6 +86,11 @@ body {
 }
 
 .app-wrapper {
+  // prevent momentum scrolling
+  position: fixed;
+  top: 0;
+  left: 0;
+
   width: 100vw;
   height: calc(100 * var(--vh));
 
@@ -107,6 +114,7 @@ body {
 @import 'components/_alert';
 @import 'components/_actionsheet';
 @import 'components/_badge';
+@import 'components/_bottomnav';
 @import 'components/_button';
 @import 'components/_checkbox';
 @import 'components/_chip';
@@ -114,6 +122,7 @@ body {
 @import 'components/_dialog';
 @import 'components/_dropdown';
 @import 'components/_icon';
+@import 'components/_imageinput';
 @import 'components/_inputs';
 @import 'components/_list';
 @import 'components/_menudropdown';
@@ -121,6 +130,10 @@ body {
 @import 'components/_preloader';
 @import 'components/_radio';
 @import 'components/_range';
+@import 'components/_sidebar';
 @import 'components/_snackbar';
 @import 'components/_switch';
 @import 'components/_tabs';
+
+// additional
+@import 'additional/customer/_customer.scss';

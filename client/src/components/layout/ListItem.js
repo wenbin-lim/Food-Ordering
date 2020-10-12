@@ -264,7 +264,7 @@ ListItem.propTypes = {
 };
 
 const mapStateToProps = state => ({
-  screenOrientation: state.layout.screenOrientation,
+  screenOrientation: state.app.screenOrientation,
 });
 
 const mapDispatchToProps = {};

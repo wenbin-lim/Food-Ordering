@@ -41,6 +41,16 @@ const UserSchema = mongoose.Schema({
     required: true,
     trim: true,
   },
+  access: {
+    type: Number,
+    required: true,
+  },
+  role: [String],
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true,
+  },
   creationDate: {
     type: Date,
     default: Date.now,

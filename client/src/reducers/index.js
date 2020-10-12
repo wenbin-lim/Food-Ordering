@@ -3,10 +3,12 @@ import { combineReducers } from 'redux';
 // import reducers
 import users from './users';
 import auth from './auth';
-import layout from './layout';
+import app from './app';
+import companies from './companies';
 
 export default combineReducers({
   users,
   auth,
-  layout,
+  app,
+  companies,
 });

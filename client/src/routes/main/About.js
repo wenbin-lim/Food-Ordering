@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
 
 // Components
-import Container from '../layout/Container';
+import Container from '../../components/layout/Container';
 
-const Landing = () => {
+const About = () => {
   return (
     <Container
       parentStyle={{
@@ -12,11 +12,14 @@ const Landing = () => {
       }}
       parentContent={
         <Fragment>
-          <h1 className='heading-1'>Landing Page</h1>
+          <h1 className='heading-1'>Wawaya Food App</h1>
+          <div>
+            <p className='body-1'>This is the About page</p>
+          </div>
         </Fragment>
       }
     />
   );
 };
 
-export default Landing;
+export default About;

@@ -4,25 +4,44 @@
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
+const { public: publicAccess } = config.get('accessLevel');
+
 // ====================================================================================================
 // Exporting module
 // ====================================================================================================
-module.exports = function (req, res, next) {
-  // Get token from header
-  const token = req.header('x-auth-token');
+module.exports = (privateOnly, minAccessLevel = publicAccess) => {
+  return (req, res, next) => {
+    // Get token from header
+    const token = req.header('x-auth-token');
 
-  // check if not token
-  if (!token) {
-    return res.status(401).json({ msg: 'Authorisation Denied' });
-  }
+    if (!token) {
+      if (privateOnly) {
+        // user is public trying to access private route
+        return res.status(401).json({ msg: 'Authorisation Denied' });
+      } else {
+        // user is public trying to access public and private route
+        req.access = publicAccess;
+        return next();
+      }
+    }
 
-  try {
-    const decoded = jwt.verify(token, config.get('jwtSecret'));
+    // token exists, user has private access
+    try {
+      const decoded = jwt.verify(token, config.get('jwtSecret'));
 
-    // assign user from payload to req.user
-    req.user = decoded.user;
-    next();
-  } catch (err) {
-    res.status(401).json({ msg: 'Invalid token' });
-  }
+      if (decoded.access < minAccessLevel) {
+        // user has access level lower than required
+        return res.status(401).json({ msg: 'Authorisation Denied' });
+      }
+
+      // assign decoded token to req.auth
+      req.access = decoded.access;
+      req.auth = decoded;
+
+      next();
+    } catch (err) {
+      console.log(err);
+      res.status(401).json({ msg: 'Invalid token' });
+    }
+  };
 };

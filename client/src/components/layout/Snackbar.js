@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 // Actions
-import { removeSnackbar } from '../../actions/layout';
+import { removeSnackbar } from '../../actions/app';
 /* 
   =====
   Props
   =====
   @name       snackbars
   @type       array of snackbar
-  @desc       from App level layout state 
+  @desc       from App level appp state 
   @required   true
 
   @name       removeSnackbar
@@ -80,7 +80,7 @@ Snackbar.propTypes = {
 };
 
 const mapStateToProps = state => ({
-  snackbars: state.layout.snackbars,
+  snackbars: state.app.snackbars,
 });
 
 const mapDispatchToProps = {

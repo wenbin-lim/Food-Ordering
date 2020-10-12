@@ -1,8 +1,5 @@
-// eslint-disable-next-line
-import React, { useState, useEffect, useRef } from 'react';
-// eslint-disable-next-line
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 // Components
 import Button from './Button';
@@ -16,33 +13,48 @@ import InstagramIcon from '../icons/InstagramIcon';
   =====
   Props
   =====
-  1. Prop Name 
-  @type       type
-  @desc       description
-  @required   true
-  @default    none
+  @name       socialMediaLinks
+  @type       object of {facebook, twitter, instagram: url string}
+  @desc       facebook twitter instagram redirect links
+  @required   false
 */
-export const SocialMediaButtons = () => {
-  return (
+export const SocialMediaButtons = ({ socialMediaLinks }) => {
+  return socialMediaLinks ? (
     <div
       style={{
         display: 'flex',
         justifyContent: 'center',
       }}
     >
-      <Button icon={<FacebookIcon />} />
-      <Button icon={<InstagramIcon />} />
-      <Button icon={<TwitterIcon />} />
+      {socialMediaLinks.facebook && (
+        <Button
+          icon={<FacebookIcon />}
+          onClick={() => window.open(socialMediaLinks.facebook)}
+        />
+      )}
+      {socialMediaLinks.instagram && (
+        <Button
+          icon={<InstagramIcon />}
+          onClick={() => window.open(socialMediaLinks.instagram)}
+        />
+      )}
+      {socialMediaLinks.twitter && (
+        <Button
+          icon={<TwitterIcon />}
+          onClick={() => window.open(socialMediaLinks.twitter)}
+        />
+      )}
     </div>
-  );
+  ) : null;
 };
 
 // eslint-disable-next-line
-SocialMediaButtons.propTypes = {};
+SocialMediaButtons.propTypes = {
+  socialMediaLinks: PropTypes.shape({
+    facebook: PropTypes.string,
+    twitter: PropTypes.string,
+    instagram: PropTypes.string,
+  }),
+};
 
-const mapStateToProps = state => ({});
-
-// eslint-disable-next-line
-const mapDispatchToProps = {};
-
-export default connect(mapStateToProps, mapDispatchToProps)(SocialMediaButtons);
+export default SocialMediaButtons;

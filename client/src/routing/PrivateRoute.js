@@ -6,21 +6,33 @@ import { connect } from 'react-redux';
 const PrivateRoute = ({
   component: Component,
   path,
-  redirectLink = '/login',
+  redirectLink = '/',
   auth,
+  access,
   children,
   ...rest
 }) => {
-  const { isAuthenticated } = auth;
-  if (!isAuthenticated) {
-    return <Navigate to={redirectLink}></Navigate>;
-  } else {
-    return (
-      <Route path={path} element={<Component {...rest} auth={auth} />}>
-        {children}
-      </Route>
-    );
+  const { table, user, access: authAccessLevel } = auth;
+
+  if (table || user) {
+    if (typeof access === 'number') {
+      if (authAccessLevel >= access) {
+        return (
+          <Route path={path} element={<Component {...rest} />}>
+            {children}
+          </Route>
+        );
+      }
+    } else {
+      return (
+        <Route path={path} element={<Component {...rest} />}>
+          {children}
+        </Route>
+      );
+    }
   }
+
+  return <Navigate to={redirectLink}></Navigate>;
 };
 
 PrivateRoute.propTypes = {

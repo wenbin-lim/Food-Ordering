@@ -1,15 +1,15 @@
 // import action types
 import {
-  APP_LOADED,
+  GET_COMPANIES_PUBLIC,
   UPDATE_SCREEN_ORIENTATION,
   SET_SNACKBAR,
   REMOVE_SNACKBAR,
 } from '../actions/types';
 
 const initialState = {
-  appLoaded: false,
   screenOrientation: window.innerHeight > window.innerWidth,
   snackbars: [],
+  companies: [],
 };
 
 export default (state = initialState, action) => {
@@ -17,10 +17,10 @@ export default (state = initialState, action) => {
   const { type, payload } = action;
 
   switch (type) {
-    case APP_LOADED:
+    case GET_COMPANIES_PUBLIC:
       return {
         ...state,
-        appLoaded: true,
+        companies: payload,
       };
     // screen is portrait - true (height > width) or landscape - false (width > height)
     case UPDATE_SCREEN_ORIENTATION:

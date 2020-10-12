@@ -51,7 +51,10 @@ const Header = ({
   let navigate = useNavigate();
 
   const close = () => {
-    if (typeof closeActionCallback === 'string') {
+    if (
+      typeof closeActionCallback === 'string' ||
+      typeof closeActionCallback === 'number'
+    ) {
       navigate(closeActionCallback);
     } else if (typeof closeActionCallback === 'function') {
       closeActionCallback();
@@ -86,13 +89,17 @@ const Header = ({
 Header.propTypes = {
   title: PropTypes.string,
   content: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  navigateToWhenClose: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+  closeActionCallback: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.func,
+  ]),
   moreActionCallback: PropTypes.func,
   screenOrientation: PropTypes.bool,
 };
 
 const mapStateToProps = state => ({
-  screenOrientation: state.layout.screenOrientation,
+  screenOrientation: state.app.screenOrientation,
 });
 
 const mapDispatchToProps = {};

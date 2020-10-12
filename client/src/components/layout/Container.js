@@ -40,19 +40,21 @@ const Container = ({
   childContent,
   parentSize,
   childSize,
+  parentClass,
+  childClass,
   parentStyle,
   childStyle,
 }) => {
   return (
     <main className='container'>
       <section
-        className='parent'
+        className={`parent ${parentClass ? parentClass : ''}`.trim()}
         style={{ ...parentStyle, flex: parentSize || 1 }}
       >
         {parentContent}
       </section>
       <section
-        className='child'
+        className={`child ${childClass ? childClass : ''}`.trim()}
         style={{ ...childStyle, flexGrow: childSize || 1 }}
       >
         {childContent}

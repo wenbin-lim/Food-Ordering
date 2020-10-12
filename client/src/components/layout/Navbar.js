@@ -1,98 +1,79 @@
 // eslint-disable-next-line
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 // Router
-// eslint-disable-next-line
-import { Link, useNavigate } from 'react-router-dom';
-
-// actions
-import { logout } from '../../actions/auth';
+import { useNavigate } from 'react-router-dom';
 
 // Components
 import Button from './Button';
 import Sidebar from './Sidebar';
 
 // Icons
-import LogoutIcon from '../icons/LogoutIcon';
 import MenuIcon from '../icons/MenuIcon';
-
-// Assets
-import logo from '../../assets/logo.png';
 
 /* 
   =====
   Props
   =====
-  @name       auth
-  @type       object
-  @desc       app level auth state
+  @name       logo
+  @type       object of {large: String/Element, small: String/Element}
+  @desc       small and large logo for navbar and sidebar
   @required   true
 
-  @name       logout
-  @type       function
-  @desc       redux action function from auth to logout user
-  @required   true
+  @name       navbarLinks
+  @type       jsx
+  @desc       navbar links or icons on the navbar right
+  @required   false
 
-  ============
-  Boilerplates
-  ============
-  // Links
-  <Link to='/login' className='nav-link'>
-    Login
-  </Link>
+  @name       sidebarLinks
+  @type       object of {name, link}
+  @desc       sidebar links to redirect to
+  @required   false
 
-  // Button Icons
-  <button className='btn-icon'>
-      <LogoutIcon />
-  </button>
+  @name       socialMediaLinks
+  @type       object of {facebook, twitter, instagram: url string}
+  @desc       facebook twitter instagram redirect links
+  @required   false
 
-  // Navbar Logo
-  <div className='nav-logo' onClick={() => navigate('/')}>
-    <img src={logo} alt='Logo' />
-  </div>
+  @name       additionalStyles
+  @type       css style object
+  @desc       change navbar style
+  @desc       use to change color
+  @required   false
 */
-export const Navbar = ({ auth: { isAuthenticated, loading }, logout }) => {
-  let navigate = useNavigate();
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
+export const Navbar = ({
+  leftContent,
+  centerContent,
+  rightContent,
+  additionalClasses,
+  additionalStyles,
+}) => {
   return (
     <Fragment>
-      <nav className='navbar'>
-        <section className='navbar-left'>
-          <Button
-            icon={<MenuIcon />}
-            additionalClasses={'sidebar-toggle'}
-            onClick={() => setSidebarOpen(true)}
-          />
-        </section>
-        <section className='navbar-center hide-in-portrait'>
-          <div className='nav-logo' onClick={() => navigate('/')}>
-            <img className='logo invert-in-dark-mode' src={logo} alt='Logo' />
-          </div>
-        </section>
-        <section className='navbar-right'>
-          {!loading && isAuthenticated && (
-            <Button icon={<LogoutIcon />} onClick={() => logout()} />
-          )}
-        </section>
+      <nav
+        className={`navbar ${additionalClasses}`.trim()}
+        style={additionalStyles}
+      >
+        {leftContent && (
+          <section className='navbar-left'>{leftContent}</section>
+        )}
+        {centerContent && (
+          <section className='navbar-center'>{centerContent}</section>
+        )}
+        {rightContent && (
+          <section className='navbar-right'>{rightContent}</section>
+        )}
       </nav>
-      {sidebarOpen && <Sidebar unmountSidebar={() => setSidebarOpen(false)} />}
     </Fragment>
   );
 };
 
 Navbar.propTypes = {
-  logout: PropTypes.func.isRequired,
-  auth: PropTypes.object.isRequired,
+  leftContent: PropTypes.element,
+  leftContent: PropTypes.element,
+  leftContent: PropTypes.element,
+  additionalStyles: PropTypes.object,
 };
 
-const mapStateToProps = state => ({
-  auth: state.auth,
-});
-
-const mapDispatchToProps = { logout };
-
-export default connect(mapStateToProps, mapDispatchToProps)(Navbar);
+export default Navbar;

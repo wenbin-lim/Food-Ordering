@@ -24,11 +24,13 @@ const jwt = require('jsonwebtoken');
 // Variables
 // ====================================================================================================
 const router = express.Router();
+const customerAccessLevel = config.get('accessLevel.customer');
 
 // ====================================================================================================
 // Models
 // ====================================================================================================
 const User = require('../models/User');
+const Table = require('../models/Table');
 
 // ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
@@ -40,13 +42,12 @@ const auth = require('../middleware/auth');
 // ====================================================================================================
 
 // @route    GET api/auth
-// @desc     Get logged in user
+// @desc     decode jwt token and return
 // @access   Private
-router.get('/', auth, async (req, res) => {
+router.get('/', auth(true), async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
-
-    res.json(user);
+    // return decoded jwt token
+    res.json(req.auth);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -69,12 +70,13 @@ router.post(
       return res.status(400).json(errors);
     }
 
-    const { username, password, date } = req.body;
-
-    console.log(typeof new Date(date));
+    const { username, password } = req.body;
 
     try {
-      let user = await User.findOne({ username });
+      let user = await User.findOne({ username }).populate(
+        'company',
+        'name logo socialMediaLinks'
+      );
 
       // check if user exists with input username
       if (!user) {
@@ -90,21 +92,84 @@ router.post(
 
       // return jwt back to user
       const payload = {
-        user: {
+        auth: {
           id: user.id,
+          role: user.role,
         },
+        access: user.access,
+        company: user.company,
       };
 
       jwt.sign(
         payload,
         config.get('jwtSecret'),
         {
-          // expiresIn: 3600,
+          // expiresIn: 10,
         },
         (err, token) => {
           if (err) throw err;
 
-          res.json({ token });
+          res.json({
+            token,
+            ...payload,
+          });
+        }
+      );
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
+
+// @route    POST api/auth/table
+// @desc     Authenticate table & get token
+// @access   Public
+router.post(
+  '/table',
+  [
+    check('tableId', 'TableId is required').not().isEmpty(),
+    check('companyId', 'CompanyId is required').not().isEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req).array();
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    const { tableId, companyId } = req.body;
+
+    try {
+      let table = await Table.findOne({
+        _id: tableId,
+        company: companyId,
+      }).populate('company', 'name logo socialMediaLinks');
+
+      // check if table exists
+      if (!table) {
+        return res.status(403).json('No table exists');
+      }
+
+      // return jwt back to user
+      const payload = {
+        auth: {
+          id: tableId,
+          name: table.name,
+        },
+        access: customerAccessLevel,
+        company: table.company,
+      };
+
+      jwt.sign(
+        payload,
+        config.get('jwtSecret'),
+        {
+          expiresIn: 600,
+        },
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token, ...payload });
         }
       );
     } catch (err) {

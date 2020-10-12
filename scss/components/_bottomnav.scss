@@ -1,0 +1,23 @@
+/* Variables */
+$bottom-nav-y-padding: 8px;
+$bottom-nav-x-padding: 8px;
+
+.bottom-nav {
+  background-color: var(--surface1);
+  color: var(--on-surface);
+
+  display: flex;
+  justify-content: center;
+
+  .bottom-nav-items {
+    padding: 0 $bottom-nav-x-padding;
+    padding-top: $bottom-nav-y-padding;
+    padding-bottom: Max(env(safe-area-inset-bottom), $bottom-nav-y-padding);
+
+    width: 100%;
+    max-width: $max-container-size;
+
+    display: flex;
+    justify-content: space-around;
+  }
+}

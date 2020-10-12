@@ -24,9 +24,21 @@ const mongoose = require('mongoose');
 // 2. default
 // 3. unique(Boolean)
 // ====================================================================================================
-const documentSchema = mongoose.Schema({});
+const FoodGroupSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    set: name => name.replace(/\s+/g, ' '),
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true,
+  },
+});
 
 // ====================================================================================================
 // Exports
 // ====================================================================================================
-module.exports = mongoose.model('document', documentSchema);
+module.exports = mongoose.model('FoodGroup', FoodGroupSchema);

@@ -24,6 +24,7 @@ const jwt = require('jsonwebtoken');
 // Variables
 // ====================================================================================================
 const router = express.Router();
+const accessLevel = config.get('accessLevel');
 
 // ====================================================================================================
 // Models
@@ -67,21 +68,36 @@ router.post(
       .isEmpty()
       .withMessage('Please enter a username')
       .bail()
-      // check if username does not contains any illegal characters
-      .custom(value => /^\w(?:\w*(?:[.-]\w+)?)*(?<=^.{4,32})$/g.test(value))
+      .isEmail()
+      .withMessage('Please enter a valid email'),
+    check('password')
+      .exists()
+      .withMessage('Please enter a password')
+      .isLength({ min: 5 })
+      .withMessage('Password should be at least 5 characters')
+      .custom(value =>
+        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$.!%*#?&])[A-Za-z\d@$.!%*#?&]{5,}$/g.test(
+          value
+        )
+      )
       .withMessage(
-        'Please enter a valid username with a minimum of 4 characters to a maximum of 32 characters'
+        'Password should have at least one letter, one number and one special valid character'
       ),
     check(
-      'password',
-      'Please enter a password with 6 or more characters'
-    ).isLength({ min: 6 }),
+      'access',
+      `Please enter a valid access number of [${accessLevel.staff},${accessLevel.wawaya}]`
+    ).isInt({
+      min: accessLevel.staff,
+      max: accessLevel.wawaya,
+    }),
+    check('role', 'Invalid role type').isArray(),
+    check('company', 'Invalid Company').isMongoId(),
   ],
   async (req, res) => {
-    const { name, username, password } = req.body;
+    const { name, username, password, access, role, company } = req.body;
 
     try {
-      const errors = validationResult(req).array();
+      let errors = validationResult(req).array();
 
       // check if username already exist
       let user = await User.findOne({ username });
@@ -89,7 +105,7 @@ router.post(
       if (user) {
         errors.push({
           location: 'body',
-          msg: 'Username has been taken',
+          msg: 'Email has been taken',
           param: 'username',
         });
       }
@@ -102,6 +118,9 @@ router.post(
         name,
         username,
         password,
+        access,
+        role,
+        company,
       });
 
       // encrypt password
@@ -111,25 +130,7 @@ router.post(
       // save user to db
       await user.save();
 
-      // return jwt back to user
-      const payload = {
-        user: {
-          id: user.id,
-        },
-      };
-
-      jwt.sign(
-        payload,
-        config.get('jwtSecret'),
-        {
-          // expiresIn: 3600,
-        },
-        (err, token) => {
-          if (err) throw err;
-
-          res.json({ token });
-        }
-      );
+      res.json(user);
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

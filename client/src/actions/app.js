@@ -1,17 +1,26 @@
+import axios from 'axios';
 import { v4 as uuid } from 'uuid';
 
 // import action types
 import {
-  APP_LOADED,
+  GET_COMPANIES_PUBLIC,
   UPDATE_SCREEN_ORIENTATION,
   SET_SNACKBAR,
   REMOVE_SNACKBAR,
 } from '../actions/types';
 
-export const loadApp = () => dispatch => {
-  dispatch({
-    type: APP_LOADED,
-  });
+// get list of companies for public
+export const getCompaniesPublic = () => async dispatch => {
+  const res = await axios.get('/api/companies');
+
+  try {
+    dispatch({
+      type: GET_COMPANIES_PUBLIC,
+      payload: res.data,
+    });
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 // update screen orientation

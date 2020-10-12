@@ -3,6 +3,7 @@
 // ====================================================================================================
 const express = require('express');
 const path = require('path');
+const config = require('config');
 
 // ====================================================================================================
 // Fundamental Variables
@@ -22,13 +23,19 @@ connectDB();
 app.use(
   express.json({
     extended: false,
+    limit: '50mb',
   })
 );
+
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 // ====================================================================================================
 // Define Routes
 // ====================================================================================================
-app.use('/api/users', require('./routes/users'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/companies', require('./routes/companies'));
+app.use('/api/tables', require('./routes/tables'));
+app.use('/api/users', require('./routes/users'));
 
 // ====================================================================================================
 // Serve Static assets in production

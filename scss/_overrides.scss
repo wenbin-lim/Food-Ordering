@@ -35,6 +35,7 @@ input {
   outline: none;
   color: inherit;
   font-family: $primary-font-family;
+  user-select: auto;
 
   &:focus,
   &:invalid {

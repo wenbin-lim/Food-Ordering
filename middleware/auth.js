@@ -29,12 +29,12 @@ module.exports = (privateOnly, minAccessLevel = publicAccess) => {
     try {
       const decoded = jwt.verify(token, config.get('jwtSecret'));
 
-      if (decoded.access < minAccessLevel) {
+      if (decoded.access <= minAccessLevel - 1) {
         // user has access level lower than required
         return res.status(401).json({ msg: 'Authorisation Denied' });
       }
 
-      // assign decoded token to req.auth
+      req.company = decoded.company._id;
       req.access = decoded.access;
       req.auth = decoded;
 

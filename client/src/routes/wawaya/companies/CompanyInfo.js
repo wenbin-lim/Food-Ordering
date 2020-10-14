@@ -27,10 +27,7 @@ import Spinner from '../../../components/layout/Spinner';
   @required   true
 */
 
-const CompanyInfo = ({
-  getCompany,
-  companies: { company, companyLoading },
-}) => {
+const CompanyInfo = ({ getCompany, companies: { company } }) => {
   let { id } = useParams();
 
   useEffect(() => {
@@ -52,8 +49,8 @@ const CompanyInfo = ({
           userSelect: 'auto',
         }}
       >
-        {!companyLoading && company ? (
-          <div style={{ padding: '2rem' }}>
+        {company && (
+          <div style={{ padding: '1rem' }}>
             {company.name && (
               <Fragment>
                 <p className='caption'>Name</p>
@@ -139,8 +136,6 @@ const CompanyInfo = ({
               </Fragment>
             )}
           </div>
-        ) : (
-          <Spinner />
         )}
       </div>
     </div>

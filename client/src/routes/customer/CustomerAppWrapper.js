@@ -45,14 +45,14 @@ export const CustomerAppWrapper = ({ company, auth }) => {
   );
 
   const navbarRightContent = match && (
-    <Button icon={<CartIcon />} onClick={() => navigate('cart')} />
+    <Button icon={<CartIcon />} onClick={() => navigate('table/cart')} />
   );
 
   const sidebarHeader = (
     <Fragment>
       <img
         className='invert-in-dark-mode'
-        // src={company ? company.logo.small : company.logo.large}
+        src={company ? company.logo.large : company.logo.small}
         alt='logo'
         style={{
           maxWidth: '100%',
@@ -68,6 +68,19 @@ export const CustomerAppWrapper = ({ company, auth }) => {
         leftContent={navbarLeftContent}
         rightContent={navbarRightContent}
       />
+      {match && showSidebar && (
+        <Sidebar
+          headerContent={sidebarHeader}
+          sidebarLinks={[
+            {
+              name: 'menu',
+              link: 'table/menu',
+            },
+          ]}
+          socialMediaLinks={company && company.socialMediaLinks}
+          unmountSidebar={() => setShowSidebar(false)}
+        />
+      )}
       <Outlet />
     </div>
   );

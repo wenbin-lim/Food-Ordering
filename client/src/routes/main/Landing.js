@@ -78,7 +78,7 @@ const Landing = ({ companies }) => {
                         margin: '0.5rem 0',
                       }}
                     >
-                      Tables
+                      Tables QR Code links
                     </h3>
                     {tables &&
                       tables.map(
@@ -95,7 +95,7 @@ const Landing = ({ companies }) => {
                     <Link
                       to={`/ordernow/${company.name}?company=${company._id}&table=somethingrandom`}
                     >
-                      random
+                      {`fake table link for ${company.name}`}
                     </Link>
                   </div>
                 ))}

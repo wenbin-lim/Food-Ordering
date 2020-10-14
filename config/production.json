@@ -1,4 +1,22 @@
 {
-  "mongoURI": "mongodb+srv://wawaya:11feb25aug@wawayafood.s8w7h.mongodb.net/production?retryWrites=true&w=majority",
-  "jwtSecret": "wawaya"
+  "mongoURI": "mongodb+srv://wawaya:11feb25aug@wawayafood.s8w7h.mongodb.net/development?retryWrites=true&w=majority",
+  "jwtSecret": "wawaya",
+  "cloudinary": {
+    "name": "wawaya",
+    "apiKey": "857791795816868",
+    "apiSecret": "ktuIZe6X0T_OznJUL4akaijae_w",
+    "rootFolder": "wawayaFoodApp/"
+  },
+  "cloudinaryName": "wawaya",
+  "cloudinaryApiKey": "857791795816868",
+  "cloudinaryApiSecret": "ktuIZe6X0T_OznJUL4akaijae_w",
+  "cloudinaryRootFolder": "wawayaFoodApp/",
+  "accessLevel": {
+    "public": 0,
+    "private": 1,
+    "customer": 1,
+    "staff": 2,
+    "admin": 3,
+    "wawaya": 99
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -88,7 +88,7 @@ const CompanyAdd = ({
         overflow: 'hidden',
       }}
     >
-      <Header title={'Add Company'} closeActionCallback={-1} />
+      <Header title={'Add Company'} closeActionCallback={'../'} />
 
       <form
         id='companyAddForm'

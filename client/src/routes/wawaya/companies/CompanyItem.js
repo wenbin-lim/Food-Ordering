@@ -102,7 +102,7 @@ const CompanyItem = ({ index, company, deleteCompany }) => {
               />
               <Button
                 btnStyle={'outline'}
-                color={'var(--on-background)'}
+                type={'background'}
                 text={'Cancel'}
                 additionalStyles={{ flex: '1', marginLeft: '1rem' }}
                 onClick={() => setShowDeleteUserAlert(false)}

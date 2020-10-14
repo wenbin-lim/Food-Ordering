@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -33,6 +33,11 @@ import { TweenMax, Power4 } from 'gsap';
   @type       jsx
   @desc       jsx element that appears after the list content
 
+  @name       onClickListItem
+  @type       function
+  @desc       function callback after clicking on list
+  @required   false
+
   @name       actions
   @type       array of actions
   @desc       actions when user swipe on list item or press the more icon
@@ -61,6 +66,7 @@ const ListItem = ({
   beforeListContent,
   listContent,
   afterListContent,
+  onClickListItem,
   actions,
 }) => {
   const listItemRef = useRef(null);
@@ -224,6 +230,14 @@ const ListItem = ({
     }
   };
 
+  useEffect(() => {
+    const list = listItemRef.current;
+
+    if (list && onClickListItem) {
+      list.style.cursor = 'pointer';
+    }
+  }, [onClickListItem]);
+
   return (
     <div className='list-item-wrapper'>
       {actions && actions.length > 0 && (
@@ -239,7 +253,12 @@ const ListItem = ({
           ))}
         </div>
       )}
-      <div className='list-item' ref={listItemRef} {...onDrag()}>
+      <div
+        className='list-item'
+        ref={listItemRef}
+        {...onDrag()}
+        onClick={onClickListItem}
+      >
         {beforeListContent && (
           <div className='before-list-content'>{beforeListContent}</div>
         )}
@@ -259,6 +278,7 @@ ListItem.propTypes = {
   beforeListContent: PropTypes.element,
   listContent: PropTypes.element,
   afterListContent: PropTypes.element,
+  onClickListItem: PropTypes.func,
   actions: PropTypes.array,
   screenOrientation: PropTypes.bool,
 };

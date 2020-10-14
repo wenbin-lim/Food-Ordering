@@ -31,7 +31,7 @@ import CheckIcon from '../icons/CheckIcon';
   @required   true
 
   4. checkboxInputs
-  @type       array of checkboxInputs {label, value}
+  @type       array of checkboxInputs {key, value}
   @desc       to populate the checkbox inputs
   @required   true
   @example
@@ -112,32 +112,33 @@ const CheckboxInput = ({
           <small className='required-input'>* required</small>
         )}
       </label>
-      {checkboxInputs.map(checkboxInput => (
-        <div
-          className='checkbox-input'
-          key={uuid()}
-          style={checkboxInputInlineStyle}
-        >
+      {checkboxInputs &&
+        checkboxInputs.map(checkboxInput => (
           <div
-            className='checkbox-wrapper'
-            onClick={e => onClick(e, checkboxInput.value)}
+            className='checkbox-input'
+            key={uuid()}
+            style={checkboxInputInlineStyle}
           >
             <div
-              className={`checkbox ${
-                value.indexOf(checkboxInput.value) >= 0 && 'checked'
-              }`}
+              className='checkbox-wrapper'
+              onClick={e => onClick(e, checkboxInput.value)}
             >
-              <CheckIcon />
+              <div
+                className={`checkbox ${
+                  value.indexOf(checkboxInput.value) >= 0 && 'checked'
+                }`}
+              >
+                <CheckIcon />
+              </div>
+            </div>
+            <div
+              className='checkbox-input-key'
+              onClick={e => onClick(e, checkboxInput.value)}
+            >
+              {checkboxInput.key}
             </div>
           </div>
-          <div
-            className='checkbox-input-key'
-            onClick={e => onClick(e, checkboxInput.value)}
-          >
-            {checkboxInput.key}
-          </div>
-        </div>
-      ))}
+        ))}
       {validity ? (
         <p className='checkbox-input-message'>{informationText}</p>
       ) : (

@@ -16,7 +16,7 @@ import AvatarIcon from '../icons/AvatarIcon';
 // Actions
 import { deleteUser } from '../../actions/users';
 
-/* 
+/*
   =====
   Props
   =====
@@ -53,7 +53,7 @@ const UserItem = ({ authenticatedUser, user, deleteUser }) => {
 
   const [showDeleteUserAlert, setShowDeleteUserAlert] = useState(false);
 
-  if (authenticatedUser._id !== userId) {
+  if (authenticatedUser && authenticatedUser.id !== userId) {
     listItemAction.push({
       name: 'Delete',
       callback: () => setShowDeleteUserAlert(true),
@@ -68,7 +68,22 @@ const UserItem = ({ authenticatedUser, user, deleteUser }) => {
         beforeListContent={<AvatarIcon />}
         listContent={
           <Fragment>
-            <p className='body-1'>{name.toUpperCase()}</p>
+            <p
+              className='body-1'
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              {name.toUpperCase()}
+              {user.role &&
+                user.role.map((role, index) => (
+                  <span
+                    key={`user-${userId}-role-${index}`}
+                    className='badge badge-small badge-secondary'
+                    style={{ marginLeft: '0.5rem' }}
+                  >
+                    {role}
+                  </span>
+                ))}
+            </p>
             <p className='body-2'>
               Created at{' '}
               <Moment local format='DD/MM HH:mm:ss'>
@@ -94,15 +109,15 @@ const UserItem = ({ authenticatedUser, user, deleteUser }) => {
               }}
             >
               <Button
-                style={'contained'}
+                btnStyle={'contained'}
                 type={'error'}
                 text={'delete'}
                 additionalStyles={{ flex: '1', marginRight: '1rem' }}
                 onClick={() => deleteUser(userId)}
               />
               <Button
-                style={'outline'}
-                color={'var(--on-background)'}
+                btnStyle={'outline'}
+                type={'background'}
                 text={'Cancel'}
                 additionalStyles={{ flex: '1', marginLeft: '1rem' }}
                 onClick={() => setShowDeleteUserAlert(false)}
@@ -123,7 +138,7 @@ UserItem.propTypes = {
 };
 
 const mapStateToProps = state => ({
-  authenticatedUser: state.auth.user,
+  authenticatedUser: state.auth.auth,
 });
 
 const mapDispatchToProps = {

@@ -8,7 +8,7 @@ import {
   Route,
   Routes,
   Outlet,
-  Link,
+  Navigate,
 } from 'react-router-dom';
 
 // Redux
@@ -16,9 +16,9 @@ import { Provider } from 'react-redux';
 import store from './store';
 
 // Auth components
-import PrivateRoute from './routing/PrivateRoute';
 import WawayaRoute from './routing/WawayaRoute';
 import CustomerRoute from './routing/CustomerRoute';
+import CompanyRoute from './routing/CompanyRoute';
 
 // Components
 import Snackbar from './components/layout/Snackbar';
@@ -31,24 +31,21 @@ import Login from './routes/main/Login';
 import Contact from './routes/main/Contact';
 import OrderNow from './routes/ordernow/OrderNow';
 
-// Order Now Pages
-import CompanyOrderNow from './routes/customer/CustomerTakeaway';
+// Customer App Pages
+import CustomerAppWrapper from './routes/customer/CustomerAppWrapper';
+import CustomerTakeaway from './routes/customer/CustomerTakeaway';
+import CustomerLanding from './routes/customer/CustomerLanding';
+import Cart from './routes/customer/Cart';
 
 // Company/Main App Pages
 import CompanyAppWrapper from './routes/company/CompanyAppWrapper';
 import CompanyLanding from './routes/company/CompanyLanding';
 import Dashboard from './routes/company/admin/Dashboard';
-import Menu from './routes/company/menu/Menu';
+import Menu from './components/menu/Menu';
 import Notifications from './routes/company/notifications/Notifications';
 import Bills from './routes/company/bills/Bills';
 import Orders from './routes/company/orders/Orders';
 import Tables from './routes/company/tables/Tables';
-
-// Customer App Pages
-import CustomerAppWrapper from './routes/customer/CustomerAppWrapper';
-import CustomerTakeaway from './routes/customer/CustomerTakeaway';
-import CustomerLanding from './routes/customer/CustomerLanding';
-// import CustomerCart from './routes/customer/CustomerCart';
 
 // Wawaya Master Pages
 import WawayaAppWrapper from './routes/wawaya/WawayaAppWrapper';
@@ -57,6 +54,10 @@ import Companies from './routes/wawaya/companies/Companies';
 import CompanyInfo from './routes/wawaya/companies/CompanyInfo';
 import CompanyAdd from './routes/wawaya/companies/CompanyAdd';
 import CompanyEdit from './routes/wawaya/companies/CompanyEdit';
+import Users from './routes/wawaya/users/Users';
+import UserAdd from './components/users/UserAdd';
+import UserInfo from './components/users/UserInfo';
+import UserEdit from './components/users/UserEdit';
 
 // Actions
 import { getCompaniesPublic, updateScreenOrientation } from './actions/app';
@@ -78,11 +79,12 @@ const App = () => {
 
     /* Screen Orientation */
     window.addEventListener('orientationchange', () => {
+      setVhProperty();
       store.dispatch(updateScreenOrientation());
     });
 
     // store
-    // populate list of companies in app level app state
+    // populate list of companies in app level app state for route population
     store.dispatch(getCompaniesPublic());
 
     // eslint-disable-next-line
@@ -92,6 +94,7 @@ const App = () => {
     <Provider store={store}>
       <Router>
         <Routes>
+          <Route path='*' element={<Navigate to='/' />} />
           <Route path='/' element={<MainAppWrapper />}>
             <Route path='' element={<Landing />} />
             <Route path='login' element={<Login />} />
@@ -107,26 +110,23 @@ const App = () => {
             <CustomerRoute path='table' minAccessLevel={1} component={Outlet}>
               <CustomerRoute path='' component={CustomerLanding} />
               <CustomerRoute path='menu' component={Menu} />
+              <CustomerRoute path='cart' component={Cart} />
             </CustomerRoute>
           </CustomerRoute>
 
-          <PrivateRoute path='/:companyName' component={CompanyAppWrapper}>
-            <PrivateRoute path='' access={1} component={CompanyLanding} />
-            {/* <PrivateRoute path='admin' access={2} component={Dashboard} />
-            <PrivateRoute path='menu' access={1} component={Menu} />
-            <PrivateRoute
+          <CompanyRoute path='/:companyName' component={CompanyAppWrapper}>
+            <CompanyRoute path='' component={CompanyLanding} />
+            <CompanyRoute path='menu' component={Menu} />
+            <CompanyRoute path='admin' access={3} component={Dashboard} />
+            <CompanyRoute
               path='notifications'
               access={1}
               component={Notifications}
             />
-            <PrivateRoute path='bills' access={1} component={Bills} />
-            <PrivateRoute path='orders' access={1} component={Orders} />
-            <PrivateRoute path='tables' access={1} component={Tables} />
-            <PrivateRoute path='table' component={CustomerAppWrapper}>
-              <PrivateRoute path='menu' component={Menu} />
-              <PrivateRoute path='cart' component={Cart} />
-            </PrivateRoute> */}
-          </PrivateRoute>
+            <CompanyRoute path='tables' component={Tables} />
+            <CompanyRoute path='orders' component={Orders} />
+            <CompanyRoute path='bills' component={Bills} />
+          </CompanyRoute>
 
           <WawayaRoute path='/wawaya' component={WawayaAppWrapper}>
             <WawayaRoute path='' component={WawayaDashboard} />
@@ -135,6 +135,12 @@ const App = () => {
               <WawayaRoute path='add' component={CompanyAdd} />
               <WawayaRoute path=':id' component={CompanyInfo} />
               <WawayaRoute path=':id/edit' component={CompanyEdit} />
+            </WawayaRoute>
+
+            <WawayaRoute path='users' component={Users}>
+              <WawayaRoute path='add' component={UserAdd} />
+              <WawayaRoute path=':id' component={UserInfo} />
+              <WawayaRoute path=':id/edit' component={UserEdit} />
             </WawayaRoute>
           </WawayaRoute>
         </Routes>

@@ -3,7 +3,6 @@ import axios from 'axios';
 // import action types
 import {
   GET_COMPANIES,
-  GETTING_COMPANY,
   GET_COMPANY,
   ADDING_COMPANY,
   ADD_COMPANY,
@@ -36,19 +35,9 @@ export const getCompanies = () => async dispatch => {
 // Get company by id
 export const getCompany = id => dispatch => {
   dispatch({
-    type: GETTING_COMPANY,
+    type: GET_COMPANY,
+    payload: id,
   });
-
-  try {
-    // const res = await axios.get(`/api/companies/${id}`);
-
-    dispatch({
-      type: GET_COMPANY,
-      payload: id,
-    });
-  } catch (err) {
-    dispatch(setSnackbar('An unexpected error occured.', 'error'));
-  }
 };
 
 // Add new company

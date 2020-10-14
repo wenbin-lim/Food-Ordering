@@ -128,8 +128,8 @@ router.post(
 router.post(
   '/table',
   [
-    check('tableId', 'TableId is required').not().isEmpty(),
-    check('companyId', 'CompanyId is required').not().isEmpty(),
+    check('tableId', 'Invalid Credentials').not().isEmpty().isMongoId(),
+    check('companyId', 'Invalid Credentials').not().isEmpty().isMongoId(),
   ],
   async (req, res) => {
     const errors = validationResult(req).array();

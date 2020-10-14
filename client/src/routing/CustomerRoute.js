@@ -3,10 +3,14 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Route, Navigate, useParams } from 'react-router-dom';
 
+// Components
+import Preloader from '../components/layout/Preloader';
+
 const CustomerRoute = ({
   component: Component,
   path,
   minAccessLevel = 0,
+  loading,
   companies,
   auth,
   children,
@@ -16,20 +20,23 @@ const CustomerRoute = ({
 
   const company = companies.find(company => company.name === companyName);
 
-  if (company) {
-    if (auth.access >= minAccessLevel) {
-      return (
-        <Route
-          path={path}
-          element={<Component auth={auth} company={company} {...rest} />}
-        >
-          {children}
-        </Route>
-      );
+  if (loading) {
+    return <Preloader />;
+  } else {
+    if (company) {
+      if (auth.access >= minAccessLevel) {
+        return (
+          <Route
+            path={path}
+            element={<Component auth={auth} company={company} {...rest} />}
+          >
+            {children}
+          </Route>
+        );
+      }
     }
+    return <Navigate to='/' />;
   }
-
-  return <Navigate to='/' />;
 };
 
 CustomerRoute.propTypes = {
@@ -40,6 +47,7 @@ CustomerRoute.propTypes = {
 };
 
 const mapStateToProps = state => ({
+  loading: state.app.companiesLoading,
   companies: state.app.companies,
   auth: state.auth,
 });

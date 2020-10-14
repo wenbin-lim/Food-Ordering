@@ -19,7 +19,6 @@ const initialState = {
   usersLoading: false,
   user: null,
   userLoading: false,
-  userUpdateLoading: false,
   userErrors: null,
 };
 
@@ -69,7 +68,7 @@ export default (state = initialState, action) => {
     case DELETE_USER:
       return {
         ...state,
-        users: state.users.filter(user => user._id !== payload.userId),
+        users: state.users.filter(user => user._id !== payload),
         userErrors: null,
       };
     case USER_ERROR:

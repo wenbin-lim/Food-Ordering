@@ -45,7 +45,7 @@ import Menu from './components/menu/Menu';
 import Notifications from './routes/company/notifications/Notifications';
 import Bills from './routes/company/bills/Bills';
 import Orders from './routes/company/orders/Orders';
-import Tables from './routes/company/tables/Tables';
+// import Tables from './routes/company/tables/Tables';
 
 // Wawaya Master Pages
 import WawayaAppWrapper from './routes/wawaya/WawayaAppWrapper';
@@ -58,6 +58,10 @@ import Users from './routes/wawaya/users/Users';
 import UserAdd from './components/users/UserAdd';
 import UserInfo from './components/users/UserInfo';
 import UserEdit from './components/users/UserEdit';
+import Tables from './routes/wawaya/tables/Tables';
+import TableAdd from './components/tables/TableAdd';
+import TableInfo from './components/tables/TableInfo';
+import TableEdit from './components/tables/TableEdit';
 
 // Actions
 import { getCompaniesPublic, updateScreenOrientation } from './actions/app';
@@ -141,6 +145,12 @@ const App = () => {
               <WawayaRoute path='add' component={UserAdd} />
               <WawayaRoute path=':id' component={UserInfo} />
               <WawayaRoute path=':id/edit' component={UserEdit} />
+            </WawayaRoute>
+
+            <WawayaRoute path='tables' component={Tables}>
+              <WawayaRoute path='add' component={TableAdd} />
+              <WawayaRoute path=':id' component={TableInfo} />
+              <WawayaRoute path=':id/edit' component={TableEdit} />
             </WawayaRoute>
           </WawayaRoute>
         </Routes>

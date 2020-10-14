@@ -36,6 +36,10 @@ const TableSchema = mongoose.Schema({
     ref: 'Company',
     required: true,
   },
+  creationDate: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // ====================================================================================================

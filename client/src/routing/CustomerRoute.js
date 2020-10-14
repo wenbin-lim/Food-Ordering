@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Route, Navigate, useParams } from 'react-router-dom';
 
 // Components
-import Preloader from '../components/layout/Preloader';
+import Spinner from '../components/layout/Spinner';
 
 const CustomerRoute = ({
   component: Component,
@@ -21,7 +21,18 @@ const CustomerRoute = ({
   const company = companies.find(company => company.name === companyName);
 
   if (loading) {
-    return <Preloader />;
+    return (
+      <div
+        style={{
+          display: 'grid',
+          placeItems: 'center',
+          height: 'calc(100 * var(--vh)',
+          width: '100vw',
+        }}
+      >
+        <Spinner height={200} />
+      </div>
+    );
   } else {
     if (company) {
       if (auth.access >= minAccessLevel) {

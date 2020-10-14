@@ -46,9 +46,10 @@ const auth = require('../middleware/auth');
 router.get('/', auth(true, accessLevel.admin), async (req, res) => {
   try {
     // get all users in company
-    let users = await User.find({ company: req.query.companyId }).select(
-      '-password'
-    );
+    let users = await User.find({ company: req.query.companyId })
+      .select('-password')
+      .collation({ locale: 'en' })
+      .sort({ name: 'asc' });
 
     res.json(users);
   } catch (err) {
@@ -276,21 +277,13 @@ router.put(
 
 // @route    DELETE api/users/:id
 // @desc     Delete single user
-// @access   Public/Private
-router.delete('/:id', async (req, res) => {
+// @access   Private
+router.delete('/:id', auth(true, accessLevel.admin), async (req, res) => {
   try {
-    // get the user
-    let user = await User.findById(req.params.id);
-
-    if (!user) {
-      // User not found
-      return res.status(406).send('An unexpected error occured');
-    }
-
     // delete user
     await User.findByIdAndRemove(req.params.id);
 
-    res.json({ userId: req.params.id });
+    res.json(req.params.id);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

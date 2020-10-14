@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -238,7 +238,7 @@ const UserAdd = ({
 UserAdd.propTypes = {
   auth: PropTypes.object.isRequired,
   users: PropTypes.object.isRequired,
-  comapnies: PropTypes.object.isRequired,
+  companies: PropTypes.object.isRequired,
   addUser: PropTypes.func.isRequired,
 };
 

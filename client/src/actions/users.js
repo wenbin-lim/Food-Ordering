@@ -118,7 +118,6 @@ export const editUser = (userId, user) => async dispatch => {
       payload: res.data,
     });
 
-    console.log(res.data);
     dispatch(setSnackbar('User Updated', 'success'));
 
     return true;

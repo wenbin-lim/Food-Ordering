@@ -6,11 +6,16 @@ import { connect } from 'react-redux';
 const WawayaRoute = ({
   component: Component,
   path,
-  auth: { access, auth, company },
+  auth,
   children,
   ...rest
 }) => {
-  if (access === 99 && company && company.name === 'wawaya') {
+  if (
+    auth &&
+    auth.access === 99 &&
+    auth.company &&
+    auth.company.name === 'wawaya'
+  ) {
     return (
       <Route path={path} element={<Component auth={auth} {...rest} />}>
         {children}

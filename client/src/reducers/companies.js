@@ -1,7 +1,6 @@
 // import action types
 import {
   GET_COMPANIES,
-  GETTING_COMPANY,
   GET_COMPANY,
   ADDING_COMPANY,
   ADD_COMPANY,
@@ -31,7 +30,6 @@ export default (state = initialState, action) => {
         companies: payload,
         companiesLoading: false,
       };
-    case GETTING_COMPANY:
     case ADDING_COMPANY:
     case EDITING_COMPANY:
     case DELETING_COMPANY:

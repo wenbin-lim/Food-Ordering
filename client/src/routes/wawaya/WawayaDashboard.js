@@ -25,7 +25,6 @@ const WawayaDashboard = ({}) => {
       parentContent={
         <Fragment>
           <h1 className='heading-1'>Wawaya Master</h1>
-          <Link to='/'>213</Link>
         </Fragment>
       }
     />

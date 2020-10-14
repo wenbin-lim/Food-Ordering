@@ -102,24 +102,29 @@ const RadioInput = ({
           <small className='required-input'>* required</small>
         )}
       </label>
-      {radioInputs.map(radioInput => (
-        <div className='radio-input' key={uuid()} style={radioInputInlineStyle}>
-          <input
-            type='radio'
-            name={name}
-            id={`${name}-radio-input-${radioInput.value}`}
-            value={radioInput.value}
-            checked={radioInput.value === value}
-            onChange={e => onChange(e)}
-          />
-          <label
-            htmlFor={`${name}-radio-input-${radioInput.value}`}
-            className='radio-input-key'
+      {radioInputs &&
+        radioInputs.map(radioInput => (
+          <div
+            className='radio-input'
+            key={uuid()}
+            style={radioInputInlineStyle}
           >
-            {radioInput.key}
-          </label>
-        </div>
-      ))}
+            <input
+              type='radio'
+              name={name}
+              id={`${name}-radio-input-${radioInput.value}`}
+              value={radioInput.value}
+              checked={radioInput.value === value}
+              onChange={e => onChange(e)}
+            />
+            <label
+              htmlFor={`${name}-radio-input-${radioInput.value}`}
+              className='radio-input-key'
+            >
+              {radioInput.key}
+            </label>
+          </div>
+        ))}
       {validity ? (
         <p className='radio-input-message'>{informationText}</p>
       ) : (

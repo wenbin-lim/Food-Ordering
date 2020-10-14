@@ -58,9 +58,15 @@ export const CustomerTakeaway = ({
 
   return (
     <div>
-      company CustomerTakeaway page
-      <Link to={`table`}>table</Link>
-      <Link to={`table/menu`}>menu</Link>
+      CustomerTakeaway page
+      <div style={{ display: 'flex' }}>
+        <Link to={`table`} className='btn btn-outline btn-background'>
+          link trying to access qr landing page
+        </Link>
+        <Link to={`table/menu`} className='btn btn-outline btn-background'>
+          link trying to access table menu page
+        </Link>
+      </div>
     </div>
   );
 };

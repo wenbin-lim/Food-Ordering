@@ -1,76 +1,86 @@
 // import action types
 
 import {
+  GETTING_USERS,
   GET_USERS,
-  GETTING_USER,
   GET_USER,
-  UPDATING_USER,
-  UPDATE_USER_SUCCESS,
-  UPDATE_USER_FAILED,
+  ADDING_USER,
+  ADD_USER,
+  EDITING_USER,
+  EDIT_USER,
+  DELETING_USER,
   DELETE_USER,
+  USER_ERROR,
+  LOGOUT,
 } from '../actions/types';
 
 const initialState = {
   users: [],
-  userListLoading: true,
+  usersLoading: false,
   user: null,
   userLoading: false,
   userUpdateLoading: false,
-  userUpdateErrors: null,
+  userErrors: null,
 };
 
 export default (state = initialState, action) => {
   const { type, payload } = action;
 
   switch (type) {
+    case GETTING_USERS:
+      return {
+        ...initialState,
+        usersLoading: true,
+      };
     case GET_USERS:
       return {
         ...state,
         users: payload,
-        userListLoading: false,
+        usersLoading: false,
       };
-    case GETTING_USER:
+    case ADDING_USER:
+    case EDITING_USER:
+    case DELETING_USER:
       return {
         ...state,
         user: null,
         userLoading: true,
-        userUpdateErrors: null,
+        userErrors: null,
       };
     case GET_USER:
       return {
         ...state,
-        user: payload,
+        user: state.users.find(user => user._id === payload),
+      };
+    case ADD_USER:
+      return {
+        ...state,
+        users: [payload, ...state.users],
         userLoading: false,
       };
-    case UPDATING_USER:
+    case EDIT_USER:
       return {
         ...state,
-        userUpdateLoading: true,
-        userUpdateErrors: null,
-      };
-    case UPDATE_USER_SUCCESS:
-      return {
-        ...state,
-        users: state.users.map(user => {
-          if (payload._id === user._id) {
-            return payload;
-          }
-          return user;
-        }),
-        userUpdateLoading: false,
-        userUpdateErrors: null,
-      };
-    case UPDATE_USER_FAILED:
-      return {
-        ...state,
-        userUpdateLoading: false,
-        userUpdateErrors: payload,
+        users: state.users.map(user =>
+          user._id === payload._id ? payload : user
+        ),
+        userLoading: false,
       };
     case DELETE_USER:
       return {
         ...state,
         users: state.users.filter(user => user._id !== payload.userId),
-        errors: null,
+        userErrors: null,
+      };
+    case USER_ERROR:
+      return {
+        ...state,
+        userLoading: false,
+        userErrors: payload,
+      };
+    case LOGOUT:
+      return {
+        ...initialState,
       };
     default:
       return state;

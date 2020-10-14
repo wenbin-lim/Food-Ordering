@@ -42,13 +42,13 @@ export const MainAppWrapper = ({ screenOrientation }) => {
       />
       {!screenOrientation && (
         <Fragment>
-          <NavLink
+          {/* <NavLink
             to='/ordernow'
             className='navbar-link button-text'
             activeClassName='navbar-link-active'
           >
             ORDER
-          </NavLink>
+          </NavLink> */}
           <NavLink
             to='/about'
             className='navbar-link button-text'
@@ -106,10 +106,10 @@ export const MainAppWrapper = ({ screenOrientation }) => {
               name: 'HOME',
               link: '/',
             },
-            {
-              name: 'ORDER',
-              link: '/ordernow',
-            },
+            // {
+            //   name: 'ORDER',
+            //   link: '/ordernow',
+            // },
             {
               name: 'ABOUT',
               link: '/about',

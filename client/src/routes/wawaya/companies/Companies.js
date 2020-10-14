@@ -12,9 +12,6 @@ import CompanyItem from './CompanyItem';
 // Icons
 import PlusIcon from '../../../components/icons/PlusIcon';
 
-// Actions
-import { getCompanies } from '../../../actions/companies';
-
 /* 
   =====
   Props
@@ -23,24 +20,9 @@ import { getCompanies } from '../../../actions/companies';
   @type       object
   @desc       app level companies state
   @required   true
-
-  @name       getCompanies 
-  @type       function
-  @desc       redux action to get all companies
-  @required   true
 */
-export const Companies = ({
-  companies: { companies, companiesLoading },
-  getCompanies,
-}) => {
+export const Companies = ({ companies: { companies, companiesLoading } }) => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    /* Functions to run on mount */
-    getCompanies();
-
-    // eslint-disable-next-line
-  }, []);
 
   return (
     <Container
@@ -83,15 +65,12 @@ export const Companies = ({
 
 Companies.propTypes = {
   companies: PropTypes.object.isRequired,
-  getCompanies: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
   companies: state.companies,
 });
 
-const mapDispatchToProps = {
-  getCompanies,
-};
+const mapDispatchToProps = {};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Companies);

@@ -34,7 +34,7 @@ import { logout } from '../../actions/auth';
   @desc       to logout user
   @required   true
 */
-export const CompanyAppWrapper = ({ auth: { company, user }, logout }) => {
+export const CompanyAppWrapper = ({ auth: { company, auth }, logout }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -45,42 +45,42 @@ export const CompanyAppWrapper = ({ auth: { company, user }, logout }) => {
   const menuNavItem = (
     <Button
       icon={<FoodMenuIcon active={locationMatch('menu')} />}
-      onClick={() => navigate(`/${company.name}/menu`)}
+      onClick={() => navigate(`menu`)}
     />
   );
 
   const adminNavItem = (
     <Button
       icon={<HomeIcon active={locationMatch('admin')} />}
-      onClick={() => navigate(`/${company.name}/admin`)}
+      onClick={() => navigate(`admin`)}
     />
   );
 
   const tablesNavItem = (
     <Button
       icon={<FoodTableIcon active={locationMatch('tables')} />}
-      onClick={() => navigate(`/${company.name}/tables`)}
+      onClick={() => navigate(`tables`)}
     />
   );
 
   const ordersNavItem = (
     <Button
       icon={<FoodOrderIcon active={locationMatch('orders')} />}
-      onClick={() => navigate(`/${company.name}/orders`)}
+      onClick={() => navigate(`orders`)}
     />
   );
 
   const billsNavItem = (
     <Button
       icon={<FoodBillIcon active={locationMatch('bills')} />}
-      onClick={() => navigate(`/${company.name}/bills`)}
+      onClick={() => navigate(`bills`)}
     />
   );
 
   const notificationsNavItem = (
     <Button
       icon={<BellIcon active={locationMatch('notifications')} />}
-      onClick={() => navigate(`/${company.name}/notifications`)}
+      onClick={() => navigate(`notifications`)}
     />
   );
 
@@ -99,17 +99,17 @@ export const CompanyAppWrapper = ({ auth: { company, user }, logout }) => {
     </Fragment>
   );
 
-  const navbarRightContent = user ? (
+  const navbarRightContent = (
     <Fragment>
       {logoutNavItem}
-      {user.role.indexOf('admin') >= 0 ? notificationsNavItem : null}
+      {auth.role.indexOf('admin') >= 0 ? notificationsNavItem : null}
     </Fragment>
-  ) : null;
+  );
 
-  const bottomNavItems = user ? (
+  const bottomNavItems = (
     <Fragment>
       {menuNavItem}
-      {user.role.indexOf('admin') >= 0 ? (
+      {auth.role.indexOf('admin') >= 0 ? (
         <Fragment>
           {adminNavItem}
           {tablesNavItem}
@@ -118,16 +118,16 @@ export const CompanyAppWrapper = ({ auth: { company, user }, logout }) => {
         </Fragment>
       ) : (
         <Fragment>
-          {user.role.indexOf('waiter') >= 0 ? tablesNavItem : null}
-          {user.role.indexOf('kitchen') >= 0 ? ordersNavItem : null}
-          {user.role.indexOf('cashier') >= 0 ? billsNavItem : null}
+          {auth.role.indexOf('waiter') >= 0 ? tablesNavItem : null}
+          {auth.role.indexOf('kitchen') >= 0 ? ordersNavItem : null}
+          {auth.role.indexOf('cashier') >= 0 ? billsNavItem : null}
           {notificationsNavItem}
         </Fragment>
       )}
     </Fragment>
-  ) : null;
+  );
 
-  return user ? (
+  return (
     <div className='app-wrapper'>
       <Navbar
         leftContent={navbarLeftContent}
@@ -136,8 +136,6 @@ export const CompanyAppWrapper = ({ auth: { company, user }, logout }) => {
       <Outlet />
       <BottomNav navItems={bottomNavItems} />
     </div>
-  ) : (
-    <Outlet />
   );
 };
 

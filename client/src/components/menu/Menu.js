@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 // Components
-import Container from '../../../components/layout/Container';
+import Container from '../layout/Container';
 
 /* 
   =====

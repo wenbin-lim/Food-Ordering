@@ -109,8 +109,7 @@ const CompanyEdit = ({
     const editCompanySuccess = await editCompany(id, formData);
 
     if (editCompanySuccess) {
-      // go back to 'wawaya/company'
-      navigate('../../');
+      navigate('../');
     }
   };
 

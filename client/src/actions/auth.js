@@ -44,49 +44,6 @@ export const loadToken = () => async dispatch => {
   }
 };
 
-// Register a user
-export const register = ({ name, username, password }) => async dispatch => {
-  dispatch({
-    type: SET_AUTH_LOADING,
-    payload: true,
-  });
-
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  const body = JSON.stringify({ name, username, password });
-
-  try {
-    const res = await axios.post('/api/users', body, config);
-
-    dispatch({
-      type: REGISTER_SUCCESS,
-      payload: res.data,
-    });
-
-    dispatch(setSnackbar('User created!', 'success'));
-
-    // dispatch(loadUser());
-  } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(
-        setSnackbar('An unexpected error occured. Please try again!', 'error')
-      );
-    }
-
-    dispatch({
-      type: REGISTER_FAIL,
-      payload: {
-        status: err.response.status,
-        data: err.response.data,
-      },
-    });
-  }
-};
-
 // Login user
 export const login = (username, password) => async dispatch => {
   dispatch({

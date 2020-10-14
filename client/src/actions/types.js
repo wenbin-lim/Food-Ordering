@@ -12,13 +12,17 @@ export const REGISTER_FAIL = 'REGISTER_FAIL';
 export const SET_AUTH_LOADING = 'SET_AUTH_LOADING';
 
 // Users
+export const GETTING_USERS = 'GETTING_USERS';
 export const GET_USERS = 'GET_USERS';
 export const GETTING_USER = 'GETTING_USER';
 export const GET_USER = 'GET_USER';
-export const UPDATING_USER = 'UPDATING_USER';
-export const UPDATE_USER_SUCCESS = 'UPDATE_USER_SUCCESS';
-export const UPDATE_USER_FAILED = 'UPDATE_USER_FAILED';
+export const ADDING_USER = 'ADDING_USER';
+export const ADD_USER = 'ADD_USER';
+export const EDITING_USER = 'EDITING_USER';
+export const EDIT_USER = 'EDIT_USER';
+export const DELETING_USER = 'DELETING_USER';
 export const DELETE_USER = 'DELETE_USER';
+export const USER_ERROR = 'USER_ERROR';
 
 // Companies
 export const GET_COMPANIES = 'GET_COMPANIES';

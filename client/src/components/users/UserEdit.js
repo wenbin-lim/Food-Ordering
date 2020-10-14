@@ -25,9 +25,9 @@ import useInputError from '../../hooks/useInputError';
   =====
   Props
   =====
-  @name       user
+  @name       auth
   @type       object
-  @desc       user object from Parent
+  @desc       auth object from RouteWrapper
   @required   true
 
   @name       users
@@ -36,7 +36,13 @@ import useInputError from '../../hooks/useInputError';
   @desc       only require the errors(for checking form submission) and loading(check if form is submitted)
   @required   true
 
-  @name       updateUser
+  @name       getUser
+  @type       function
+  @desc       Redux action to set user in app level users state
+  @required   true
+  @default    none
+
+  @name       editUser
   @type       function
   @desc       Redux action to update the user in DB and app level users state
   @required   true
@@ -133,7 +139,7 @@ const UserEdit = ({
         gridTemplateRows: 'auto 1fr auto',
       }}
     >
-      <Header title={'User Edit'} closeActionCallback={'../'} />
+      <Header title={'User Edit'} closeActionCallback={'../../'} />
 
       {user && (
         <form

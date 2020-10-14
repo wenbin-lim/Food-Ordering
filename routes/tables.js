@@ -22,8 +22,7 @@ const { check, validationResult } = require('express-validator');
 // Variables
 // ====================================================================================================
 const router = express.Router();
-// const wawayaAccessLevel = config.get('wawayaAccessLevel');
-// const adminAccessLevel = config.get('adminAccessLevel');
+const accessLevel = config.get('accessLevel');
 
 // ====================================================================================================
 // Models
@@ -44,19 +43,24 @@ const auth = require('../middleware/auth');
 // @access   Private, admin and above only
 router.get(
   '/',
-  // auth(adminAccessLevel),
+  // auth(true, accessLevel.admin),
+  auth(false, accessLevel.admin),
   async (req, res) => {
     try {
-      // get all tables of the company
-      // const { company, access } = req.user;
+      // get all tables in company
+      // let tables = await Table.find({ company: req.query.companyId }).sort({
+      //   creationDate: -1,
+      // });
 
-      // let tables = {};
+      let tables = {};
 
-      // if (access === wawayaAccessLevel) {
-      tables = await Table.find().populate('company', 'name');
-      // } else {
-      //   tables = await Table.find({ company });
-      // }
+      if (req.access >= accessLevel.admin) {
+        tables = await Table.find({ company: req.query.companyId }).sort({
+          creationDate: -1,
+        });
+      } else {
+        tables = await Table.find().populate('company', 'name');
+      }
 
       res.json(tables);
     } catch (err) {
@@ -72,7 +76,7 @@ router.get(
 router.post(
   '/',
   [
-    // auth(adminAccessLevel),
+    auth(true, accessLevel.admin),
     check('name', 'Table name is required').not().isEmpty(),
     check('company', 'Invalid Company').isMongoId(),
   ],
@@ -81,11 +85,11 @@ router.post(
 
     let errors = validationResult(req).array();
 
-    try {
-      if (errors.length > 0) {
-        return res.status(400).json(errors);
-      }
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
 
+    try {
       let table = new Table({
         name,
         company,
@@ -104,18 +108,82 @@ router.post(
 
 // @route    GET api/tables/:id
 // @desc     Get single tables
-// @access   Public/Private
-router.get('/:id', async (req, res) => {});
+// @access   Private
+router.get('/:id', auth(true, accessLevel.admin), async (req, res) => {
+  try {
+    // get a single table
+    let table = await Table.findById(req.params.id);
+
+    if (!table) {
+      return res.status(400).json({
+        errors: [
+          {
+            msg: 'Table not found',
+          },
+        ],
+      });
+    }
+
+    res.json(table);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 // @route    PUT api/tables/:id
 // @desc     Update single tables
 // @access   Public/Private
-router.put('/:id', async (req, res) => {});
+router.put(
+  '/:id',
+  [
+    auth(true, accessLevel.admin),
+    check('name', 'Table name is required').not().isEmpty(),
+  ],
+  async (req, res) => {
+    const { name } = req.body;
+
+    let errors = validationResult(req).array();
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    try {
+      let table = await Table.findById(req.params.id);
+
+      if (!table) {
+        // Table not found
+        return res.status(406).send('An unexpected error occured');
+      }
+
+      table.name = name;
+
+      // save table to db
+      await table.save();
+
+      res.json(table);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
 
 // @route    DELETE api/tables/:id
 // @desc     Delete single tables
-// @access   Public/Private
-router.delete('/:id', async (req, res) => {});
+// @access   Private
+router.delete('/:id', auth(true, accessLevel.admin), async (req, res) => {
+  try {
+    // delete table
+    await Table.findByIdAndRemove(req.params.id);
+
+    res.json(req.params.id);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 // ====================================================================================================
 // Exporting module

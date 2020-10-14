@@ -59,13 +59,6 @@ export const WawayaAppWrapper = ({
             {!screenOrientation && (
               <Fragment>
                 <NavLink
-                  to='random'
-                  className='navbar-link button-text'
-                  activeClassName='navbar-link-active'
-                >
-                  random
-                </NavLink>
-                <NavLink
                   to='companies'
                   className='navbar-link button-text'
                   activeClassName='navbar-link-active'
@@ -78,6 +71,13 @@ export const WawayaAppWrapper = ({
                   activeClassName='navbar-link-active'
                 >
                   Users
+                </NavLink>
+                <NavLink
+                  to='tables'
+                  className='navbar-link button-text'
+                  activeClassName='navbar-link-active'
+                >
+                  Tables
                 </NavLink>
               </Fragment>
             )}
@@ -95,6 +95,14 @@ export const WawayaAppWrapper = ({
             {
               name: 'Companies',
               link: 'companies',
+            },
+            {
+              name: 'Users',
+              link: 'users',
+            },
+            {
+              name: 'Tables',
+              link: 'tables',
             },
           ]}
           unmountSidebar={() => setShowSidebar(false)}

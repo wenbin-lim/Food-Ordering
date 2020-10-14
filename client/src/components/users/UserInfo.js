@@ -101,7 +101,7 @@ const UserInfo = ({
               </Fragment>
             )}
 
-            {user.username && (
+            {user.creationDate && (
               <Fragment>
                 <p className='caption'>Created at</p>
                 <Moment format='DD-MM-YYYY'>{user.creationDate}</Moment>

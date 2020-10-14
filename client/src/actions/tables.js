@@ -1,34 +1,33 @@
 import axios from 'axios';
 
-// import action types
 import {
-  GETTING_USERS,
-  GET_USERS,
-  GET_USER,
-  ADDING_USER,
-  ADD_USER,
-  EDITING_USER,
-  EDIT_USER,
-  DELETE_USER,
-  USER_ERROR,
-  DELETING_USER,
+  GETTING_TABLES,
+  GET_TABLES,
+  GET_TABLE,
+  ADDING_TABLE,
+  ADD_TABLE,
+  EDITING_TABLE,
+  EDIT_TABLE,
+  DELETING_TABLE,
+  DELETE_TABLE,
+  TABLE_ERROR,
 } from './types';
 
 // import actions
 import { setSnackbar } from './app';
 
-// Get users
-export const getUsers = companyId => async dispatch => {
+// get list of tables of the company
+export const getTables = companyId => async dispatch => {
   dispatch({
-    type: GETTING_USERS,
+    type: GETTING_TABLES,
   });
 
   try {
     const params = { companyId };
-    const res = await axios.get('/api/users', { params });
+    const res = await axios.get('/api/tables', { params });
 
     dispatch({
-      type: GET_USERS,
+      type: GET_TABLES,
       payload: res.data,
     });
 
@@ -41,18 +40,18 @@ export const getUsers = companyId => async dispatch => {
   }
 };
 
-// Get one user by its id
-export const getUser = id => async dispatch => {
+// Get one table by its id
+export const getTable = id => async dispatch => {
   dispatch({
-    type: GET_USER,
+    type: GET_TABLE,
     payload: id,
   });
 };
 
-// add a user
-export const addUser = (company, user) => async dispatch => {
+// add a table
+export const addTable = (company, table) => async dispatch => {
   dispatch({
-    type: ADDING_USER,
+    type: ADDING_TABLE,
   });
 
   const config = {
@@ -62,19 +61,19 @@ export const addUser = (company, user) => async dispatch => {
   };
 
   const body = JSON.stringify({
-    ...user,
+    ...table,
     company,
   });
 
   try {
-    const res = await axios.post('/api/users', body, config);
+    const res = await axios.post('/api/tables', body, config);
 
     dispatch({
-      type: ADD_USER,
+      type: ADD_TABLE,
       payload: res.data,
     });
 
-    dispatch(setSnackbar('User created!', 'success'));
+    dispatch(setSnackbar('Table created!', 'success'));
 
     return true;
   } catch (err) {
@@ -84,7 +83,7 @@ export const addUser = (company, user) => async dispatch => {
       );
     } else {
       dispatch({
-        type: USER_ERROR,
+        type: TABLE_ERROR,
         payload: {
           status: err.response.status,
           data: err.response.data,
@@ -96,10 +95,10 @@ export const addUser = (company, user) => async dispatch => {
   }
 };
 
-// edit user
-export const editUser = (userId, user) => async dispatch => {
+// edit table
+export const editTable = (tableId, table) => async dispatch => {
   dispatch({
-    type: EDITING_USER,
+    type: EDITING_TABLE,
   });
 
   const config = {
@@ -108,17 +107,17 @@ export const editUser = (userId, user) => async dispatch => {
     },
   };
 
-  const body = JSON.stringify(user);
+  const body = JSON.stringify(table);
 
   try {
-    const res = await axios.put(`/api/users/${userId}`, body, config);
+    const res = await axios.put(`/api/tables/${tableId}`, body, config);
 
     dispatch({
-      type: EDIT_USER,
+      type: EDIT_TABLE,
       payload: res.data,
     });
 
-    dispatch(setSnackbar('User Updated', 'success'));
+    dispatch(setSnackbar('Table Updated', 'success'));
 
     return true;
   } catch (err) {
@@ -126,7 +125,7 @@ export const editUser = (userId, user) => async dispatch => {
       dispatch(setSnackbar('An unexpected error occured.', 'error'));
     } else {
       dispatch({
-        type: USER_ERROR,
+        type: TABLE_ERROR,
         payload: {
           status: err.response.status,
           data: err.response.data,
@@ -138,21 +137,22 @@ export const editUser = (userId, user) => async dispatch => {
   }
 };
 
-// Delete user
-export const deleteUser = id => async dispatch => {
+// Delete table
+export const deleteTable = id => async dispatch => {
   dispatch({
-    type: DELETING_USER,
+    type: DELETING_TABLE,
   });
 
   try {
-    const res = await axios.delete(`/api/users/${id}`);
+    const res = await axios.delete(`/api/tables/${id}`);
 
+    console.log(res.data);
     dispatch({
-      type: DELETE_USER,
+      type: DELETE_TABLE,
       payload: res.data,
     });
 
-    dispatch(setSnackbar('User Deleted', 'success'));
+    dispatch(setSnackbar('Table Deleted', 'success'));
   } catch (err) {
     // only error is 500 Server Error
     dispatch(setSnackbar('An unexpected error occured.', 'error'));

@@ -2,24 +2,25 @@ import React, { Fragment } from 'react';
 
 const Preloader = ({ height = 30 }) => {
   // this preloader goes by a width:height ratio of 4:1
+  const animationDuration = 1.5;
   return (
     <Fragment>
       <svg
         width={`${height * 4}px`}
         height={`${height}px`}
-        viewBox='0 0 120 30'
+        viewBox='0 0 160 40'
         xmlns='http://www.w3.org/2000/svg'
         fill='#fff'
         className='preloader'
       >
-        <circle cx='15' cy='15' r='15'>
+        <circle cx='20' cy='20' r='20' fillOpacity='1'>
           <animate
             attributeName='r'
-            from='15'
-            to='15'
-            begin='0s'
-            dur='0.8s'
-            values='15;3;15'
+            from='20'
+            to='20'
+            begin='0'
+            dur={animationDuration}
+            values='20;0;20'
             calcMode='linear'
             repeatCount='indefinite'
           />
@@ -27,21 +28,21 @@ const Preloader = ({ height = 30 }) => {
             attributeName='fill-opacity'
             from='1'
             to='1'
-            begin='0s'
-            dur='0.8s'
-            values='1;.5;1'
+            begin='0'
+            dur={animationDuration}
+            values='1;0;1'
             calcMode='linear'
             repeatCount='indefinite'
           />
         </circle>
-        <circle cx='60' cy='15' r='9' fillOpacity='0.3'>
+        <circle cx='80' cy='20' r='10' fillOpacity='0.5'>
           <animate
             attributeName='r'
-            from='9'
-            to='9'
-            begin='0s'
-            dur='0.8s'
-            values='9;12;15;12;9;6;3;0;3;6;9'
+            from='10'
+            to='10'
+            begin='0'
+            dur={animationDuration}
+            values='10;20;10;0;10'
             calcMode='linear'
             repeatCount='indefinite'
           />
@@ -49,31 +50,31 @@ const Preloader = ({ height = 30 }) => {
             attributeName='fill-opacity'
             from='0.5'
             to='0.5'
-            begin='0s'
-            dur='0.8s'
-            values='.5;1;.5'
+            begin='0'
+            dur={animationDuration}
+            values='.5;1;.5;0;.5'
             calcMode='linear'
             repeatCount='indefinite'
           />
         </circle>
-        <circle cx='105' cy='15' r='15'>
+        <circle cx='140' cy='20' r='0' fillOpacity='0'>
           <animate
             attributeName='r'
             from='0'
             to='0'
-            begin='0s'
-            dur='0.8s'
-            values='0;15;0'
+            begin='0'
+            dur={animationDuration}
+            values='0;20;0'
             calcMode='linear'
             repeatCount='indefinite'
           />
           <animate
             attributeName='fill-opacity'
-            from='1'
-            to='1'
-            begin='0s'
-            dur='0.8s'
-            values='1;.5;1'
+            from='0'
+            to='0'
+            begin='0'
+            dur={animationDuration}
+            values='0;1;0'
             calcMode='linear'
             repeatCount='indefinite'
           />

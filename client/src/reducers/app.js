@@ -10,6 +10,7 @@ const initialState = {
   screenOrientation: window.innerHeight > window.innerWidth,
   snackbars: [],
   companies: [],
+  companiesLoading: true,
 };
 
 export default (state = initialState, action) => {
@@ -21,6 +22,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         companies: payload,
+        companiesLoading: false,
       };
     // screen is portrait - true (height > width) or landscape - false (width > height)
     case UPDATE_SCREEN_ORIENTATION:

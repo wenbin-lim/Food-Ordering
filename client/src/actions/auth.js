@@ -2,19 +2,17 @@ import axios from 'axios';
 
 // import actions
 import {
-  NO_TOKEN,
   LOAD_TOKEN,
+  LOAD_TOKEN_FAIL,
+  NO_TOKEN,
   LOGGING_IN,
   LOGIN_SUCCESS,
   LOGIN_FAIL,
   LOGOUT,
-  REGISTER_SUCCESS,
-  REGISTER_FAIL,
-  SET_AUTH_LOADING,
 } from './types';
 
 // import actions
-import { setSnackbar } from './app';
+import { setErrorSnackbar } from './app';
 
 // import utils
 import setAuthToken from '../utils/setAuthToken';
@@ -25,21 +23,28 @@ export const loadToken = () => async dispatch => {
     setAuthToken(localStorage.token);
 
     try {
+      // decode token in server and return payload
       const res = await axios.get('/api/auth');
 
+      // store payload in redux state
       dispatch({
         type: LOAD_TOKEN,
         payload: res.data,
       });
     } catch (err) {
-      dispatch(
-        setSnackbar('An unexpected error occured. Please try again!', 'error')
-      );
+      console.error(err);
+      dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+      dispatch({
+        type: LOAD_TOKEN_FAIL,
+        payload: null,
+      });
     }
   } else {
     // no token in localstorage
     dispatch({
       type: NO_TOKEN,
+      payload: null,
     });
   }
 };
@@ -68,12 +73,6 @@ export const login = (username, password) => async dispatch => {
       payload: res.data,
     });
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(
-        setSnackbar('An unexpected error occured. Please try again!', 'error')
-      );
-    }
-
     dispatch({
       type: LOGIN_FAIL,
       payload: {

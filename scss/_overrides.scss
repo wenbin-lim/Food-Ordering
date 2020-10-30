@@ -1,41 +1,49 @@
+*,
+*:before,
+*:after {
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
+
+  -webkit-tap-highlight-color: transparent;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--on-background) transparent;
+}
+
 a {
+  unset: all;
   user-select: none;
-  text-align: center;
   text-decoration: none;
-  appearance: none;
   display: inline-block;
 
   &:link,
   &:visited {
-    text-decoration: none;
     color: inherit;
   }
 }
 
 button {
-  user-select: none;
-  appearance: none;
+  unset: all;
   background: none;
-  outline: none;
   border: none;
-  text-decoration: none;
   cursor: pointer;
-  align-items: stretch;
-  text-align: center;
+  outline: none;
   color: inherit;
 
-  // fonts
   font-family: $primary-font-family;
   font-size: 1rem;
 }
 
 input {
+  unset: all;
   border: none;
   appearance: none;
   outline: none;
   color: inherit;
   font-family: $primary-font-family;
-  user-select: auto;
+  font-size: 1rem;
 
   &:focus,
   &:invalid {
@@ -55,17 +63,7 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-// scrollbar
-::-webkit-scrollbar {
-  width: $scrollbar-size;
-  height: $scrollbar-size;
-
-  &-track {
-    background: none;
-  }
-
-  &-thumb {
-    background: var(--on-background);
-    border-radius: 4px;
-  }
+img {
+  max-width: 100%;
+  display: block;
 }

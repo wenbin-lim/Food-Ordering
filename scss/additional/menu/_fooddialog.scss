@@ -1,0 +1,225 @@
+.fooddialog-wrapper {
+  overflow: visible !important;
+  background: none !important;
+  height: calc(var(--vh) * 80);
+  width: 100%;
+
+  .fooddialog-front,
+  .fooddialog-back {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+    backface-visibility: hidden;
+    position: absolute;
+
+    transition: transform 0.8s ease-in-out;
+
+    background-color: var(--background);
+  }
+
+  .fooddialog-front {
+    .fooddialog-front-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+
+      img {
+        min-width: 100%;
+        max-width: 100%;
+        min-height: 100%;
+        object-fit: cover;
+      }
+
+      .fooddialog-close-btn {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+
+        backdrop-filter: blur(10px) contrast(80%);
+      }
+    }
+
+    .fooddialog-front-content {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+
+      .fooddialog-front-header {
+        padding-top: 16px;
+        padding-bottom: 8px;
+        padding-left: var(--container-padding);
+        padding-right: var(--container-padding);
+
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+
+        .fooddialog-front-name {
+          @include heading-1;
+          font-size: 2.5rem;
+          margin-bottom: 0;
+        }
+
+        .fooddialog-front-portionsize {
+          @include body-2;
+          text-transform: uppercase;
+        }
+      }
+
+      .fooddialog-front-body {
+        padding-left: var(--container-padding);
+        padding-right: var(--container-padding);
+
+        overflow-y: auto;
+
+        .fooddialog-front-desc {
+          margin-bottom: 8px;
+        }
+
+        .fooddialog-front-allergics {
+          display: flex;
+          flex-wrap: wrap;
+
+          .chip {
+            margin-bottom: 4px;
+            margin-right: 8px;
+          }
+        }
+
+        .fooddialog-front-preparationtime {
+          @include body-2;
+          opacity: 0.4;
+          font-style: italic;
+        }
+      }
+
+      .fooddialog-front-footer {
+      }
+    }
+  }
+
+  .fooddialog-back {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+
+    .fooddialog-back-header {
+      padding: 16px 8px;
+      display: grid;
+      grid-template-columns: $icon-size 1fr $icon-size;
+    }
+
+    .fooddialog-back-body {
+      overflow-y: auto;
+      padding-left: var(--container-padding);
+      padding-right: var(--container-padding);
+
+      .fooddialog-back-customisations-group {
+        .fooddialog-back-customisations-group-title {
+          @include heading-2;
+          margin-bottom: 8px;
+        }
+
+        .fooddialog-back-customisation {
+          .checkbox-input-key {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+
+            .fooddialog-back-customisation-option-price {
+              @include body-2;
+              opacity: 0.4;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .fooddialog-quantity-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .fooddialog-quantity {
+      font-size: 3rem;
+      margin: 0 36px;
+    }
+
+    .fooddialog-quantity-btn {
+      height: 36px;
+      width: 36px;
+      border-radius: 8px;
+
+      svg {
+        height: 18px;
+        width: 18px;
+      }
+    }
+  }
+
+  .fooddialog-bottom-btn {
+    .btn-additional-text {
+      font-size: 1.75rem;
+      font-weight: normal;
+    }
+  }
+
+  // flipping functionality
+  .fooddialog-front {
+    transform: perspective(30cm) rotateY(0deg);
+    z-index: 1;
+
+    &.hidden {
+      transform: perspective(30cm) rotateY(180deg);
+      z-index: -1;
+    }
+  }
+
+  .fooddialog-back {
+    transform: perspective(30cm) rotateY(-180deg);
+    z-index: -1;
+
+    &.shown {
+      transform: perspective(30cm) rotateY(0deg);
+      z-index: 1;
+    }
+  }
+}
+
+// Media queries
+@media only screen and (orientation: portrait) {
+  .fooddialog-wrapper {
+    .fooddialog-front {
+      display: grid;
+      grid-template-rows: 3fr 2fr;
+    }
+
+    .fooddialog-back {
+    }
+  }
+}
+
+$fooddialog-border-radius: 24px;
+
+@media only screen and (orientation: landscape) {
+  .fooddialog-wrapper {
+    .fooddialog-front,
+    .fooddialog-back {
+      border-radius: $fooddialog-border-radius;
+    }
+
+    .fooddialog-front {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+
+      .fooddialog-bottom-btn {
+        border-radius: 0 !important;
+      }
+    }
+
+    .fooddialog-back {
+    }
+  }
+}

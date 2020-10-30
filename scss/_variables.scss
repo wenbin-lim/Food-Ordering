@@ -1,23 +1,20 @@
 /* Colors */
 // background colors
-$background-light-color: #f8f8f8;
+$background-light-color: #f5f5f5;
 $on-background-light-color: text-contrast($background-light-color);
 
 $background-dark-color: #121212;
 $on-background-dark-color: text-contrast($background-dark-color);
 
 // surface colors
-// surface2 is main surface
-// other colors shld take surface1 and surface3
-// Eg input, list  and dropdown
 $surface1-light-color: #e5e5e5;
-$surface2-light-color: #d8d8d8;
-$surface3-light-color: #c2c2c2;
+$surface2-light-color: #d0d0d0;
+$surface3-light-color: #c5c5c5;
 $on-surface-light-color: text-contrast($surface1-light-color);
 
-$surface1-dark-color: #1e1e1e;
+$surface1-dark-color: #212121;
 $surface2-dark-color: #323232;
-$surface3-dark-color: #464646;
+$surface3-dark-color: #424242;
 $on-surface-dark-color: text-contrast($surface1-dark-color);
 
 // primary and secondary colors
@@ -48,28 +45,31 @@ $on-warning-color: text-contrast($warning-color);
 $disabled-color: #757575;
 $on-disabled-color: text-contrast($disabled-color);
 
-// scrim colors
+// scrim
 $scrim-light-color: rgba(0, 0, 0, 0.5);
-$scrim-dark-color: rgba(0, 0, 0, 0.7);
+$scrim-dark-color: rgba(255, 255, 255, 0.05);
 
 /* Font */
 $primary-font-family: 'Poppins', sans-serif;
 
 /* Sizes */
-$icon-size: 48px;
-$max-container-size: 1400px;
-$min-dialog-size: 400px;
-$max-dialog-size: 800px;
+$padding: 16px;
 $scrollbar-size: 8px;
 
-/* Layout Heights */
-
-/* Components */
+$icon-size: 48px;
+$max-container-size: 1400px;
+$container-padding: 16px;
+$min-dialog-size: 400px;
+$max-dialog-size: 1000px;
+$foodcard-min-width: 150px;
+$foodcard-min-height: 200px;
 
 /* Elevation */
 $navbar-elevation: 4;
-$sidebar-elevation: 8;
+$fab-elevation: 6;
+$bottomnav-elevation: 8;
 $sheet-elevation: 12;
-$dialog-elevation: 16;
-$actionsheet-elevation: 20;
+$sidebar-elevation: 16;
+$dialog-elevation: 20;
+$actionsheet-elevation: 24;
 $snackbar-elevation: 28;

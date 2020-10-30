@@ -5,23 +5,14 @@ import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 
 // Components
 import Navbar from '../../components/layout/Navbar';
-import Button from '../../components/layout/Button';
 import Sidebar from '../../components/layout/Sidebar';
 
 // Assets
 import WawayaLogoLarge from '../../assets/wawaya_logo_large.png';
 import WawayaLogoSmall from '../../assets/wawaya_logo_small.png';
+import Container from '../../components/layout/Container';
 
-/* 
-  =====
-  Props
-  =====
-  @name       screenOrientation 
-  @type       boolean
-  @desc       determines if app is portrait or landscape mode
-  @required   true
-*/
-export const MainAppWrapper = ({ screenOrientation }) => {
+const MainAppWrapper = ({ screenOrientation }) => {
   const navigate = useNavigate();
 
   const [showSidebar, setShowSidebar] = useState(false);
@@ -29,49 +20,34 @@ export const MainAppWrapper = ({ screenOrientation }) => {
   const navbarLeftContent = (
     <Fragment>
       <img
-        className='navbar-logo invert-in-dark-mode'
+        className='navbar-logo'
         src={WawayaLogoSmall}
-        alt='logo'
-        onClick={() => {
-          if (screenOrientation) {
-            setShowSidebar(true);
-          } else {
-            navigate('/');
-          }
-        }}
+        alt='navbar-logo'
+        onClick={() =>
+          !screenOrientation ? setShowSidebar(true) : navigate('/')
+        }
       />
-      {!screenOrientation && (
-        <Fragment>
-          {/* <NavLink
-            to='/ordernow'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            ORDER
-          </NavLink> */}
-          <NavLink
-            to='/about'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            ABOUT
-          </NavLink>
-          <NavLink
-            to='/contact'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            CONTACT
-          </NavLink>
-        </Fragment>
-      )}
+      <NavLink
+        to='/about'
+        className='navbar-link'
+        activeClassName='navbar-link-active'
+      >
+        ABOUT
+      </NavLink>
+      <NavLink
+        to='/contact'
+        className='navbar-link'
+        activeClassName='navbar-link-active'
+      >
+        CONTACT
+      </NavLink>
     </Fragment>
   );
 
   const navbarRightContent = (
     <NavLink
       to='/login'
-      className='navbar-link button-text'
+      className='navbar-link'
       activeClassName='navbar-link-active'
     >
       LOGIN
@@ -80,15 +56,7 @@ export const MainAppWrapper = ({ screenOrientation }) => {
 
   const sidebarHeader = (
     <Fragment>
-      <img
-        className='invert-in-dark-mode'
-        src={WawayaLogoLarge}
-        alt='logo'
-        style={{
-          maxWidth: '100%',
-          height: '48px',
-        }}
-      />
+      <img className='sidebar-logo' src={WawayaLogoLarge} alt='sidebar-logo' />
     </Fragment>
   );
 
@@ -98,35 +66,31 @@ export const MainAppWrapper = ({ screenOrientation }) => {
         leftContent={navbarLeftContent}
         rightContent={navbarRightContent}
       />
-      {screenOrientation && showSidebar && (
+      {!screenOrientation && showSidebar && (
         <Sidebar
           headerContent={sidebarHeader}
           sidebarLinks={[
             {
               name: 'HOME',
-              link: '/',
+              path: '/',
             },
-            // {
-            //   name: 'ORDER',
-            //   link: '/ordernow',
-            // },
             {
               name: 'ABOUT',
-              link: '/about',
+              path: '/about',
             },
             {
               name: 'CONTACT',
-              link: '/contact',
+              path: '/contact',
             },
           ]}
           socialMediaLinks={{
             facebook: 'https://facebook.com',
             instagram: 'https://instagram.com',
           }}
-          unmountSidebar={() => setShowSidebar(false)}
+          unmountSidebarHandler={() => setShowSidebar(false)}
         />
       )}
-      <Outlet />
+      <Container parentContent={<Outlet />} />
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { addCompany } from '../../../actions/companies';
 
 // Components
-import Header from '../../../components/layout/Header';
+import SideSheet from '../../../components/layout/SideSheet';
 import Spinner from '../../../components/layout/Spinner';
 import TextInput from '../../../components/layout/TextInput';
 import ImageInput from '../../../components/layout/ImageInput';
@@ -19,39 +19,19 @@ import ArrowIcon from '../../../components/icons/ArrowIcon';
 // Custom Hooks
 import useInputError from '../../../hooks/useInputError';
 
-/* 
-  =====
-  Props
-  =====
-  @name       companies 
-  @type       object
-  @desc       app level companies state
-  @required   true
-
-  @name       addCompany 
-  @type       function
-  @desc       action to add new company to db
-  @required   true
-*/
-const CompanyAdd = ({
-  companies: { companyLoading, companyErrors },
-  addCompany,
-}) => {
-  const initialInputErrorMessagesState = {
-    name: '',
-    logoLarge: '',
-    logoSmall: '',
-    facebook: '',
-    twitter: '',
-    instagram: '',
-  };
-
+const CompanyAdd = ({ companies: { requesting, errors }, addCompany }) => {
   const [inputErrorMessages] = useInputError(
-    initialInputErrorMessagesState,
-    companyErrors
+    {
+      name: '',
+      logoLarge: '',
+      logoSmall: '',
+      facebook: '',
+      twitter: '',
+      instagram: '',
+    },
+    errors
   );
 
-  // Component state to change input field values
   const [formData, setFormData] = useState({
     name: '',
     logoLarge: '',
@@ -63,9 +43,8 @@ const CompanyAdd = ({
 
   const { name, logoLarge, logoSmall, facebook, twitter, instagram } = formData;
 
-  const onChange = ({ name, value }) => {
+  const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
-  };
 
   const navigate = useNavigate();
 
@@ -74,114 +53,118 @@ const CompanyAdd = ({
 
     const addCompanySuccess = await addCompany(formData);
 
-    if (addCompanySuccess) {
-      navigate('../');
-    }
+    return addCompanySuccess && closeSideSheet();
   };
 
+  const closeSideSheet = () => navigate('../');
+
+  const sideSheetContent = (
+    <form id='companyAddForm' onSubmit={onSubmit}>
+      <div className='row'>
+        <div className='col'>
+          <TextInput
+            label={'name'}
+            required={true}
+            name={'name'}
+            type={'text'}
+            value={name}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.name}
+          />
+        </div>
+      </div>
+
+      <div className='row'>
+        <div className='col'>
+          <ImageInput
+            label={'Logo (large)'}
+            name={'logoLarge'}
+            value={logoLarge}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.logoLarge}
+          />
+        </div>
+      </div>
+
+      <div className='row'>
+        <div className='col'>
+          <ImageInput
+            label={'Logo (small)'}
+            name={'logoSmall'}
+            value={logoSmall}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.logoSmall}
+          />
+        </div>
+      </div>
+
+      <div className='row'>
+        <div className='col'>
+          <TextInput
+            label={'facebook'}
+            name={'facebook'}
+            type={'text'}
+            value={facebook}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.facebook}
+          />
+        </div>
+      </div>
+
+      <div className='row'>
+        <div className='col'>
+          <TextInput
+            label={'twitter'}
+            name={'twitter'}
+            type={'text'}
+            value={twitter}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.twitter}
+          />
+        </div>
+      </div>
+
+      <div className='row'>
+        <div className='col'>
+          <TextInput
+            label={'instagram'}
+            name={'instagram'}
+            type={'text'}
+            value={instagram}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.instagram}
+          />
+        </div>
+      </div>
+    </form>
+  );
+
   return (
-    <div
-      style={{
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: 'auto 1fr auto',
-        overflow: 'hidden',
-      }}
-    >
-      <Header title={'Add Company'} closeActionCallback={'../'} />
-
-      <form
-        id='companyAddForm'
-        style={{ padding: '1rem 2rem', overflowY: 'auto' }}
-        onSubmit={e => onSubmit(e)}
-      >
-        <TextInput
-          label={'name'}
-          name={'name'}
-          type={'text'}
-          value={name}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.name}
-          errorMessage={inputErrorMessages.name}
+    <SideSheet
+      wrapper={false}
+      headerTitle={'Add Company'}
+      closeSideSheetHandler={closeSideSheet}
+      content={sideSheetContent}
+      footerBtn={
+        <Button
+          fill={'contained'}
+          type={'primary'}
+          block={true}
+          blockBtnBottom={true}
+          text={'add'}
+          icon={
+            requesting ? (
+              <Spinner height={'1.5rem'} />
+            ) : (
+              <ArrowIcon direction='right' />
+            )
+          }
+          disabled={requesting}
+          submit={true}
+          form={'companyAddForm'}
         />
-
-        <h3 className='heading-3' style={{ marginTop: '1rem' }}>
-          Logo
-        </h3>
-        <ImageInput
-          label={'Large'}
-          name={'logoLarge'}
-          value={logoLarge}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.logoLarge}
-          errorMessage={inputErrorMessages.logoLarge}
-        />
-        <ImageInput
-          label={'Small'}
-          name={'logoSmall'}
-          value={logoSmall}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.logoSmall}
-          errorMessage={inputErrorMessages.logoSmall}
-        />
-
-        <h3 className='heading-3' style={{ marginTop: '1rem' }}>
-          Social Media Links
-        </h3>
-        <TextInput
-          label={'facebook'}
-          name={'facebook'}
-          type={'text'}
-          value={facebook}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.facebook}
-          errorMessage={inputErrorMessages.facebook}
-        />
-
-        <TextInput
-          label={'twitter'}
-          name={'twitter'}
-          type={'text'}
-          value={twitter}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.twitter}
-          errorMessage={inputErrorMessages.twitter}
-        />
-
-        <TextInput
-          label={'instagram'}
-          name={'instagram'}
-          type={'text'}
-          value={instagram}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.instagram}
-          errorMessage={inputErrorMessages.instagram}
-        />
-        {inputErrorMessages.noParam && (
-          <div className='alert alert-small alert-error'>
-            {inputErrorMessages.noParam}
-          </div>
-        )}
-      </form>
-
-      <Button
-        btnStyle={'contained'}
-        type={'primary'}
-        block={true}
-        fixBlockBtnBottom={true}
-        text={'Add'}
-        icon={
-          !companyLoading ? (
-            <ArrowIcon direction='right' />
-          ) : (
-            <Spinner height={'1.5rem'} />
-          )
-        }
-        submit={true}
-        form={'companyAddForm'}
-        disabled={companyLoading}
-      />
-    </div>
+      }
+    />
   );
 };
 

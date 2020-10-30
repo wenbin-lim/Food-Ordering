@@ -1,0 +1,33 @@
+.loginform {
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+  margin-top: 128px;
+
+  display: grid;
+  grid-template-rows: auto 200px auto;
+  row-gap: 8px;
+
+  border-radius: 48px;
+  overflow: hidden;
+
+  .loginform-header {
+    @include heading-1;
+    text-align: center;
+  }
+
+  .loginform-content {
+    padding: 4px;
+
+    & > *:not(:last-child) {
+      margin-bottom: 16px;
+    }
+  }
+}
+
+// Media queries
+@media only screen and (orientation: landscape) {
+  .loginform {
+    margin-top: 64px;
+  }
+}

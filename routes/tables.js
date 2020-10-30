@@ -41,34 +41,20 @@ const auth = require('../middleware/auth');
 // @route    GET api/tables
 // @desc     List all tables
 // @access   Private, admin and above only
-router.get(
-  '/',
-  // auth(true, accessLevel.admin),
-  auth(false, accessLevel.admin),
-  async (req, res) => {
-    try {
-      // get all tables in company
-      // let tables = await Table.find({ company: req.query.companyId }).sort({
-      //   creationDate: -1,
-      // });
+router.get('/', auth(true, accessLevel.admin), async (req, res) => {
+  try {
+    const { company } = req.query;
 
-      let tables = {};
+    let tables = await Table.find({ company }).sort({
+      creationDate: -1,
+    });
 
-      if (req.access >= accessLevel.admin) {
-        tables = await Table.find({ company: req.query.companyId }).sort({
-          creationDate: -1,
-        });
-      } else {
-        tables = await Table.find().populate('company', 'name');
-      }
-
-      res.json(tables);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
+    res.json(tables);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
-);
+});
 
 // @route    POST api/tables
 // @desc     Create new tables
@@ -77,8 +63,11 @@ router.post(
   '/',
   [
     auth(true, accessLevel.admin),
-    check('name', 'Table name is required').not().isEmpty(),
-    check('company', 'Invalid Company').isMongoId(),
+    check('name', 'Please enter a name').exists({ checkFalsy: true }),
+    check(
+      'company',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
   ],
   async (req, res) => {
     const { name, company } = req.body;
@@ -109,27 +98,39 @@ router.post(
 // @route    GET api/tables/:id
 // @desc     Get single tables
 // @access   Private
-router.get('/:id', auth(true, accessLevel.admin), async (req, res) => {
-  try {
-    // get a single table
-    let table = await Table.findById(req.params.id);
+router.get(
+  '/:id',
+  [
+    auth(true, accessLevel.admin),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
 
-    if (!table) {
-      return res.status(400).json({
-        errors: [
-          {
-            msg: 'Table not found',
-          },
-        ],
-      });
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
     }
 
-    res.json(table);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    try {
+      let table = await Table.findById(req.params.id).populate(
+        'company',
+        'displayedName'
+      );
+
+      if (!table) {
+        return res.status(404).send('Table not found');
+      }
+
+      res.json(table);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
   }
-});
+);
 
 // @route    PUT api/tables/:id
 // @desc     Update single tables
@@ -138,7 +139,11 @@ router.put(
   '/:id',
   [
     auth(true, accessLevel.admin),
-    check('name', 'Table name is required').not().isEmpty(),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+    check('name', 'Please enter a name').exists({ checkFalsy: true }),
   ],
   async (req, res) => {
     const { name } = req.body;
@@ -153,8 +158,7 @@ router.put(
       let table = await Table.findById(req.params.id);
 
       if (!table) {
-        // Table not found
-        return res.status(406).send('An unexpected error occured');
+        return res.status(404).send('Table not found');
       }
 
       table.name = name;
@@ -173,17 +177,36 @@ router.put(
 // @route    DELETE api/tables/:id
 // @desc     Delete single tables
 // @access   Private
-router.delete('/:id', auth(true, accessLevel.admin), async (req, res) => {
-  try {
-    // delete table
-    await Table.findByIdAndRemove(req.params.id);
+router.delete(
+  '/:id',
+  [
+    auth(true, accessLevel.admin),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
 
-    res.json(req.params.id);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    try {
+      let deletedTable = await Table.findByIdAndRemove(req.params.id);
+
+      if (!deletedTable) {
+        return res.status(404).send('Table not found');
+      }
+
+      res.json(deletedTable);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
   }
-});
+);
 
 // ====================================================================================================
 // Exporting module

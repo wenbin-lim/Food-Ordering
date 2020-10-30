@@ -1,0 +1,32 @@
+.menu {
+  .menu-header {
+  }
+
+  .menu-content {
+    display: grid;
+    column-gap: var(--container-padding);
+    row-gap: 24px;
+  }
+}
+
+// Media queries
+@media only screen and (orientation: portrait) {
+  .menu {
+    .menu-content {
+      grid-template-columns: repeat(auto-fit, minmax($foodcard-min-width, 1fr));
+      grid-auto-rows: $foodcard-min-height;
+    }
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .menu {
+    .menu-content {
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax($foodcard-min-width * 2, 1fr)
+      );
+      grid-auto-rows: $foodcard-min-height * 2;
+    }
+  }
+}

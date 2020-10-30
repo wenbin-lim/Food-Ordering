@@ -28,7 +28,7 @@ export default (state = initialState, action) => {
     case UPDATE_SCREEN_ORIENTATION:
       return {
         ...state,
-        screenOrientation: !state.screenOrientation,
+        screenOrientation: window.innerHeight > window.innerWidth,
       };
     case SET_SNACKBAR:
       return {

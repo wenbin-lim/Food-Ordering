@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Outlet, NavLink } from 'react-router-dom';
@@ -16,30 +16,7 @@ import LogoutIcon from '../../components/icons/LogoutIcon';
 import { logout } from '../../actions/auth';
 import { getCompanies } from '../../actions/companies';
 
-/* 
-  =====
-  Props
-  =====
-  @name       screenOrientation 
-  @type       boolean
-  @desc       app level app state of screenOrientation
-  @required   true
-
-  @name       auth 
-  @type       object
-  @desc       app level auth state
-  @required   true
-
-  @name       logout 
-  @type       function
-  @desc       to logout user
-  @required   true
-*/
-export const WawayaAppWrapper = ({
-  screenOrientation,
-  logout,
-  getCompanies,
-}) => {
+const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
   const [showSidebar, setShowSidebar] = useState(false);
 
   useEffect(() => {
@@ -50,39 +27,62 @@ export const WawayaAppWrapper = ({
     // eslint-disable-next-line
   }, []);
 
+  const navbarLeftContent = (
+    <Fragment>
+      <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
+      {!screenOrientation && (
+        <Fragment>
+          <NavLink
+            to='companies'
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            Companies
+          </NavLink>
+          <NavLink
+            to='users'
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            Users
+          </NavLink>
+          <NavLink
+            to='tables'
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            Tables
+          </NavLink>
+          <NavLink
+            to='menus'
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            Menus
+          </NavLink>
+          <NavLink
+            to='foods'
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            Foods
+          </NavLink>
+          <NavLink
+            to='customisations'
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            Customisations
+          </NavLink>
+        </Fragment>
+      )}
+    </Fragment>
+  );
+
   return (
-    <div className='app-wrapper'>
+    <Fragment>
       <Navbar
-        leftContent={
-          <Fragment>
-            <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
-            {!screenOrientation && (
-              <Fragment>
-                <NavLink
-                  to='companies'
-                  className='navbar-link button-text'
-                  activeClassName='navbar-link-active'
-                >
-                  Companies
-                </NavLink>
-                <NavLink
-                  to='users'
-                  className='navbar-link button-text'
-                  activeClassName='navbar-link-active'
-                >
-                  Users
-                </NavLink>
-                <NavLink
-                  to='tables'
-                  className='navbar-link button-text'
-                  activeClassName='navbar-link-active'
-                >
-                  Tables
-                </NavLink>
-              </Fragment>
-            )}
-          </Fragment>
-        }
+        leftContent={navbarLeftContent}
         rightContent={<Button icon={<LogoutIcon />} onClick={() => logout()} />}
       />
       {showSidebar && (
@@ -90,26 +90,38 @@ export const WawayaAppWrapper = ({
           sidebarLinks={[
             {
               name: 'Dashboard',
-              link: '',
+              path: '',
             },
             {
               name: 'Companies',
-              link: 'companies',
+              path: 'companies',
             },
             {
               name: 'Users',
-              link: 'users',
+              path: 'users',
             },
             {
               name: 'Tables',
-              link: 'tables',
+              path: 'tables',
+            },
+            {
+              name: 'Menus',
+              path: 'menus',
+            },
+            {
+              name: 'Foods',
+              path: 'foods',
+            },
+            {
+              name: 'Customisations',
+              path: 'customisations',
             },
           ]}
-          unmountSidebar={() => setShowSidebar(false)}
+          unmountSidebarHandler={() => setShowSidebar(false)}
         />
       )}
       <Outlet />
-    </div>
+    </Fragment>
   );
 };
 

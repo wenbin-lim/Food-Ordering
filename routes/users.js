@@ -16,7 +16,7 @@
 // ====================================================================================================
 const express = require('express');
 const config = require('config');
-const { check, validationResult } = require('express-validator');
+const { check, body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -45,11 +45,11 @@ const auth = require('../middleware/auth');
 // @access   Private
 router.get('/', auth(true, accessLevel.admin), async (req, res) => {
   try {
-    // get all users in company
-    let users = await User.find({ company: req.query.companyId })
+    const { company } = req.query;
+
+    let users = await User.find({ company })
       .select('-password')
-      .collation({ locale: 'en' })
-      .sort({ name: 'asc' });
+      .sort({ creationDate: -1 });
 
     res.json(users);
   } catch (err) {
@@ -65,59 +65,60 @@ router.post(
   '/',
   [
     auth(true, accessLevel.admin),
-    check('name', 'Please enter a name').not().isEmpty(),
+    check('name', 'Please enter a name').exists({ checkFalsy: true }),
     check('username')
-      // check if username is empty
-      .not()
-      .isEmpty()
+      .exists({ checkFalsy: true })
       .withMessage('Please enter a username')
       .bail()
       .isEmail()
       .withMessage('Please enter a valid email'),
     check('password')
-      .exists()
+      .exists({ checkFalsy: true })
       .withMessage('Please enter a password')
+      .bail()
       .isLength({ min: 5 })
       .withMessage('Password should be at least 5 characters')
+      .bail()
       .custom(value =>
         /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$.!%*#?&])[A-Za-z\d@$.!%*#?&]{5,}$/g.test(
           value
         )
       )
       .withMessage(
-        'Password should have at least one letter, one number and one special valid character'
+        'Password should have at least one letter, one number and one special character'
       ),
     check('access', `Please enter a valid access`).isInt({
       min: accessLevel.staff,
       max: accessLevel.wawaya,
     }),
-    check('role', 'Invalid role type').isArray(),
-    check('company', 'Invalid Company').isMongoId(),
+    body('role').toArray(),
+    check(
+      'company',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
   ],
   async (req, res) => {
     const { name, username, password, access, role, company } = req.body;
 
-    try {
-      let errors = validationResult(req).array();
+    let errors = validationResult(req).array();
 
+    try {
       // check if username already exist
       let user = await User.findOne({ username });
 
-      if (user) {
+      user &&
         errors.push({
           location: 'body',
           msg: 'Email has been taken',
           param: 'username',
         });
-      }
 
-      if (role.length === 0) {
+      role.length === 0 &&
         errors.push({
           location: 'body',
-          msg: 'Role is required',
+          msg: 'Please select at least one role',
           param: 'role',
         });
-      }
 
       if (errors.length > 0) {
         return res.status(400).json(errors);
@@ -153,27 +154,38 @@ router.post(
 // @route    GET api/users/:id
 // @desc     Get single user
 // @access   Private
-router.get('/:id', auth(true, accessLevel.admin), async (req, res) => {
-  try {
-    // get a single user
-    let user = await User.findById(req.params.id).select('-password');
+router.get(
+  '/:id',
+  [
+    auth(true, accessLevel.admin),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
 
-    if (!user) {
-      return res.status(400).json({
-        errors: [
-          {
-            msg: 'User not found',
-          },
-        ],
-      });
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
     }
 
-    res.json(user);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    try {
+      let user = await User.findById(req.params.id)
+        .select('-password')
+        .populate('company', 'displayedName');
+
+      if (!user) {
+        return res.status(404).send('User not found');
+      }
+
+      res.json(user);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
   }
-});
+);
 
 // @route    PUT api/users/:id
 // @desc     Update single user
@@ -182,11 +194,13 @@ router.put(
   '/:id',
   [
     auth(true, accessLevel.admin),
-    check('name', 'Name is required').not().isEmpty(),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+    check('name', 'Please enter a name').exists({ checkFalsy: true }),
     check('username')
-      // check if username is empty
-      .not()
-      .isEmpty()
+      .exists({ checkFalsy: true })
       .withMessage('Please enter a username')
       .bail()
       .isEmail()
@@ -195,33 +209,32 @@ router.put(
       .optional({ checkFalsy: true })
       .isLength({ min: 5 })
       .withMessage('Password should be at least 5 characters')
+      .bail()
+      .optional({ checkFalsy: true })
       .custom(value =>
         /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$.!%*#?&])[A-Za-z\d@$.!%*#?&]{5,}$/g.test(
           value
         )
       )
       .withMessage(
-        'Password should have at least one letter, one number and one special valid character'
+        'Password should have at least one letter, one number and one special character'
       ),
     check('access', `Please enter a valid access`).isInt({
       min: accessLevel.staff,
       max: accessLevel.wawaya,
     }),
-    check('role', 'Invalid role type').isArray(),
+    body('role').toArray(),
   ],
   async (req, res) => {
     const { name, username, password, access, role } = req.body;
 
-    let errors = validationResult(req);
-    errors = errors.array();
+    let errors = validationResult(req).array();
 
     try {
-      // get the user
       let user = await User.findById(req.params.id);
 
       if (!user) {
-        // User not found
-        return res.status(406).send('An unexpected error occured');
+        return res.status(404).send('User not found');
       }
 
       // check if username already exist elsewhere
@@ -229,22 +242,20 @@ router.put(
       if (user.username !== username) {
         let userWithNewUsername = await User.findOne({ username });
 
-        if (userWithNewUsername) {
+        if (userWithNewUsername)
           errors.push({
             location: 'body',
             msg: 'Email has been taken',
             param: 'username',
           });
-        }
       }
 
-      if (role.length === 0) {
+      if (role.length === 0)
         errors.push({
           location: 'body',
-          msg: 'Role is required',
+          msg: 'Please select at least one role',
           param: 'role',
         });
-      }
 
       if (errors.length > 0) {
         return res.status(400).json(errors);
@@ -278,17 +289,36 @@ router.put(
 // @route    DELETE api/users/:id
 // @desc     Delete single user
 // @access   Private
-router.delete('/:id', auth(true, accessLevel.admin), async (req, res) => {
-  try {
-    // delete user
-    await User.findByIdAndRemove(req.params.id);
+router.delete(
+  '/:id',
+  [
+    auth(true, accessLevel.admin),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
 
-    res.json(req.params.id);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    try {
+      let deletedUser = await User.findByIdAndRemove(req.params.id);
+
+      if (!deletedUser) {
+        return res.status(404).send('User not found');
+      }
+
+      res.json(deletedUser);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
   }
-});
+);
 
 // ====================================================================================================
 // Exporting module

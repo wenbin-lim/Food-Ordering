@@ -36,6 +36,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/companies', require('./routes/companies'));
 app.use('/api/tables', require('./routes/tables'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/menus', require('./routes/menus'));
+app.use('/api/foods', require('./routes/foods'));
+app.use('/api/customisations', require('./routes/customisations'));
 
 // ====================================================================================================
 // Serve Static assets in production

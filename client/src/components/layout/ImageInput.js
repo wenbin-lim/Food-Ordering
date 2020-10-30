@@ -1,55 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 // Components
 import Button from './Button';
 
 /* 
-  =====
-  Props
-  =====
-  1. label 
-  @type       string
-  @desc       label of input group
-  @required   false
-  
-  2. name
-  @type       string
-  @desc       name of this input
-  @required   true
-
-  3. value
-  @type       boolean
-  @desc       value of this input
-  @required   true
-
-  4. onChangeHandler
-  @type       function
-  @desc       to update the form data
-  @example
-
-  const onChange = ({ name, value }) => {
+  const onChange = ({ name, value }) => 
     setFormData({ ...formData, [name]: value });
-  };
-
-  @required   true
-
-  5. informationText
-  @type       string
-  @desc       information text that is displayed below input field
-  @required   false
-
-  6. validity 
-  @type       boolean
-  @desc       shows if field is valid or invalid
-  @desc       should be passed down from Parent error checking
-  @required   true
-  @default    true
-
-  7. errorMessage 
-  @type       string
-  @desc       displays error message below input field
-  @required   true if validity is false
 */
 const ImageInput = ({
   label,
@@ -57,48 +14,31 @@ const ImageInput = ({
   value,
   onChangeHandler,
   informationText,
-  validity,
-  errorMessage,
+  error,
+  btnSmall = true,
 }) => {
   const inputRef = useRef(null);
   const [fileInput, setFileInput] = useState('');
-  const [imagePreview, setImagePreview] = useState();
 
-  const onClick = e => {
-    if (inputRef.current) {
-      inputRef.current.click();
-    }
-  };
+  const onClick = e => inputRef.current && inputRef.current.click();
 
   const onChange = e => {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-
+    reader.onloadend = () => onChangeHandler({ name, value: reader.result });
     setFileInput(e.target.value);
   };
-
-  useEffect(() => {
-    if (imagePreview) {
-      onChangeHandler({ name, value: imagePreview });
-    }
-  }, [imagePreview]);
-
-  useEffect(() => {
-    setImagePreview(value);
-  }, [value]);
 
   return (
     <div className='image-input-group'>
       <div className='image-input'>
         <label>{label}</label>
         <Button
-          btnStyle={'contained'}
+          fill={'contained'}
           type={'secondary'}
-          text='choose'
+          text={'choose'}
+          small={btnSmall}
           onClick={onClick}
         />
         <input
@@ -109,17 +49,15 @@ const ImageInput = ({
           ref={inputRef}
         />
       </div>
-      {validity ? (
-        <p className='image-input-message'>{informationText}</p>
-      ) : (
-        <p className='image-input-message error-message'>{errorMessage}</p>
+
+      {(informationText || error) && (
+        <p className={`input-${error ? 'error-' : ''}message`}>
+          {error ? error : informationText}
+        </p>
       )}
-      {imagePreview && (
-        <img
-          className='image-input-preview'
-          src={imagePreview}
-          alt='preview-image'
-        />
+
+      {value && (
+        <img className='image-input-preview' src={value} alt='input-preview' />
       )}
     </div>
   );
@@ -131,14 +69,8 @@ ImageInput.propTypes = {
   value: PropTypes.string.isRequired,
   onChangeHandler: PropTypes.func.isRequired,
   informationText: PropTypes.string,
-  validity: PropTypes.bool.isRequired,
-  errorMessage: (props, propName) => {
-    if (!props['validity'] && typeof props[propName] !== 'string') {
-      return new Error(
-        'errorMessage cannot be empty if validity is false. errorMessage must be a string type.'
-      );
-    }
-  },
+  error: PropTypes.string,
+  btnSmall: PropTypes.bool,
 };
 
 export default ImageInput;

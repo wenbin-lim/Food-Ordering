@@ -1,7 +1,7 @@
 /* Variables */
 // size
 $btn-height: 48px;
-$btn-x-padding: 16px;
+$btn-padding: 16px;
 $btn-border-radius: 8px;
 $btn-small-factor: 0.7;
 
@@ -9,19 +9,16 @@ $btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
 
 .btn {
   height: $btn-height;
-  padding: 0 $btn-x-padding;
+  padding: 0 $btn-padding;
 
   border-radius: $btn-border-radius;
-
-  // to accomodate additionalText
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  overflow: hidden;
+  position: relative;
 
   // typography
-  @extend .button-text;
+  @include button-text;
 
-  // Styles
+  // fill
   &.btn-contained {
     @each $i in $btn-colors {
       &.btn-#{$i} {
@@ -52,24 +49,13 @@ $btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
 
   &.btn-small {
     height: $btn-height * $btn-small-factor;
-    padding: 0 $btn-x-padding * $btn-small-factor;
-  }
-
-  // if text and icon is present
-  .btn-content {
-    display: grid;
-    place-items: center;
-
-    &.append-icon {
-      grid-template-columns: auto auto;
-      grid-gap: $btn-x-padding / 2;
-    }
+    padding: 0 $btn-padding * $btn-small-factor;
+    font-size: #{$btn-small-factor}em;
   }
 
   &.btn-block {
     width: 100%;
-    padding: 0 ($btn-x-padding * 2);
-    justify-content: flex-end;
+    padding: 0 ($btn-padding * 2);
 
     &.btn-block-bottom {
       height: calc(
@@ -79,40 +65,22 @@ $btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
       border-top-right-radius: $btn-border-radius * 2;
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
+
+      flex-direction: row-reverse;
+      justify-content: space-between;
     }
   }
 
   &.btn-disabled {
     filter: opacity(0.2) !important;
     cursor: default;
-  }
 
-  .btn-alert {
-    position: absolute;
-    pointer-events: none;
-    width: $btn-height / 4;
-    height: $btn-height / 4;
-    top: $btn-height / 4;
-    right: $btn-height / 4;
-    transform: translate(50%, -50%);
-
-    background-color: var(--error);
-    border-radius: 50%;
-  }
-
-  .btn-ripple-effect {
-    position: absolute;
-    pointer-events: none;
-    top: 0;
-    left: 0;
-    width: $btn-height / 2;
-    height: $btn-height / 2;
-    border-radius: 50%;
-    background-color: var(--background);
-    filter: invert(1) opacity(0.2);
-    opacity: 0;
-
-    transform: scale(0);
+    &:active {
+      &:after {
+        opacity: 0 !important;
+        transform: scale(0) !important;
+      }
+    }
   }
 
   &.btn-icon {
@@ -121,10 +89,6 @@ $btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
     border-radius: 50%;
 
     color: inherit;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
 
     &:after {
       content: '';
@@ -150,5 +114,32 @@ $btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
         transform: scale(1);
       }
     }
+  }
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  // if text and icon is present
+  .btn-content {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    grid-gap: $btn-padding / 2;
+    place-items: center;
+  }
+
+  .btn-ripple-effect {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: $btn-height / 2;
+    height: $btn-height / 2;
+    border-radius: 50%;
+    background-color: var(--background);
+    filter: invert(1) opacity(0.2);
+
+    opacity: 1;
+    transform: scale(0);
   }
 }

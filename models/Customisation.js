@@ -31,13 +31,47 @@ const CustomisationSchema = mongoose.Schema({
     trim: true,
     set: name => name.replace(/\s+/g, ' '),
   },
-  price: {
-    type: Number,
-    default: 0,
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+    set: title => title.replace(/\s+/g, ' '),
   },
-  isMainFood: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Food',
+  availability: {
+    type: Boolean,
+    default: true,
+    required: true,
+  },
+  selection: {
+    type: String,
+    required: true,
+  },
+  options: [
+    {
+      price: {
+        type: Number,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+        set: name => name.replace(/\s+/g, ' '),
+      },
+      availability: {
+        type: Boolean,
+        default: true,
+        required: true,
+      },
+    },
+  ],
+  min: {
+    type: Number,
+    required: true,
+  },
+  max: {
+    type: Number,
+    required: true,
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,

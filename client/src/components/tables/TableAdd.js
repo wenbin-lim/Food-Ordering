@@ -5,9 +5,10 @@ import { useNavigate } from 'react-router-dom';
 
 // Actions
 import { addTable } from '../../actions/tables';
+import { setSnackbar } from '../../actions/app';
 
 // Components
-import Header from '../layout/Header';
+import SideSheet from '../layout/SideSheet';
 import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
 import Button from '../layout/Button';
@@ -18,127 +19,86 @@ import ArrowIcon from '../icons/ArrowIcon';
 // Custom Hooks
 import useInputError from '../../hooks/useInputError';
 
-/* 
-  =====
-  Props
-  =====
-  @name       auth 
-  @type       object
-  @desc       app level auth state from Route
-  @required   true
-
-  @name       companies 
-  @type       object
-  @desc       app level companies state
-  @required   true
-
-  @name       tables 
-  @type       object
-  @desc       app level tables state
-  @required   true
-
-  @name       addTable 
-  @type       function
-  @desc       action to add new company to db
-  @required   true
-*/
 const TableAdd = ({
   auth: { access: authAccess, company: authCompany },
   companies: { company },
-  tables: { tableLoading, tableErrors },
+  tables: { requesting, errors },
   addTable,
+  setSnackbar,
 }) => {
-  const initialInputErrorMessagesState = {
-    name: '',
-  };
+  const [inputErrorMessages] = useInputError({ name: '' }, errors);
 
-  const [inputErrorMessages] = useInputError(
-    initialInputErrorMessagesState,
-    tableErrors
-  );
-
-  // Component state to change input field values
   const [formData, setFormData] = useState({
     name: '',
   });
 
   const { name } = formData;
 
-  const onChange = ({ name, value }) => {
+  const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
-  };
 
   const navigate = useNavigate();
 
   const onSubmit = async e => {
     e.preventDefault();
 
-    let newTable = formData;
-    let companyId = authCompany._id;
+    if (authAccess === 99 && !company)
+      return setSnackbar('Select a company first!', 'error');
 
-    if (authAccess === 99 && company) {
-      companyId = company._id;
-    }
+    let companyId =
+      company && authAccess === 99 ? company._id : authCompany._id;
 
-    const addTableSuccess = await addTable(companyId, newTable);
+    const addTableSuccess = await addTable(companyId, formData);
 
-    if (addTableSuccess) {
-      navigate('../');
-    }
+    return addTableSuccess && closeSideSheet();
   };
 
+  const closeSideSheet = () => navigate('../');
+
+  const sideSheetContent = (
+    <form id='tableAddForm' onSubmit={onSubmit}>
+      <div className='row'>
+        <div className='col'>
+          <TextInput
+            label={'name'}
+            required={true}
+            name={'name'}
+            type={'text'}
+            value={name}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.name}
+          />
+        </div>
+      </div>
+    </form>
+  );
+
   return (
-    <div
-      style={{
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: 'auto 1fr auto',
-        overflow: 'hidden',
-      }}
-    >
-      <Header title={'Add Table'} closeActionCallback={'../'} />
-
-      <form
-        id='tableAddForm'
-        style={{ padding: '1rem 2rem', overflowY: 'auto' }}
-        onSubmit={e => onSubmit(e)}
-      >
-        <TextInput
-          label={'name'}
-          showRequiredInLabel={true}
-          name={'name'}
-          type={'text'}
-          value={name}
-          onChangeHandler={onChange}
-          validity={!inputErrorMessages.name}
-          errorMessage={inputErrorMessages.name}
+    <SideSheet
+      wrapper={false}
+      headerTitle={'Add Table'}
+      closeSideSheetHandler={closeSideSheet}
+      content={sideSheetContent}
+      footerBtn={
+        <Button
+          fill={'contained'}
+          type={'primary'}
+          block={true}
+          blockBtnBottom={true}
+          text={'add'}
+          icon={
+            requesting ? (
+              <Spinner height={'1.5rem'} />
+            ) : (
+              <ArrowIcon direction='right' />
+            )
+          }
+          disabled={requesting}
+          submit={true}
+          form={'tableAddForm'}
         />
-
-        {inputErrorMessages.noParam && (
-          <div className='alert alert-small alert-error'>
-            {inputErrorMessages.noParam}
-          </div>
-        )}
-      </form>
-
-      <Button
-        btnStyle={'contained'}
-        type={'primary'}
-        block={true}
-        fixBlockBtnBottom={true}
-        text={'Add'}
-        icon={
-          !tableLoading ? (
-            <ArrowIcon direction='right' />
-          ) : (
-            <Spinner height={'1.5rem'} />
-          )
-        }
-        submit={true}
-        form={'tableAddForm'}
-        disabled={tableLoading}
-      />
-    </div>
+      }
+    />
   );
 };
 
@@ -147,6 +107,7 @@ TableAdd.propTypes = {
   tables: PropTypes.object.isRequired,
   companies: PropTypes.object.isRequired,
   addTable: PropTypes.func.isRequired,
+  setSnackbar: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
@@ -156,6 +117,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   addTable,
+  setSnackbar,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(TableAdd);

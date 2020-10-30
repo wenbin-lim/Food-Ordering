@@ -1,129 +1,92 @@
 /* Variables */
 // navbar
-$navbar-y-inner-padding: 8px;
-$navbar-x-inner-padding: 16px;
+$navbar-y-padding: calc(var(--padding) / 2);
+$navbar-x-padding: calc(var(--padding));
 
 // nav-item
-$nav-item-size: 48px;
-$nav-item-gap: 16px;
-
-// sidebar-toggle
-$sidebar-toggle-color: var(--primary);
-$on-sidebar-toggle-color: var(--on-primary);
+$nav-item-height: 48px;
+$nav-item-gap: var(--padding);
 
 .navbar {
-  padding: $navbar-y-inner-padding 0;
-  padding-left: Max(#{$navbar-x-inner-padding}, env(safe-area-inset-left));
-  padding-right: Max(#{$navbar-x-inner-padding}, env(safe-area-inset-right));
+  position: fixed;
+  top: 0;
+  width: 100%;
 
-  display: flex;
-  align-items: center;
+  z-index: $navbar-elevation;
+  @include box-shadow(1);
 
-  user-select: none;
+  background-color: var(--background);
+  color: var(--on-background);
 
-  .navbar-logo {
-    max-width: 100%;
-    height: $nav-item-size * 0.75;
-    margin: ($nav-item-size * 0.25 / 2) 0;
-
-    display: inline-grid;
-    place-items: center;
-
-    cursor: pointer;
-  }
-
-  .navbar-link {
-    min-width: $nav-item-size;
-    height: $nav-item-size;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid transparent;
-
-    &.navbar-link-active {
-      border-bottom: 4px solid var(--secondary);
-    }
-  }
-
-  .sidebar-toggle {
-    /* special styles for my own sidebar toggle */
-
-    // move sidebar toggle to the most left of the sidebar
-    margin-left: calc(
-      Max(#{$navbar-x-inner-padding}, env(safe-area-inset-left)) * -1
+  padding: $navbar-y-padding
+    Max(
+      #{$navbar-x-padding},
+      env(safe-area-inset-left),
+      env(safe-area-inset-right)
     );
 
-    width: calc(env(safe-area-inset-left) + #{$nav-item-size * 1.25});
-    // padding-left: calc(env(safe-area-inset-left) + #{$nav-item-size * 0.5});
-    padding-left: calc(env(safe-area-inset-left));
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
 
-    border-radius: 0 16px 16px 0;
+  &.navbar-center-present {
+    grid-template-areas: 'left center right';
+    grid-template-columns: 1fr auto 1fr;
 
-    background: $sidebar-toggle-color;
-    color: $on-sidebar-toggle-color;
-
-    /* special styles for my own sidebar toggle */
-
-    order: -1;
+    .navbar-left {
+      grid-area: left;
+    }
+    .navbar-center {
+      grid-area: center;
+    }
+    .navbar-right {
+      grid-area: right;
+    }
   }
 
-  .navbar-left {
-    flex: 1;
-
+  .navbar-left,
+  .navbar-center,
+  .navbar-right {
     display: flex;
-    place-items: center;
-    flex-wrap: wrap;
+  }
 
-    & > *:not(:first-child) {
-      margin-left: $nav-item-gap;
-    }
+  .navbar-left > *:not(:first-child),
+  .navbar-center > *:not(:first-child) {
+    margin-left: $nav-item-gap;
   }
 
   .navbar-right {
-    flex: 1;
-
-    display: flex;
-    place-items: center;
     flex-direction: row-reverse;
-    flex-wrap: wrap;
 
     & > *:not(:first-child) {
       margin-right: $nav-item-gap;
     }
   }
 
-  .navbar-center {
-    display: flex;
-    place-items: center;
+  .navbar-logo {
+    max-width: 100%;
+    height: $nav-item-height;
+
+    cursor: pointer;
+
+    @extend .invert-in-dark-mode;
   }
-}
 
-// Media queries
-/* default CSS will target portrait screens */
-@media only screen and (orientation: landscape) {
-  .navbar {
-    padding: ($navbar-y-inner-padding * 1.5) 0;
-    padding-left: Max(
-      #{$navbar-x-inner-padding * 1.5},
-      env(safe-area-inset-left)
-    );
-    padding-right: Max(
-      #{$navbar-x-inner-padding * 1.5},
-      env(safe-area-inset-right)
-    );
+  .navbar-link {
+    @include button-text;
+    height: $nav-item-height;
 
-    .navbar-left {
-      & > *:not(:first-child) {
-        margin-left: $nav-item-gap * 1.5;
-      }
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    .navbar-right {
-      & > *:not(:first-child) {
-        margin-right: $nav-item-gap * 1.5;
-      }
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+
+    transition: border-color 0.5s;
+
+    &.navbar-link-active {
+      border-bottom: 4px solid var(--secondary);
     }
   }
 }

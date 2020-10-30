@@ -23,8 +23,7 @@ $chip-large-factor: 2;
   align-items: center;
 
   height: $chip-height;
-  padding-left: $chip-height + $chip-x-padding / 2;
-  padding-right: $chip-x-padding;
+  padding: 0 $chip-x-padding;
 
   border-radius: $chip-x-padding;
 
@@ -41,6 +40,16 @@ $chip-large-factor: 2;
     border-radius: 50%;
   }
 
+  &.img-left {
+    padding-left: $chip-height + $chip-x-padding / 2;
+    padding-right: $chip-x-padding;
+
+    img {
+      right: auto;
+      left: 0;
+    }
+  }
+
   &.img-right {
     padding-right: $chip-height + $chip-x-padding / 2;
     padding-left: $chip-x-padding;
@@ -53,10 +62,7 @@ $chip-large-factor: 2;
 
   &.chip-large {
     height: $chip-height * $chip-large-factor;
-    padding-left: $chip-height * $chip-large-factor +
-      ($chip-x-padding * $chip-large-factor) / 2;
-
-    padding-right: $chip-x-padding * $chip-large-factor;
+    padding: 0 ($chip-x-padding * $chip-large-factor);
 
     border-radius: $chip-x-padding * $chip-large-factor;
 
@@ -65,15 +71,16 @@ $chip-large-factor: 2;
       height: $chip-height * $chip-large-factor;
     }
 
+    &.img-left {
+      padding-left: $chip-height * $chip-large-factor +
+        ($chip-x-padding * $chip-large-factor) / 2;
+      padding-right: $chip-x-padding * $chip-large-factor;
+    }
+
     &.img-right {
       padding-right: $chip-height * $chip-large-factor +
         ($chip-x-padding * $chip-large-factor) / 2;
       padding-left: $chip-x-padding * $chip-large-factor;
-
-      img {
-        left: auto;
-        right: 0;
-      }
     }
   }
 }

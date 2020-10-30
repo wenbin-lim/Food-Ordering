@@ -1,139 +1,112 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
+
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
 // Animations
 import { TimelineMax, Power4 } from 'gsap';
 
-/* 
-  =====
-  Props
-  =====
-  @name       header 
-  @type       jsx or string
-  @desc       header of the dialog
-  @required   false
-  
-  @name       content 
-  @type       jsx or string
-  @desc       content of the dialog
-  @required   false
+const Dialog = forwardRef(
+  (
+    { content, classes, style, fullscreen = false, unmountDialogHandler },
+    ref
+  ) => {
+    useImperativeHandle(ref, () => ({
+      tlm,
+      closeDialog,
+    }));
 
-  @name       footer 
-  @type       jsx or string
-  @desc       footer of the dialog
-  @required   false
+    const scrimRef = useRef(null);
+    const dialogRef = useRef(null);
+    const animationTime = 0.3;
 
-  @name       fullscreen 
-  @type       boolean
-  @desc       determines if dialog is fullscreen
-  @required   false
-  @default    false
+    const dialogRootContainer = document.getElementById('dialog-root');
 
-  @name       closeDialogHandler 
-  @type       function
-  @desc       function from parent to close this dialog when clicking on scrim
-  @desc       give an empty function if u dont wan to close dialog when clicking on scrim
-  @required   true
-*/
-const Dialog = ({
-  header,
-  content,
-  footer,
-  fullscreen = false,
-  closeDialogHandler,
-}) => {
-  const scrimRef = useRef(null);
-  const dialogRef = useRef(null);
+    var scrimBgColor = getComputedStyle(
+      document.documentElement
+    ).getPropertyValue('--scrim');
 
-  const [tlm] = useState(
-    new TimelineMax({
-      paused: true,
-      reversed: true,
-      onReverseComplete: closeDialogHandler,
-    })
-  );
+    const [tlm] = useState(
+      new TimelineMax({
+        paused: true,
+        reversed: true,
+        onReverseComplete: unmountDialogHandler,
+      })
+    );
 
-  const [animationTime] = useState(0.3);
+    useEffect(() => {
+      document.body.style.overflow = 'hidden';
 
-  useEffect(() => {
-    if (fullscreen) {
-      tlm
-        .to(
-          scrimRef.current,
-          animationTime,
-          {
-            opacity: 1,
-            ease: Power4.easeOut,
-          },
-          'dialogFullscreen'
-        )
-        .to(
-          dialogRef.current,
-          animationTime,
-          {
-            x: 0,
-            ease: Power4.easeOut,
-          },
-          'dialogFullscreen'
-        );
-    } else {
-      tlm
-        .to(
-          scrimRef.current,
-          animationTime,
-          {
-            opacity: 1,
-            ease: Power4.easeOut,
-          },
-          'dialog'
-        )
-        .to(
-          dialogRef.current,
-          animationTime,
-          {
-            scale: 1,
-            ease: Power4.easeOut,
-          },
-          'dialog'
-        );
-    }
+      const scrim = scrimRef.current;
+      const dialog = dialogRef.current;
 
-    tlm.play();
+      if (scrim && dialog) {
+        const dialogAnimation = fullscreen ? { x: 0 } : { scale: 1 };
 
-    document.body.style.overflow = 'hidden';
+        tlm
+          .to(
+            scrim,
+            animationTime,
+            {
+              backdropFilter: 'blur(5px)',
+              backgroundColor: scrimBgColor,
+              ease: Power4.easeOut,
+            },
+            'dialogAnimation'
+          )
+          .to(
+            dialog,
+            animationTime,
+            {
+              ...dialogAnimation,
+              ease: Power4.easeOut,
+            },
+            'dialogAnimation'
+          );
+      }
 
-    return () => {
-      /* Functions to run before unmount */
-      document.body.style.overflow = 'auto';
-    };
-    // eslint-disable-next-line
-  }, []);
+      tlm.play();
 
-  const closeDialog = () => {
-    tlm.reverse();
-  };
+      return () => (document.body.style.overflow = 'auto');
+      // eslint-disable-next-line
+    }, []);
 
-  return (
-    <div className='dialog-scrim' ref={scrimRef} onClick={closeDialog}>
-      <div
-        className={`dialog ${fullscreen ? 'dialog-fullscreen' : ''}`}
-        ref={dialogRef}
-        onClick={e => e.stopPropagation()}
-      >
-        {header && <div className='dialog-header'>{header}</div>}
-        {content && <div className='dialog-content'>{content}</div>}
-        {footer && <div className='dialog-footer'>{footer}</div>}
-      </div>
-    </div>
-  );
-};
+    const closeDialog = () => tlm.reverse();
+
+    return createPortal(
+      <div className='dialog-scrim' ref={scrimRef} onClick={closeDialog}>
+        <article
+          className={sanitizeWhiteSpace(
+            `dialog
+            ${fullscreen ? 'dialog-fullscreen' : ''}
+            ${classes ? classes : ''}
+            `
+          )}
+          ref={dialogRef}
+          style={style}
+          onClick={e => e.stopPropagation()}
+        >
+          {content}
+        </article>
+      </div>,
+      dialogRootContainer
+    );
+  }
+);
 
 Dialog.propTypes = {
-  header: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   content: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  footer: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+  classes: PropTypes.string,
+  style: PropTypes.object,
   fullscreen: PropTypes.bool,
-  closeDialogHandler: PropTypes.func.isRequired,
+  unmountDialogHandler: PropTypes.func.isRequired,
 };
 
 export default Dialog;

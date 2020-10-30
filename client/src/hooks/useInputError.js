@@ -1,30 +1,66 @@
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setSnackbar } from '../actions/app';
 
-const useInputError = (initialState, errorsFromRedux) => {
+const useInputError = (initialState, errors) => {
   if (typeof initialState !== 'object')
-    throw 'Initial State must be an object type';
+    throw new Error('Initial State must be an object type');
 
-  if (typeof errorsFromRedux !== 'object')
-    throw 'Errors from redux must be an object type';
+  if (typeof errors !== 'object')
+    throw new Error('Errors must be an object type');
 
-  const [inputErrorMessages, setInputErrorMessages] = useState({
-    ...initialState,
-    noParam: '',
-  });
+  const [inputErrorMessages, setInputErrorMessages] = useState(initialState);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const newErrors = {};
+    let newErrors = initialState;
 
-    if (errorsFromRedux && errorsFromRedux.status === 400) {
-      errorsFromRedux.data.forEach(error => {
-        newErrors[error.param] = error.msg;
-      });
-    } else if (errorsFromRedux && errorsFromRedux.status === 403) {
-      newErrors.noParam = errorsFromRedux.data;
+    if (errors) {
+      const { status, data } = errors;
+
+      switch (status) {
+        case 400:
+          let invalidFields = false;
+          data.forEach(error => {
+            if (typeof newErrors[error.param] === 'undefined') {
+              dispatch(setSnackbar(error.msg, 'error'));
+              console.error(`Input field [${error.param}] is invalid`);
+            } else {
+              newErrors[error.param] = error.msg;
+              invalidFields = true;
+            }
+          });
+          invalidFields &&
+            dispatch(
+              setSnackbar(
+                'Some invalid fields exists. Please try again!',
+                'error'
+              )
+            );
+          break;
+        case 403:
+        case 404:
+          dispatch(setSnackbar(data, 'error'));
+          break;
+        case 500:
+          dispatch(
+            setSnackbar(
+              'The server encountered an internal error and was unable to complete your request.',
+              'error'
+            )
+          );
+          console.error(data);
+          break;
+        default:
+          break;
+      }
     }
 
     setInputErrorMessages({ ...initialState, noParam: '', ...newErrors });
-  }, [errorsFromRedux]);
+
+    // eslint-disable-next-line
+  }, [errors]);
 
   return [inputErrorMessages];
 };

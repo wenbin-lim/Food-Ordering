@@ -1,7 +1,7 @@
 import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import Moment from 'react-moment';
 
@@ -9,68 +9,63 @@ import Moment from 'react-moment';
 import { getTable } from '../../actions/tables';
 
 // Components
-import Header from '../layout/Header';
+import SideSheet from '../layout/SideSheet';
+import Spinner from '../layout/Spinner';
 
-/*
-  =====
-  Props
-  =====
-  @name       getTable
-  @type       function
-  @desc       redux action to retrieve table info for database
-  @required   true
-
-  @name       tables
-  @type       object
-  @desc       app level tables state
-  @required   true
-*/
-
-const TableInfo = ({ getTable, tables: { table } }) => {
+const TableInfo = ({ tables: { requesting, table }, getTable }) => {
   let { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getTable(id);
+
+    // eslint-disable-next-line
   }, [id]);
 
-  return (
-    <div
-      style={{
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: 'auto 1fr auto',
-      }}
-    >
-      <Header title={'Table Info'} closeActionCallback={'../'} />
+  const { _id: tableId, name, creationDate } = {
+    ...table,
+  };
 
-      <div>
-        {table && (
-          <div style={{ padding: '1rem' }}>
-            {table.name && (
-              <Fragment>
-                <p className='caption'>Name</p>
-                <p style={{ marginBottom: '1rem' }}>{table.name}</p>
-              </Fragment>
-            )}
+  const closeSideSheet = () => navigate('../');
 
-            {table.creationDate && (
-              <Fragment>
-                <p className='caption'>Created at</p>
-                <Moment format='DD-MM-YYYY'>{table.creationDate}</Moment>
-              </Fragment>
-            )}
-
-            <p></p>
+  const sideSheetContent =
+    requesting || tableId !== id ? (
+      <Spinner />
+    ) : (
+      <Fragment>
+        {name && (
+          <div className='row'>
+            <div className='col'>
+              <p className='caption'>name</p>
+              <p className='body-1'>{name}</p>
+            </div>
           </div>
         )}
-      </div>
-    </div>
+
+        {creationDate && (
+          <div className='row'>
+            <div className='col'>
+              <p className='caption'>Created at</p>
+              <Moment format='DD-MM-YYYY'>{creationDate}</Moment>
+            </div>
+          </div>
+        )}
+      </Fragment>
+    );
+
+  return (
+    <SideSheet
+      wrapper={false}
+      headerTitle={!requesting || tableId === id ? name : null}
+      closeSideSheetHandler={closeSideSheet}
+      content={sideSheetContent}
+    />
   );
 };
 
 TableInfo.propTypes = {
-  getTable: PropTypes.func.isRequired,
   tables: PropTypes.object.isRequired,
+  getTable: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({

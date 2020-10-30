@@ -1,12 +1,83 @@
 /* Variables */
-$list-item-x-padding: 16px;
+$list-item-x-padding: 8px;
 $list-item-y-padding: 12px;
 $list-item-border-radius: 8px;
-$list-item-gap: 16px;
+$list-item-gap: 8px;
+
+$list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
+  'secondary', 'error', 'success', 'warning';
+
+.list-wrapper {
+  position: relative;
+  height: 100%;
+
+  // remove padding from .parent and add to .list instead
+  padding: 0 !important;
+
+  display: flex;
+  flex-direction: column;
+
+  .list-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'list-header-left-content list-header-right-content';
+    column-gap: 16px;
+    align-items: center;
+
+    margin-bottom: 1rem;
+
+    .list-header-left-content {
+      grid-area: list-header-left-content;
+    }
+
+    .list-header-right-content {
+      grid-area: list-header-right-content;
+    }
+  }
+
+  .list-add-btn {
+    position: absolute;
+    bottom: var(--padding);
+    right: var(--padding);
+
+    z-index: $fab-elevation;
+    @include box-shadow(2);
+  }
+
+  .list {
+    flex: 1;
+    overflow: auto;
+
+    @include custom_scrollbar;
+
+    padding: var(--padding);
+
+    .list-item-wrapper {
+      margin-bottom: $list-item-gap;
+    }
+  }
+}
 
 .list-item-wrapper {
-  &:not(:last-child) {
-    margin-bottom: $list-item-gap;
+  position: relative;
+
+  .list-item-actions .list-item-action,
+  .list-item {
+    @each $i in $list-item-colors {
+      &.list-item-#{$i} {
+        @if str-index($i, 'background') {
+          background-color: var(--on-#{$i});
+          color: var(--#{$i});
+        } @else {
+          background-color: var(--#{$i});
+          @if str-index($i, 'surface') {
+            color: var(--on-surface);
+          } @else {
+            color: var(--on-#{$i});
+          }
+        }
+      }
+    }
   }
 
   .list-item-actions {
@@ -27,9 +98,6 @@ $list-item-gap: 16px;
 
     .list-item-action {
       flex: 1;
-
-      background-color: var(--surface1);
-      color: var(--on-surface);
 
       overflow: hidden;
       display: flex;
@@ -52,10 +120,10 @@ $list-item-gap: 16px;
   }
 
   .list-item {
-    padding: $list-item-y-padding $list-item-x-padding;
-
-    background-color: var(--surface1);
-    color: var(--on-surface);
+    padding-top: $list-item-y-padding;
+    padding-bottom: $list-item-y-padding;
+    padding-left: $list-item-x-padding;
+    padding-right: $list-item-x-padding;
 
     border-radius: $list-item-border-radius;
 
@@ -63,15 +131,42 @@ $list-item-gap: 16px;
     align-items: center;
 
     .before-list-content {
-      margin-right: $list-item-x-padding;
+      width: $icon-size;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .list-content {
       flex: 1;
+      padding: 0 $list-item-x-padding;
     }
 
     .after-list-content {
       margin-left: $list-item-x-padding;
+    }
+
+    .list-index {
+      @include heading-2;
+    }
+
+    .list-image {
+      width: $icon-size;
+      height: $icon-size;
+      border-radius: 50%;
+      overflow: hidden;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--surface3);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
   }
 }

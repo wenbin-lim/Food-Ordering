@@ -1,6 +1,7 @@
 import {
   GETTING_TABLES,
   GET_TABLES,
+  GETTING_TABLE,
   GET_TABLE,
   ADDING_TABLE,
   ADD_TABLE,
@@ -13,11 +14,11 @@ import {
 } from '../actions/types';
 
 const initialState = {
-  tables: [],
-  tablesLoading: false,
+  tables: false,
+  tablesLoading: true,
   table: null,
-  tableLoading: false,
-  tableErrors: null,
+  requesting: false,
+  errors: null,
 };
 
 export default (state = initialState, action) => {
@@ -26,8 +27,9 @@ export default (state = initialState, action) => {
   switch (type) {
     case GETTING_TABLES:
       return {
-        ...initialState,
+        ...state,
         tablesLoading: true,
+        errors: null,
       };
     case GET_TABLES:
       return {
@@ -35,45 +37,51 @@ export default (state = initialState, action) => {
         tables: payload,
         tablesLoading: false,
       };
+    case GETTING_TABLE:
     case ADDING_TABLE:
     case EDITING_TABLE:
     case DELETING_TABLE:
       return {
         ...state,
-        table: null,
-        tableLoading: true,
-        tableErrors: null,
+        requesting: true,
+        errors: null,
       };
     case GET_TABLE:
       return {
         ...state,
-        table: state.tables.find(table => table._id === payload),
+        table: payload,
+        requesting: false,
       };
     case ADD_TABLE:
       return {
         ...state,
-        tables: [payload, ...state.tables],
-        tableLoading: false,
+        tables: Array.isArray(state.tables) && [payload, ...state.tables],
+        requesting: false,
       };
     case EDIT_TABLE:
       return {
         ...state,
-        tables: state.tables.map(table =>
-          table._id === payload._id ? payload : table
-        ),
-        tableLoading: false,
+        tables:
+          Array.isArray(state.tables) &&
+          state.tables.map(table =>
+            table._id === payload._id ? payload : table
+          ),
+        requesting: false,
       };
     case DELETE_TABLE:
       return {
         ...state,
-        tables: state.tables.filter(table => table._id !== payload),
-        tableErrors: null,
+        tables:
+          Array.isArray(state.tables) &&
+          state.tables.filter(table => table._id !== payload),
+        requesting: false,
       };
     case TABLE_ERROR:
       return {
         ...state,
-        tableLoading: false,
-        tableErrors: payload,
+        tablesLoading: false,
+        requesting: false,
+        errors: payload,
       };
     case LOGOUT:
       return {

@@ -1,59 +1,39 @@
-// eslint-disable-next-line
-import React, { useState, Fragment } from 'react';
+import React, { useLayoutEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
-// Router
-import { useNavigate } from 'react-router-dom';
-
-// Components
-import Button from './Button';
-import Sidebar from './Sidebar';
-
-// Icons
-import MenuIcon from '../icons/MenuIcon';
-
-/* 
-  =====
-  Props
-  =====
-  @name       logo
-  @type       object of {large: String/Element, small: String/Element}
-  @desc       small and large logo for navbar and sidebar
-  @required   true
-
-  @name       navbarLinks
-  @type       jsx
-  @desc       navbar links or icons on the navbar right
-  @required   false
-
-  @name       sidebarLinks
-  @type       object of {name, link}
-  @desc       sidebar links to redirect to
-  @required   false
-
-  @name       socialMediaLinks
-  @type       object of {facebook, twitter, instagram: url string}
-  @desc       facebook twitter instagram redirect links
-  @required   false
-
-  @name       additionalStyles
-  @type       css style object
-  @desc       change navbar style
-  @desc       use to change color
-  @required   false
-*/
-export const Navbar = ({
+const Navbar = ({
+  classes = '',
   leftContent,
   centerContent,
   rightContent,
-  additionalClasses,
-  additionalStyles,
+  style,
 }) => {
+  const navbarRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const navbar = navbarRef.current;
+
+    if (navbar) {
+      document.documentElement.style.setProperty(
+        '--navbar-height',
+        `${navbar.offsetHeight}px`
+      );
+    }
+
+    return () => {
+      document.documentElement.style.setProperty('--navbar-height', '0px');
+    };
+  }, [leftContent, centerContent, rightContent]);
+
   return (
     <Fragment>
       <nav
-        className={`navbar ${additionalClasses}`.trim()}
-        style={additionalStyles}
+        className={sanitizeWhiteSpace(
+          `navbar ${centerContent ? 'navbar-center-present' : ''} ${classes}`
+        )}
+        style={style}
+        ref={navbarRef}
       >
         {leftContent && (
           <section className='navbar-left'>{leftContent}</section>
@@ -70,10 +50,11 @@ export const Navbar = ({
 };
 
 Navbar.propTypes = {
+  classes: PropTypes.string,
   leftContent: PropTypes.element,
-  leftContent: PropTypes.element,
-  leftContent: PropTypes.element,
-  additionalStyles: PropTypes.object,
+  centerContent: PropTypes.element,
+  rightContent: PropTypes.element,
+  style: PropTypes.object,
 };
 
 export default Navbar;

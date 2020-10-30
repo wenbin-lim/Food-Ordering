@@ -5,6 +5,13 @@
   shape-rendering: auto;
 }
 
+.spinner-fullscreen {
+  display: grid;
+  place-items: center;
+  height: calc(100 * var(--vh));
+  width: 100vw;
+}
+
 .spinner {
   fill: $primary-color;
   margin: auto;

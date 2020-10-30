@@ -46,8 +46,11 @@ const auth = require('../middleware/auth');
 // @access   Private
 router.get('/', auth(true), async (req, res) => {
   try {
-    // return decoded jwt token
-    res.json(req.auth);
+    // look at auth middleware to see what is sent
+    res.json({
+      token: req.token,
+      ...req.decodedToken,
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -60,8 +63,8 @@ router.get('/', auth(true), async (req, res) => {
 router.post(
   '/',
   [
-    check('username', 'Username is required').not().isEmpty(),
-    check('password', 'Password is required').not().isEmpty(),
+    check('username', 'Username is required').exists({ checkFalsy: true }),
+    check('password', 'Password is required').exists({ checkFalsy: true }),
   ],
   async (req, res) => {
     const errors = validationResult(req).array();
@@ -80,14 +83,14 @@ router.post(
 
       // check if user exists with input username
       if (!user) {
-        return res.status(403).json('Invalid Credentials');
+        return res.status(403).send('Invalid Credentials');
       }
 
       // check if input password matches db password
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(403).json('Invalid Credentials');
+        return res.status(403).send('Invalid Credentials');
       }
 
       // return jwt back to user
@@ -165,7 +168,7 @@ router.post(
         payload,
         config.get('jwtSecret'),
         {
-          expiresIn: 600,
+          expiresIn: 10,
         },
         (err, token) => {
           if (err) throw err;

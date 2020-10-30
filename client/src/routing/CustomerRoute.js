@@ -21,18 +21,7 @@ const CustomerRoute = ({
   const company = companies.find(company => company.name === companyName);
 
   if (loading) {
-    return (
-      <div
-        style={{
-          display: 'grid',
-          placeItems: 'center',
-          height: 'calc(100 * var(--vh)',
-          width: '100vw',
-        }}
-      >
-        <Spinner height={200} />
-      </div>
-    );
+    return <Spinner fullscreen={true} />;
   } else {
     if (company) {
       if (auth.access >= minAccessLevel) {

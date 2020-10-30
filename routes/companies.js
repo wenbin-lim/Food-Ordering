@@ -46,15 +46,15 @@ const { cloudinary } = require('../config/cloudinary');
 // @access   Private
 router.get('/', auth(false, wawayaAccess), async (req, res) => {
   try {
-    let companies = {};
+    let selectQuery = 'displayedName name socialMediaLinks logo';
 
     if (req.access === wawayaAccess) {
-      companies = await Company.find().sort({ creationDate: -1 });
-    } else {
-      companies = await Company.find().select(
-        'displayedName name socialMediaLinks logo'
-      );
+      selectQuery = '';
     }
+
+    let companies = await Company.find()
+      .select(selectQuery)
+      .sort({ creationDate: -1 });
 
     res.json(companies);
   } catch (err) {
@@ -71,24 +71,16 @@ router.post(
   [
     auth(true, wawayaAccess),
     check('name')
-      .not()
-      .isEmpty()
-      .withMessage('Name is required')
+      .exists({ checkFalsy: true })
+      .withMessage('Please enter a name')
       .bail()
-      // check if company name does not contains any illegal characters like
-      .custom(value => /^\w(?:\w\s*(?:[.-]\w+)?)*(?<=^.{1,99})$/g.test(value))
+      .custom(value => /^\w(?:\w\s*(?:[.-]\w+)?)*(?<=^.{4,99})$/g.test(value))
       .withMessage(
-        'Please enter a valid company name with a minimum of 1 character'
+        'Please enter a valid company name with a minimum of 4 characters'
       ),
-    check('facebook', 'Facebook link is not valid URL')
-      .optional({ checkFalsy: true })
-      .isURL(),
-    check('twitter', 'Twitter link is not valid URL')
-      .optional({ checkFalsy: true })
-      .isURL(),
-    check('instagram', 'Instagram link is not valid URL')
-      .optional({ checkFalsy: true })
-      .isURL(),
+    check('facebook', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
+    check('twitter', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
+    check('instagram', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
   ],
   async (req, res) => {
     const {
@@ -111,7 +103,7 @@ router.post(
       if (company) {
         errors.push({
           location: 'body',
-          msg: 'Company name is already taken',
+          msg: 'Company name is taken',
           param: 'name',
         });
       }
@@ -119,7 +111,7 @@ router.post(
       if (logoLarge && !isBase64(logoLarge, { mimeRequired: true })) {
         errors.push({
           location: 'body',
-          msg: 'Logo Large is not valid',
+          msg: 'Invalid image format',
           param: 'logoLarge',
         });
       }
@@ -127,7 +119,7 @@ router.post(
       if (logoSmall && !isBase64(logoSmall, { mimeRequired: true })) {
         errors.push({
           location: 'body',
-          msg: 'Logo Small is not valid',
+          msg: 'Invalid image format',
           param: 'logoSmall',
         });
       }
@@ -137,29 +129,26 @@ router.post(
       }
 
       let logo = {};
-      let logoLargeResponse = null;
-      let logoSmallResponse = null;
+      const companyName = name.replace(/\s+/g, '');
 
       if (logoLarge) {
-        logoLargeResponse = await cloudinary.uploader.upload(logoLarge, {
-          folder: `${cloudinaryRootFolder}${name.replace(/\s+/g, '')}/Logo`,
-          public_id: `large`,
+        let logoLargeResponse = await cloudinary.uploader.upload(logoLarge, {
+          public_id: `${cloudinaryRootFolder}${companyName}/Logo/large`,
         });
 
         logo['large'] = logoLargeResponse.secure_url;
       }
 
       if (logoSmall) {
-        logoSmallResponse = await cloudinary.uploader.upload(logoSmall, {
-          folder: `${cloudinaryRootFolder}${name.replace(/\s+/g, '')}/Logo`,
-          public_id: `small`,
+        let logoSmallResponse = await cloudinary.uploader.upload(logoSmall, {
+          public_id: `${cloudinaryRootFolder}${companyName}/Logo/small`,
         });
 
         logo['small'] = logoSmallResponse.secure_url;
       }
 
       company = new Company({
-        name,
+        name: companyName,
         displayedName: name,
         socialMediaLinks: {
           facebook,
@@ -183,27 +172,37 @@ router.post(
 // @route    GET api/companies/:id
 // @desc     Get single company
 // @access   Private
-router.get('/:id', auth(true, wawayaAccess), async (req, res) => {
-  try {
-    // get all companies
-    let company = await Company.findById(req.params.id);
+router.get(
+  '/:id',
+  [
+    auth(true, wawayaAccess),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
 
-    if (!company) {
-      return res.status(400).json({
-        errors: [
-          {
-            msg: 'Company not found',
-          },
-        ],
-      });
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
     }
 
-    res.json(company);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    try {
+      // get company
+      let company = await Company.findById(req.params.id);
+
+      if (!company) {
+        return res.status(404).send('Company not found');
+      }
+
+      res.json(company);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
   }
-});
+);
 
 // @route    PUT api/companies/:id
 // @desc     Update single companies
@@ -212,25 +211,21 @@ router.put(
   '/:id',
   [
     auth(true, wawayaAccess),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
     check('name')
-      .not()
-      .isEmpty()
-      .withMessage('Name is required')
+      .exists({ checkFalsy: true })
+      .withMessage('Please enter a name')
       .bail()
-      // check if company name does not contains any illegal characters like
-      .custom(value => /^\w(?:\w\s*(?:[.-]\w+)?)*(?<=^.{1,99})$/g.test(value))
+      .custom(value => /^\w(?:\w\s*(?:[.-]\w+)?)*(?<=^.{4,99})$/g.test(value))
       .withMessage(
-        'Please enter a valid company name with a minimum of 1 character'
+        'Please enter a valid company name with a minimum of 4 characters'
       ),
-    check('facebook', 'Facebook link is not valid URL')
-      .optional({ checkFalsy: true })
-      .isURL(),
-    check('twitter', 'Twitter link is not valid URL')
-      .optional({ checkFalsy: true })
-      .isURL(),
-    check('instagram', 'Instagram link is not valid URL')
-      .optional({ checkFalsy: true })
-      .isURL(),
+    check('facebook', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
+    check('twitter', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
+    check('instagram', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
   ],
   async (req, res) => {
     const {
@@ -247,6 +242,10 @@ router.put(
     try {
       let company = await Company.findById(req.params.id);
 
+      if (!company) {
+        return res.status(404).send('Company not found');
+      }
+
       if (company.displayedName !== name) {
         let companyWithNewName = await Company.findOne({
           $or: [{ displayedName: name }, { name: name.replace(/\s+/g, '') }],
@@ -255,7 +254,7 @@ router.put(
         if (companyWithNewName) {
           errors.push({
             location: 'body',
-            msg: 'Company name is already taken',
+            msg: 'Company name is taken',
             param: 'name',
           });
         }
@@ -263,13 +262,12 @@ router.put(
 
       if (logoLarge) {
         if (
-          company.logo &&
           company.logo.large !== logoLarge &&
           !isBase64(logoLarge, { mimeRequired: true })
         ) {
           errors.push({
             location: 'body',
-            msg: 'Logo Large is not valid',
+            msg: 'Invalid image format',
             param: 'logoLarge',
           });
         }
@@ -277,13 +275,12 @@ router.put(
 
       if (logoSmall) {
         if (
-          company.logo &&
           company.logo.small !== logoSmall &&
           !isBase64(logoSmall, { mimeRequired: true })
         ) {
           errors.push({
             location: 'body',
-            msg: 'Logo Small is not valid',
+            msg: 'Invalid image format',
             param: 'logoSmall',
           });
         }
@@ -294,30 +291,27 @@ router.put(
       }
 
       let logo = company.logo;
-      let logoLargeResponse = null;
-      let logoSmallResponse = null;
+      const companyName = name.replace(/\s+/g, '');
 
-      if (logoLarge && (!company.logo || company.logo.large !== logoLarge)) {
-        logoLargeResponse = await cloudinary.uploader.upload(logoLarge, {
-          folder: `${cloudinaryRootFolder}${name.replace(/\s+/g, '')}/Logo`,
-          public_id: 'large',
+      if (logoLarge && logoLarge !== company.logo.large) {
+        let logoLargeResponse = await cloudinary.uploader.upload(logoLarge, {
+          public_id: `${cloudinaryRootFolder}${companyName}/Logo/large`,
           overwrite: true,
         });
 
         logo['large'] = logoLargeResponse.secure_url;
       }
 
-      if (logoSmall && (!company.logo || company.logo.small !== logoSmall)) {
-        logoSmallResponse = await cloudinary.uploader.upload(logoSmall, {
-          folder: `${cloudinaryRootFolder}${name.replace(/\s+/g, '')}/Logo`,
-          public_id: 'small',
+      if (logoSmall && logoSmall !== company.logo.small) {
+        let logoSmallResponse = await cloudinary.uploader.upload(logoSmall, {
+          public_id: `${cloudinaryRootFolder}${companyName}/Logo/small`,
           overwrite: true,
         });
 
         logo['small'] = logoSmallResponse.secure_url;
       }
 
-      company.name = name;
+      company.name = companyName;
       company.displayedName = name;
       company.socialMediaLinks = {
         facebook,
@@ -340,41 +334,58 @@ router.put(
 // @route    DELETE api/companies/:id
 // @desc     Delete single companies
 // @access   Private
-router.delete('/:id', async (req, res) => {
-  try {
-    // get the company
-    let company = await Company.findById(req.params.id);
+router.delete(
+  '/:id',
+  [
+    auth(true, wawayaAccess),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
 
-    if (!company) {
-      // company not found
-      return res.status(406).send('An unexpected error occured');
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
     }
 
-    // delete all resources
-    cloudinary.api.delete_resources_by_prefix(
-      `${cloudinaryRootFolder}${company.name}/`,
-      (err, result) => {
-        if (err) console.error(err);
-        // delete folder
-        cloudinary.api.delete_folder(
-          `${cloudinaryRootFolder}${company.name}`,
-          (err, result) => {
-            if (err) console.error(err);
-          }
-        );
+    try {
+      let deletedCompany = await Company.findByIdAndRemove(req.params.id);
+
+      if (!deletedCompany) {
+        return res.status(404).send('Company not found');
       }
-    );
 
-    // delete user
-    await Company.findByIdAndRemove(req.params.id);
+      res.json(deletedCompany);
 
-    res.json(req.params.id);
-  } catch (err) {
-    console.log(err);
-    console.error(err.message);
-    res.status(500).send('Server Error');
+      const { name } = deletedCompany;
+
+      // delete all pictures
+      cloudinary.api.delete_resources_by_prefix(
+        `${cloudinaryRootFolder}${name}/`,
+        (err, result) => {
+          if (err) console.error(err);
+          // delete folder
+          cloudinary.api.delete_folder(
+            `${cloudinaryRootFolder}${name}`,
+            (err, result) => err && console.error(err)
+          );
+        }
+      );
+
+      // todo
+      // need delete all users
+      // need delete all bills
+      // need delete all food
+      // need delete all orders
+      // need delete all tables
+    } catch (err) {
+      console.log(err);
+      res.status(500).send('Server Error');
+    }
   }
-});
+);
 
 // ====================================================================================================
 // Exporting module

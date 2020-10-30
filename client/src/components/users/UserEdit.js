@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,13 +7,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getUser, editUser } from '../../actions/users';
 
 // Components
-import Header from '../layout/Header';
+import SideSheet from '../layout/SideSheet';
 import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
 import RadioInput from '../layout/RadioInput';
 import CheckboxInput from '../layout/CheckboxInput';
 import Button from '../layout/Button';
-import Dialog from '../layout/Dialog';
+import AlertDialog from '../layout/AlertDialog';
 
 // Icons
 import ArrowIcon from '../icons/ArrowIcon';
@@ -21,36 +21,9 @@ import ArrowIcon from '../icons/ArrowIcon';
 // Custom Hooks
 import useInputError from '../../hooks/useInputError';
 
-/*
-  =====
-  Props
-  =====
-  @name       auth
-  @type       object
-  @desc       auth object from RouteWrapper
-  @required   true
-
-  @name       users
-  @type       array of user object
-  @desc       app level users state
-  @desc       only require the errors(for checking form submission) and loading(check if form is submitted)
-  @required   true
-
-  @name       getUser
-  @type       function
-  @desc       Redux action to set user in app level users state
-  @required   true
-  @default    none
-
-  @name       editUser
-  @type       function
-  @desc       Redux action to update the user in DB and app level users state
-  @required   true
-  @default    none
-*/
 const UserEdit = ({
   auth: { access: authAccess },
-  users: { user, userLoading, userErrors },
+  users: { requesting, user, errors },
   getUser,
   editUser,
 }) => {
@@ -58,56 +31,54 @@ const UserEdit = ({
 
   useEffect(() => {
     getUser(id);
+
+    // eslint-disable-next-line
   }, [id]);
 
-  const initialInputErrorMessagesState = {
-    name: '',
-    username: '',
-    password: '',
-    general: '',
-  };
-
   const [inputErrorMessages] = useInputError(
-    initialInputErrorMessagesState,
-    userErrors
+    {
+      username: '',
+      password: '',
+      name: '',
+      access: '',
+      role: '',
+    },
+    errors
   );
 
-  // Component state to change input field values
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     name: '',
-    access: '',
+    access: '2',
     role: [],
   });
 
   const { username, password, name, access, role } = formData;
-  const [showChangePasswordAlert, setShowChangePasswordAlert] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    const { _id: userId, name, username, access, role } = { ...user };
+
+    if (userId === id) {
       setFormData({
-        ...formData,
-        username: user.username ? user.username : '',
-        name: user.name ? user.name : '',
-        access: user.access ? user.access.toString() : '',
-        role: user.role ? user.role : [],
+        username: username ? username : '',
+        password: '',
+        name: name ? name : '',
+        access: typeof access === 'number' ? access.toString() : '2',
+        role: Array.isArray(role) ? role : [],
       });
     }
-  }, [user]);
+  }, [user, id]);
 
-  const onChange = ({ name, value }) => {
+  const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
-  };
 
-  const checkIfChangePassword = async e => {
+  const [showChangePasswordAlert, setShowChangePasswordAlert] = useState(false);
+
+  const checkIfChangePassword = e => {
     e.preventDefault();
 
-    if (formData.password) {
-      setShowChangePasswordAlert(true);
-    } else {
-      onSubmit();
-    }
+    return formData.password ? setShowChangePasswordAlert(true) : onSubmit();
   };
 
   const navigate = useNavigate();
@@ -117,7 +88,7 @@ const UserEdit = ({
 
     let newUser = formData;
 
-    if (authAccess >= 3 && authAccess !== 99) {
+    if (authAccess < 99) {
       newUser = {
         ...formData,
         access: formData.role.indexOf('admin') >= 0 ? 3 : 2,
@@ -126,66 +97,64 @@ const UserEdit = ({
 
     const editUserSuccess = await editUser(id, newUser);
 
-    if (editUserSuccess) {
-      navigate('../');
-    }
+    return editUserSuccess && navigate('../');
   };
 
-  return (
-    <div
-      style={{
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: 'auto 1fr auto',
-      }}
-    >
-      <Header title={'User Edit'} closeActionCallback={'../../'} />
+  const closeSideSheet = () => navigate('../../');
 
-      {user && (
-        <form
-          id='userEditForm'
-          style={{ padding: '1rem 2rem', overflowY: 'auto' }}
-          onSubmit={checkIfChangePassword}
-        >
+  const sideSheetContent = (
+    <form id='userEditForm' onSubmit={checkIfChangePassword}>
+      <div className='row'>
+        <div className='col'>
           <TextInput
             label={'username'}
-            showRequiredInLabel={true}
+            required={true}
             name={'username'}
             type={'text'}
             value={username}
             onChangeHandler={onChange}
-            validity={!inputErrorMessages.username}
-            errorMessage={inputErrorMessages.username}
+            error={inputErrorMessages.username}
           />
+        </div>
+      </div>
 
+      <div className='row'>
+        <div className='col'>
           <TextInput
-            label={'change password'}
+            label={'password'}
+            required={true}
             name={'password'}
             type={'password'}
             value={password}
             onChangeHandler={onChange}
-            validity={!inputErrorMessages.password}
-            errorMessage={inputErrorMessages.password}
+            error={inputErrorMessages.password}
           />
+        </div>
+      </div>
 
+      <div className='row'>
+        <div className='col'>
           <TextInput
             label={'name'}
-            showRequiredInLabel={true}
+            required={true}
             name={'name'}
             type={'text'}
             value={name}
             onChangeHandler={onChange}
-            validity={!inputErrorMessages.name}
-            errorMessage={inputErrorMessages.name}
+            error={inputErrorMessages.name}
           />
+        </div>
+      </div>
 
-          {authAccess === 99 && (
+      {authAccess === 99 && (
+        <div className='row'>
+          <div className='col'>
             <RadioInput
               label={'access'}
-              showRequiredInLabel={true}
+              required={true}
               inline={true}
               name={'access'}
-              radioInputs={[
+              inputs={[
                 {
                   key: 'Staff',
                   value: '2',
@@ -201,17 +170,20 @@ const UserEdit = ({
               ]}
               value={access}
               onChangeHandler={onChange}
-              validity={!inputErrorMessages.access}
-              errorMessage={inputErrorMessages.access}
+              error={inputErrorMessages.access}
             />
-          )}
+          </div>
+        </div>
+      )}
 
+      <div className='row'>
+        <div className='col'>
           <CheckboxInput
             label={'role'}
-            showRequiredInLabel={true}
+            required={true}
             name={'role'}
             inline={true}
-            checkboxInputs={[
+            inputs={[
               {
                 key: 'Waiter',
                 value: 'waiter',
@@ -231,68 +203,52 @@ const UserEdit = ({
             ]}
             value={role}
             onChangeHandler={onChange}
-            validity={!inputErrorMessages.role}
-            errorMessage={inputErrorMessages.role}
+            error={inputErrorMessages.role}
           />
+        </div>
+      </div>
+    </form>
+  );
 
-          {inputErrorMessages.noParam && (
-            <div className='alert alert-small alert-error'>
-              {inputErrorMessages.noParam}
-            </div>
-          )}
-        </form>
-      )}
-      <Button
-        btnStyle={'contained'}
-        type={'primary'}
-        block={true}
-        fixBlockBtnBottom={true}
-        text={'Edit'}
-        icon={
-          !userLoading ? (
-            <ArrowIcon direction='right' />
-          ) : (
-            <Spinner height={'1.5rem'} />
-          )
+  return (
+    <Fragment>
+      <SideSheet
+        wrapper={false}
+        headerTitle={'Edit User'}
+        closeSideSheetHandler={closeSideSheet}
+        content={user && user._id !== id ? <Spinner /> : sideSheetContent}
+        footerBtn={
+          <Button
+            fill={'contained'}
+            type={'primary'}
+            block={true}
+            blockBtnBottom={true}
+            text={'edit'}
+            icon={
+              requesting ? (
+                <Spinner height={'1.5rem'} />
+              ) : (
+                <ArrowIcon direction='right' />
+              )
+            }
+            disabled={requesting}
+            submit={true}
+            form={'userEditForm'}
+          />
         }
-        submit={true}
-        form={'userEditForm'}
-        disabled={userLoading}
       />
       {showChangePasswordAlert && (
-        <Dialog
-          content={
-            <h2 className='heading-2 text-center' style={{ padding: '3rem 0' }}>
-              Change password?
-            </h2>
-          }
-          footer={
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-evenly',
-              }}
-            >
-              <Button
-                btnStyle={'contained'}
-                type={'error'}
-                text={'Change'}
-                additionalStyles={{ flex: '1', marginRight: '1rem' }}
-                onClick={() => onSubmit()}
-              />
-              <Button
-                btnStyle={'outline'}
-                color={'var(--on-background)'}
-                text={'Cancel'}
-                additionalStyles={{ flex: '1', marginLeft: '1rem' }}
-                onClick={() => setShowChangePasswordAlert(false)}
-              />
-            </div>
-          }
-          closeDialogHandler={() => setShowChangePasswordAlert(false)}
+        <AlertDialog
+          title={'Change password?'}
+          action={{
+            name: 'Continue',
+            type: 'error',
+            callback: onSubmit,
+          }}
+          unmountAlertDialogHandler={() => setShowChangePasswordAlert(false)}
         />
       )}
-    </div>
+    </Fragment>
   );
 };
 

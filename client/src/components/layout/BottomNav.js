@@ -1,43 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-/* 
-  =====
-  Props
-  =====
-  @name       navItems 
-  @type       jxs
-  @desc       nav items
-  @required   false
-*/
-export const BottomNav = ({
-  navItems,
-  additionalStyles,
-  additionalClasses,
-}) => {
-  useEffect(() => {
-    /* Functions to run on mount */
-    document.documentElement.style.setProperty(
-      '--container-bottom-padding',
-      `0`
-    );
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
+
+const BottomNav = ({ navItems, classes, style }) => {
+  const bottomNavRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const bottomNav = bottomNavRef.current;
+
+    if (bottomNav) {
+      document.documentElement.style.setProperty(
+        '--bottomnav-height',
+        `${bottomNav.offsetHeight}px`
+      );
+    }
 
     return () => {
-      /* Functions to run before unmount */
-      document.documentElement.style.setProperty(
-        '--container-bottom-padding',
-        `env(safe-area-inset-bottom)`
-      );
+      document.documentElement.style.setProperty('--bottomnav-height', '0px');
     };
-    // eslint-disable-next-line
-  }, []);
+  }, [navItems]);
 
   return (
     <nav
-      className={`bottom-nav ${
-        additionalClasses ? additionalClasses : ''
-      }`.trim()}
-      style={additionalStyles}
+      className={sanitizeWhiteSpace(`bottom-nav ${classes ? classes : ''}`)}
+      style={style}
+      ref={bottomNavRef}
     >
       {navItems && <section className='bottom-nav-items'>{navItems}</section>}
     </nav>

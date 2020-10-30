@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 // Components
 import Navbar from '../../components/layout/Navbar';
+import Sidebar from '../../components/layout/Sidebar';
 import BottomNav from '../../components/layout/BottomNav';
 import Button from '../../components/layout/Button';
 
 // Icons
+import MenuIcon from '../../components/icons/MenuIcon';
 import BellIcon from '../../components/icons/BellIcon';
 import HomeIcon from '../../components/icons/HomeIcon';
-import FoodMenuIcon from '../../components/icons/FoodMenuIcon';
 import FoodTableIcon from '../../components/icons/FoodTableIcon';
 import FoodOrderIcon from '../../components/icons/FoodOrderIcon';
 import FoodBillIcon from '../../components/icons/FoodBillIcon';
@@ -19,35 +20,25 @@ import LogoutIcon from '../../components/icons/LogoutIcon';
 
 // Actions
 import { logout } from '../../actions/auth';
+import { getMenus } from '../../actions/menus';
+import { getFoods } from '../../actions/foods';
 
-/* 
-  =====
-  Props
-  =====
-  @name       auth 
-  @type       object
-  @desc       app level auth state
-  @required   true
+export const CompanyAppWrapper = ({
+  auth: { company, auth },
+  menus,
+  logout,
+  getMenus,
+  getFoods,
+}) => {
+  const { role: authRole } = auth;
+  const { _id: companyId, name: companyName, socialMediaLinks } = company;
 
-  @name       logout 
-  @type       function
-  @desc       to logout user
-  @required   true
-*/
-export const CompanyAppWrapper = ({ auth: { company, auth }, logout }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const locationMatch = link => {
-    return location.pathname === `/${company.name}/${link}`;
+    return location.pathname === `/${companyName}/${link}`;
   };
-
-  const menuNavItem = (
-    <Button
-      icon={<FoodMenuIcon active={locationMatch('menu')} />}
-      onClick={() => navigate(`menu`)}
-    />
-  );
 
   const adminNavItem = (
     <Button
@@ -84,32 +75,9 @@ export const CompanyAppWrapper = ({ auth: { company, auth }, logout }) => {
     />
   );
 
-  const logoutNavItem = (
-    <Button icon={<LogoutIcon />} onClick={() => logout()} />
-  );
-
-  const navbarLeftContent = (
-    <Fragment>
-      <img
-        className='navbar-logo invert-in-dark-mode'
-        src={company ? company.logo.small : company.logo.large}
-        alt='logo'
-        onClick={() => navigate('')}
-      />
-    </Fragment>
-  );
-
-  const navbarRightContent = (
-    <Fragment>
-      {logoutNavItem}
-      {auth.role.indexOf('admin') >= 0 ? notificationsNavItem : null}
-    </Fragment>
-  );
-
   const bottomNavItems = (
     <Fragment>
-      {menuNavItem}
-      {auth.role.indexOf('admin') >= 0 ? (
+      {authRole.indexOf('admin') >= 0 ? (
         <Fragment>
           {adminNavItem}
           {tablesNavItem}
@@ -118,38 +86,81 @@ export const CompanyAppWrapper = ({ auth: { company, auth }, logout }) => {
         </Fragment>
       ) : (
         <Fragment>
-          {auth.role.indexOf('waiter') >= 0 ? tablesNavItem : null}
-          {auth.role.indexOf('kitchen') >= 0 ? ordersNavItem : null}
-          {auth.role.indexOf('cashier') >= 0 ? billsNavItem : null}
-          {notificationsNavItem}
+          {authRole.indexOf('waiter') >= 0 ? tablesNavItem : null}
+          {authRole.indexOf('kitchen') >= 0 ? ordersNavItem : null}
+          {authRole.indexOf('cashier') >= 0 ? billsNavItem : null}
         </Fragment>
       )}
+      {notificationsNavItem}
     </Fragment>
   );
 
+  useEffect(() => {
+    getMenus(companyId);
+    getFoods(companyId);
+
+    // eslint-disable-next-line
+  }, []);
+
+  const [showSidebar, setShowSidebar] = useState(false);
+
+  const sidebarHeader = company.logo && (
+    <img
+      className='sidebar-logo invert-in-dark-mode'
+      src={company.logo.large ? company.logo.large : company.logo.small}
+      alt='logo'
+    />
+  );
+
+  const sidebarLinks = [
+    {
+      name: 'Main Menu',
+      link: 'menus',
+    },
+    ...menus.map(menu => ({
+      name: menu.name,
+      link: `menus/${menu._id}`,
+    })),
+  ];
+
   return (
-    <div className='app-wrapper'>
+    <Fragment>
       <Navbar
-        leftContent={navbarLeftContent}
-        rightContent={navbarRightContent}
+        leftContent={
+          <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
+        }
+        rightContent={<Button icon={<LogoutIcon />} onClick={() => logout()} />}
       />
+      {showSidebar && (
+        <Sidebar
+          headerContent={sidebarHeader}
+          sidebarLinks={sidebarLinks}
+          socialMediaLinks={socialMediaLinks}
+          unmountSidebarHandler={() => setShowSidebar(false)}
+        />
+      )}
       <Outlet />
       <BottomNav navItems={bottomNavItems} />
-    </div>
+    </Fragment>
   );
 };
 
 CompanyAppWrapper.propTypes = {
   auth: PropTypes.object.isRequired,
+  menus: PropTypes.array.isRequired,
   logout: PropTypes.func.isRequired,
+  getMenus: PropTypes.func.isRequired,
+  getFoods: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
-  auth: state.auth,
+  menus: state.menus.menus,
 });
 
 const mapDispatchToProps = {
   logout,
+  getMenus,
+  getFoods,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CompanyAppWrapper);

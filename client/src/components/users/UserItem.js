@@ -1,14 +1,11 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
-import Moment from 'react-moment';
-import 'moment-timezone';
+import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
 // Components
 import ListItem from '../layout/ListItem';
-import Dialog from '../layout/Dialog';
-import Button from '../layout/Button';
+import AlertDialog from '../layout/AlertDialog';
 
 // Icons
 import AvatarIcon from '../icons/AvatarIcon';
@@ -16,51 +13,44 @@ import AvatarIcon from '../icons/AvatarIcon';
 // Actions
 import { deleteUser } from '../../actions/users';
 
-/*
-  =====
-  Props
-  =====
-  @name       authenticatedUser
-  @type       object
-  @desc       currently logged in user
-  @required   true
+const UserItem = ({ user, deleteUser }) => {
+  const { _id: userId, name, role, access } = user;
 
-  @name       user
-  @type       object
-  @desc       user object from Parent
-  @required   true
-
-  @name       deleteUser
-  @type       function
-  @desc       Redux action from users to delete user from app level users state and DB
-  @required   true
-*/
-const UserItem = ({ authenticatedUser, user, deleteUser }) => {
-  // destructure user obj
-  const { _id: userId, name, creationDate } = user;
-
-  // Populate list item actions
-  let listItemAction = [
+  let actions = [
     {
       name: 'View',
-      link: `${userId}`,
+      path: `${userId}`,
     },
     {
       name: 'Edit',
-      link: `${userId}/edit`,
+      path: `${userId}/edit`,
     },
   ];
 
   const [showDeleteUserAlert, setShowDeleteUserAlert] = useState(false);
 
-  if (authenticatedUser && authenticatedUser.id !== userId) {
-    listItemAction.push({
+  access < 3 &&
+    actions.push({
       name: 'Delete',
       callback: () => setShowDeleteUserAlert(true),
     });
-  } else {
-    listItemAction.filter(action => action.name === 'Delete');
-  }
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const onUserDelete = async () => {
+    const deleteUserSuccess = await deleteUser(userId);
+
+    let match = matchPath(
+      {
+        path: `/:companyName/users/${userId}`,
+        end: false,
+      },
+      location.pathname
+    );
+
+    return deleteUserSuccess && match && navigate('', { replace: true });
+  };
 
   return (
     <Fragment>
@@ -68,63 +58,31 @@ const UserItem = ({ authenticatedUser, user, deleteUser }) => {
         beforeListContent={<AvatarIcon />}
         listContent={
           <Fragment>
-            <p
-              className='body-1'
-              style={{ display: 'flex', alignItems: 'center' }}
-            >
-              {name.toUpperCase()}
-              {user.role &&
-                user.role.map((role, index) => (
-                  <span
-                    key={`user-${userId}-role-${index}`}
-                    className='badge badge-small badge-secondary'
-                    style={{ marginLeft: '0.5rem' }}
-                  >
-                    {role}
-                  </span>
-                ))}
-            </p>
-            <p className='body-2'>
-              Created at{' '}
-              <Moment local format='DD/MM HH:mm:ss'>
-                {creationDate}
-              </Moment>
-            </p>
+            <p className='body-1'>{name ? name : 'No name defined'}</p>
+            <div>
+              {role.map((role, index) => (
+                <span
+                  key={`user-${userId}-role-${index}`}
+                  className='badge badge-small badge-secondary mr-h'
+                >
+                  {role}
+                </span>
+              ))}
+            </div>
           </Fragment>
         }
-        actions={listItemAction}
+        actions={actions}
       />
       {showDeleteUserAlert && (
-        <Dialog
-          content={
-            <h2 className='heading-2 text-center' style={{ padding: '3rem 0' }}>
-              Delete user?
-            </h2>
-          }
-          footer={
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-evenly',
-              }}
-            >
-              <Button
-                btnStyle={'contained'}
-                type={'error'}
-                text={'delete'}
-                additionalStyles={{ flex: '1', marginRight: '1rem' }}
-                onClick={() => deleteUser(userId)}
-              />
-              <Button
-                btnStyle={'outline'}
-                type={'background'}
-                text={'Cancel'}
-                additionalStyles={{ flex: '1', marginLeft: '1rem' }}
-                onClick={() => setShowDeleteUserAlert(false)}
-              />
-            </div>
-          }
-          closeDialogHandler={() => setShowDeleteUserAlert(false)}
+        <AlertDialog
+          title={'Delete user?'}
+          text={'Action cannot be undone'}
+          action={{
+            name: 'delete',
+            type: 'error',
+            callback: onUserDelete,
+          }}
+          unmountAlertDialogHandler={() => setShowDeleteUserAlert(false)}
         />
       )}
     </Fragment>
@@ -132,14 +90,11 @@ const UserItem = ({ authenticatedUser, user, deleteUser }) => {
 };
 
 UserItem.propTypes = {
-  authenticatedUser: PropTypes.object,
   user: PropTypes.object.isRequired,
   deleteUser: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = state => ({
-  authenticatedUser: state.auth.auth,
-});
+const mapStateToProps = state => ({});
 
 const mapDispatchToProps = {
   deleteUser,

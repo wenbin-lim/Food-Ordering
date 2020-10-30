@@ -1,104 +1,82 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDrag } from 'react-use-gesture';
-// Router
-import { useNavigate, useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import matchLocationToPath from '../../utils/matchLocationToPath';
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
 // Component
 import SocialMediaButtons from './SocialMediaButtons';
 
 // Animations
-import { TweenMax, Power4 } from 'gsap';
+import { TweenMax } from 'gsap';
 
 // Misc
 import { v4 as uuid } from 'uuid';
 
-/* 
-  =====
-  Props
-  =====
-  @name       headerContent
-  @type       jsx element
-  @desc       sidebar header content
-  @required   false
-
-  @name       sidebarLinks
-  @type       array of object of {name, link}
-  @desc       sidebar links to redirect to
-  @required   false
-
-  @name       socialMediaLinks
-  @type       object of {facebook, twitter, instagram: url string}
-  @desc       facebook twitter instagram redirect links
-  @required   false
-
-  @name       unmountSidebar 
-  @type       function
-  @desc       from parent to unmount this sidebar
-  @required   true
-
-*/
 const Sidebar = ({
+  headerClasses,
   headerContent,
   sidebarLinks,
   socialMediaLinks,
-  unmountSidebar,
+  unmountSidebarHandler,
 }) => {
   const [animationTime] = useState(0.3);
 
   const scrimRef = useRef(null);
   const sidebarRef = useRef(null);
 
+  const container = document.getElementById('sidebar-root');
+
+  var scrimBgColor = getComputedStyle(
+    document.documentElement
+  ).getPropertyValue('--scrim');
+
   useEffect(() => {
-    // Begin animations
-    // check if scrimRef and sidebarRef is mounted properly
+    document.body.style.overflow = 'hidden';
+
     const scrim = scrimRef.current;
     const sidebar = sidebarRef.current;
 
     if (scrim && sidebar) {
-      // sidebar scrim will fade in
       TweenMax.to(scrim, animationTime, {
-        backgroundColor: getComputedStyle(
-          document.documentElement
-        ).getPropertyValue('--scrim'),
+        backdropFilter: 'blur(5px)',
+        backgroundColor: scrimBgColor,
       });
-      // sidebar will slide in from left
       TweenMax.to(sidebar, animationTime, {
         x: 0,
-        ease: Power4.easeOut,
       });
     }
 
-    // prevent scrolling in outside of scrim
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    return () => (document.body.style.overflow = 'auto');
 
     // eslint-disable-next-line
   }, []);
 
-  const closeSidebar = link => {
+  const closeSidebar = (path = false, sidebarCurrXPos = 0) => {
     const scrim = scrimRef.current;
     const sidebar = sidebarRef.current;
 
     if (scrim && sidebar) {
-      const onCompleteCallback = () => {
-        unmountSidebar();
-        if (typeof link === 'string') {
-          navigate(link);
-        }
-      };
-
       TweenMax.to(scrim, animationTime, {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+        backgroundColor: 'rgba(0,0,0,0)',
       });
-      TweenMax.to(sidebar, animationTime, {
-        xPercent: -100,
-        ease: Power4.easeOut,
-        onComplete: onCompleteCallback,
-      });
+      TweenMax.fromTo(
+        sidebar,
+        animationTime,
+        { x: sidebarCurrXPos },
+        {
+          x: '-100%',
+          onComplete: () => {
+            unmountSidebarHandler();
+            if (typeof path === 'string') {
+              navigate(path);
+            }
+          },
+        }
+      );
     }
   };
 
@@ -118,44 +96,20 @@ const Sidebar = ({
           // revert back to original
           if (movementX < 0) {
             if (Math.abs(movementX) < minSwipeDist) {
-              TweenMax.fromTo(
-                sidebar,
-                0.1,
-                { x: movementX },
-                {
-                  x: 0,
-                  ease: Power4.easeOut,
-                }
-              );
+              TweenMax.fromTo(sidebar, 0.1, { x: movementX }, { x: 0 });
             } else {
-              TweenMax.to(scrim, animationTime, {
-                backgroundColor: 'rgba(0, 0, 0, 0)',
-              });
-              TweenMax.fromTo(
-                sidebar,
-                animationTime,
-                { x: -minSwipeDist },
-                {
-                  xPercent: -100,
-                  ease: Power4.easeOut,
-                  onComplete: unmountSidebar,
-                }
-              );
+              closeSidebar(false, -minSwipeDist);
             }
           }
         }
       }
     },
-    {
-      axis: 'x',
-    }
+    { axis: 'x' }
   );
 
   const navigate = useNavigate();
 
-  const location = useLocation();
-
-  return (
+  return createPortal(
     <div className='sidebar-scrim' ref={scrimRef} onClick={closeSidebar}>
       <aside
         className='sidebar'
@@ -164,40 +118,50 @@ const Sidebar = ({
         {...onDrag()}
       >
         {headerContent && (
-          <section className='sidebar-header'>{headerContent}</section>
+          <header
+            className={sanitizeWhiteSpace(
+              `sidebar-header ${headerClasses ? headerClasses : ''}`
+            )}
+          >
+            {headerContent}
+          </header>
         )}
         <section className='sidebar-content'>
           {sidebarLinks &&
-            sidebarLinks.map(sidebarLink => (
+            sidebarLinks.map(link => (
               <span
-                className={`sidebar-link button-text ${
-                  location.pathname === sidebarLink.link
-                    ? 'sidebar-link-active'
-                    : ''
-                }`.trim()}
+                className={sanitizeWhiteSpace(
+                  `sidebar-link ${
+                    matchLocationToPath(link.path) ? 'sidebar-link-active' : ''
+                  }`
+                )}
                 key={uuid()}
-                onClick={() => closeSidebar(sidebarLink.link)}
+                onClick={() => closeSidebar(link.path)}
               >
-                {sidebarLink.name}
+                {link.name}
               </span>
             ))}
         </section>
-        <section className='sidebar-footer'>
-          <SocialMediaButtons socialMediaLinks={socialMediaLinks} />
-          <p className='body-2'>Powered by</p>
-          <p className='body-2'>The W Company</p>
-        </section>
+        {socialMediaLinks && (
+          <footer className='sidebar-footer'>
+            <SocialMediaButtons socialMediaLinks={socialMediaLinks} />
+            <p className='body-2'>Powered by</p>
+            <p className='body-2'>The W Company</p>
+          </footer>
+        )}
       </aside>
-    </div>
+    </div>,
+    container
   );
 };
 
 Sidebar.propTypes = {
+  headerClasses: PropTypes.string,
   headerContent: PropTypes.element,
   sidebarLinks: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string,
-      link: PropTypes.string,
+      path: PropTypes.string,
     })
   ),
   socialMediaLinks: PropTypes.shape({
@@ -205,7 +169,7 @@ Sidebar.propTypes = {
     twitter: PropTypes.string,
     instagram: PropTypes.string,
   }),
-  unmountSidebar: PropTypes.func.isRequired,
+  unmountSidebarHandler: PropTypes.func.isRequired,
 };
 
 export default Sidebar;

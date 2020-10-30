@@ -4,12 +4,14 @@
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
-const { public: publicAccess } = config.get('accessLevel');
+const { public: publicAccess, customer: customerAccess } = config.get(
+  'accessLevel'
+);
 
 // ====================================================================================================
 // Exporting module
 // ====================================================================================================
-module.exports = (privateOnly, minAccessLevel = publicAccess) => {
+module.exports = (privateOnly, minAccessLevel = customerAccess) => {
   return (req, res, next) => {
     // Get token from header
     const token = req.header('x-auth-token');
@@ -17,7 +19,7 @@ module.exports = (privateOnly, minAccessLevel = publicAccess) => {
     if (!token) {
       if (privateOnly) {
         // user is public trying to access private route
-        return res.status(401).json({ msg: 'Authorisation Denied' });
+        return res.status(401).send('Unauthorized');
       } else {
         // user is public trying to access public and private route
         req.access = publicAccess;
@@ -27,21 +29,32 @@ module.exports = (privateOnly, minAccessLevel = publicAccess) => {
 
     // token exists, user has private access
     try {
-      const decoded = jwt.verify(token, config.get('jwtSecret'));
+      const decodedToken = jwt.verify(token, config.get('jwtSecret'));
+      const { auth, access, company } = decodedToken;
 
-      if (decoded.access <= minAccessLevel - 1) {
-        // user has access level lower than required
-        return res.status(401).json({ msg: 'Authorisation Denied' });
+      if (access < minAccessLevel) {
+        return res.status(401).send('Unauthorized');
       }
 
-      req.company = decoded.company._id;
-      req.access = decoded.access;
-      req.auth = decoded;
+      if (company) {
+        const { _id: companyId, name: companyName } = company;
+
+        req.companyName = companyName;
+        req.company = companyId;
+      }
+
+      req.access = access ? access : publicAccess;
+
+      req.auth = auth;
+
+      delete decodedToken.iat;
+      req.decodedToken = decodedToken;
+      req.token = token;
 
       next();
     } catch (err) {
-      console.log(err);
-      res.status(401).json({ msg: 'Invalid token' });
+      console.error(err);
+      return res.status(401).send('Invalid Token');
     }
   };
 };

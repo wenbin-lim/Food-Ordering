@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -9,7 +10,7 @@ import { v4 as uuid } from 'uuid';
 // Components
 import Button from '../../components/layout/Button';
 import Container from '../../components/layout/Container';
-import ImageInput from '../../components/layout/ImageInput';
+import CheckboxInput from '../../components/layout/CheckboxInput';
 import FoodTableIcon from '../../components/icons/FoodTableIcon';
 import BellIcon from '../../components/icons/BellIcon';
 
@@ -31,6 +32,16 @@ const Landing = ({ companies }) => {
     };
     // eslint-disable-next-line
   }, []);
+
+  const [formData, setFormData] = useState({
+    checkbox: [],
+  });
+
+  const { checkbox } = formData;
+
+  const onChange = ({ name, value }) => {
+    setFormData({ ...formData, [name]: value });
+  };
 
   return (
     <Container
@@ -92,6 +103,11 @@ const Landing = ({ companies }) => {
                             </Link>
                           )
                       )}
+                    <Link
+                      to={`/ordernow/bbbcompany?company=5f7e27a70374c240fc1e1a76&table=5f7e29d80374c240fc1e1a80`}
+                    >
+                      {`real table link for ${company.name}`}
+                    </Link>
                     <Link
                       to={`/ordernow/${company.name}?company=${company._id}&table=somethingrandom`}
                     >

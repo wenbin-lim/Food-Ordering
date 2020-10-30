@@ -1,48 +1,26 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
-import Moment from 'react-moment';
-import 'moment-timezone';
+import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
 // Components
 import ListItem from '../layout/ListItem';
-import Dialog from '../layout/Dialog';
-import Button from '../layout/Button';
-
-// Icons
-import AvatarIcon from '../icons/AvatarIcon';
+import AlertDialog from '../layout/AlertDialog';
 
 // Actions
 import { deleteTable } from '../../actions/tables';
 
-/*
-  =====
-  Props
-  =====
-  @name       table
-  @type       object
-  @desc       table object from Parent
-  @required   true
+const TableItem = ({ index, table, deleteTable }) => {
+  const { _id: tableId, name } = table;
 
-  @name       deleteTable
-  @type       function
-  @desc       Redux action from tables to delete table from app level tables state and DB
-  @required   true
-*/
-const TableItem = ({ table, deleteTable }) => {
-  // destructure table obj
-  const { _id: tableId, name, creationDate } = table;
-
-  // Populate list item actions
-  let listItemAction = [
+  let actions = [
     {
       name: 'View',
-      link: `${tableId}`,
+      path: `${tableId}`,
     },
     {
       name: 'Edit',
-      link: `${tableId}/edit`,
+      path: `${tableId}/edit`,
     },
     {
       name: 'Delete',
@@ -52,69 +30,44 @@ const TableItem = ({ table, deleteTable }) => {
 
   const [showDeleteTableAlert, setShowDeleteTableAlert] = useState(false);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const onTableDelete = async () => {
+    const deleteTableSuccess = await deleteTable(tableId);
+
+    let match = matchPath(
+      {
+        path: `/:companyName/tables/${tableId}`,
+        end: false,
+      },
+      location.pathname
+    );
+
+    return deleteTableSuccess && match && navigate('', { replace: true });
+  };
+
   return (
     <Fragment>
       <ListItem
-        beforeListContent={<AvatarIcon />}
+        beforeListContent={<h2 className='list-index'>{index}</h2>}
         listContent={
           <Fragment>
-            <p
-              className='body-1'
-              style={{ display: 'flex', alignItems: 'center' }}
-            >
-              {name}
-              {table.role &&
-                table.role.map((role, index) => (
-                  <span
-                    key={`table-${tableId}-role-${index}`}
-                    className='badge badge-small badge-secondary'
-                    style={{ marginLeft: '0.5rem' }}
-                  >
-                    {role}
-                  </span>
-                ))}
-            </p>
-            <p className='body-2'>
-              Created at{' '}
-              <Moment local format='DD/MM HH:mm:ss'>
-                {creationDate}
-              </Moment>
-            </p>
+            <p className='body-1'>{name ? name : 'No name defined'}</p>
           </Fragment>
         }
-        actions={listItemAction}
+        actions={actions}
       />
       {showDeleteTableAlert && (
-        <Dialog
-          content={
-            <h2 className='heading-2 text-center' style={{ padding: '3rem 0' }}>
-              Delete table?
-            </h2>
-          }
-          footer={
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-evenly',
-              }}
-            >
-              <Button
-                btnStyle={'contained'}
-                type={'error'}
-                text={'delete'}
-                additionalStyles={{ flex: '1', marginRight: '1rem' }}
-                onClick={() => deleteTable(tableId)}
-              />
-              <Button
-                btnStyle={'outline'}
-                type={'background'}
-                text={'Cancel'}
-                additionalStyles={{ flex: '1', marginLeft: '1rem' }}
-                onClick={() => setShowDeleteTableAlert(false)}
-              />
-            </div>
-          }
-          closeDialogHandler={() => setShowDeleteTableAlert(false)}
+        <AlertDialog
+          title={'Delete table?'}
+          text={'Action cannot be undone'}
+          action={{
+            name: 'delete',
+            type: 'error',
+            callback: onTableDelete,
+          }}
+          unmountAlertDialogHandler={() => setShowDeleteTableAlert(false)}
         />
       )}
     </Fragment>
@@ -122,6 +75,7 @@ const TableItem = ({ table, deleteTable }) => {
 };
 
 TableItem.propTypes = {
+  index: PropTypes.number,
   table: PropTypes.object.isRequired,
   deleteTable: PropTypes.func.isRequired,
 };

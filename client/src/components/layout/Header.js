@@ -15,6 +15,11 @@ import MoreIcon from '../icons/MoreIcon';
   =====
   Props
   =====
+  @name       headerClass 
+  @type       string
+  @desc       additional classes for header component
+  @required   false
+
   @name       title 
   @type       string
   @desc       title of the header
@@ -42,6 +47,7 @@ import MoreIcon from '../icons/MoreIcon';
   @required   true
 */
 const Header = ({
+  headerClass,
   title,
   content,
   closeActionCallback,
@@ -62,31 +68,32 @@ const Header = ({
   };
 
   return (
-    <header className='header'>
+    <header className={`header ${headerClass ? headerClass : ''}`.trim()}>
       {closeActionCallback && (
         <Button
           icon={screenOrientation ? <ArrowIcon /> : <CloseIcon />}
           onClick={close}
-          additionalClasses={'close-btn'}
+          additionalClasses={'header-close-btn'}
         />
       )}
-      {title && <h1 className='title'>{title}</h1>}
+      {title && <h2 className='header-title'>{title}</h2>}
       {moreActionCallback && (
         <Button
           icon={
             screenOrientation ? <MoreIcon /> : <MoreIcon type='horizontal' />
           }
           onClick={close}
-          additionalClasses={'more-action-btn'}
+          additionalClasses={'header-more-action-btn'}
         />
       )}
 
-      {content && <div className='content'>{content}</div>}
+      {content && <div className='header-content'>{content}</div>}
     </header>
   );
 };
 
 Header.propTypes = {
+  headerClass: PropTypes.string,
   title: PropTypes.string,
   content: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   closeActionCallback: PropTypes.oneOfType([

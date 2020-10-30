@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTable, editTable } from '../../actions/tables';
 
 // Components
-import Header from '../layout/Header';
+import SideSheet from '../layout/SideSheet';
 import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
 import Button from '../layout/Button';
@@ -18,29 +18,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 // Custom Hooks
 import useInputError from '../../hooks/useInputError';
 
-/*
-  =====
-  Props
-  =====
-  @name       tables
-  @type       array of table object
-  @desc       app level tables state
-  @desc       only require the errors(for checking form submission) and loading(check if form is submitted)
-  @required   true
-
-  @name       getTable
-  @type       function
-  @desc       Redux action to set table in app level tables state
-  @required   true
-
-  @name       editTable
-  @type       function
-  @desc       Redux action to update the table in DB and app level tables state
-  @required   true
-  @default    none
-*/
 const TableEdit = ({
-  tables: { table, tableLoading, tableErrors },
+  tables: { requesting, table, errors },
   getTable,
   editTable,
 }) => {
@@ -48,18 +27,12 @@ const TableEdit = ({
 
   useEffect(() => {
     getTable(id);
+
+    // eslint-disable-next-line
   }, [id]);
 
-  const initialInputErrorMessagesState = {
-    name: '',
-  };
+  const [inputErrorMessages] = useInputError({ name: '' }, errors);
 
-  const [inputErrorMessages] = useInputError(
-    initialInputErrorMessagesState,
-    tableErrors
-  );
-
-  // Component state to change input field values
   const [formData, setFormData] = useState({
     name: '',
   });
@@ -67,84 +40,74 @@ const TableEdit = ({
   const { name } = formData;
 
   useEffect(() => {
-    if (table) {
+    const { _id: tableId, name } = { ...table };
+
+    if (tableId === id) {
       setFormData({
-        ...formData,
-        name: table.name ? table.name : '',
+        name: name ? name : '',
       });
     }
-  }, [table]);
+  }, [table, id]);
 
-  const onChange = ({ name, value }) => {
+  const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
-  };
 
   const navigate = useNavigate();
 
   const onSubmit = async e => {
     e.preventDefault();
 
-    let newTable = formData;
+    const editTableSuccess = await editTable(id, formData);
 
-    const editTableSuccess = await editTable(id, newTable);
-
-    if (editTableSuccess) {
-      navigate('../');
-    }
+    return editTableSuccess && navigate('../');
   };
 
-  return (
-    <div
-      style={{
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: 'auto 1fr auto',
-      }}
-    >
-      <Header title={'Table Edit'} closeActionCallback={'../../'} />
+  const closeSideSheet = () => navigate('../../');
 
-      {table && (
-        <form
-          id='tableEditForm'
-          style={{ padding: '1rem 2rem', overflowY: 'auto' }}
-          onSubmit={onSubmit}
-        >
+  const sideSheetContent = (
+    <form id='tableEditForm' onSubmit={onSubmit}>
+      <div className='row'>
+        <div className='col'>
           <TextInput
             label={'name'}
-            showRequiredInLabel={true}
+            required={true}
             name={'name'}
             type={'text'}
             value={name}
             onChangeHandler={onChange}
-            validity={!inputErrorMessages.name}
-            errorMessage={inputErrorMessages.name}
+            error={inputErrorMessages.name}
           />
+        </div>
+      </div>
+    </form>
+  );
 
-          {inputErrorMessages.noParam && (
-            <div className='alert alert-small alert-error'>
-              {inputErrorMessages.noParam}
-            </div>
-          )}
-        </form>
-      )}
-      <Button
-        btnStyle={'contained'}
-        type={'primary'}
-        block={true}
-        fixBlockBtnBottom={true}
-        text={'Edit'}
-        icon={
-          !tableLoading ? (
-            <ArrowIcon direction='right' />
-          ) : (
-            <Spinner height={'1.5rem'} />
-          )
-        }
-        submit={true}
-        form={'tableEditForm'}
-        disabled={tableLoading}
-      />
-    </div>
+  return (
+    <SideSheet
+      wrapper={false}
+      headerTitle={'Edit Table'}
+      closeSideSheetHandler={closeSideSheet}
+      content={sideSheetContent}
+      footerBtn={
+        <Button
+          fill={'contained'}
+          type={'primary'}
+          block={true}
+          blockBtnBottom={true}
+          text={'add'}
+          icon={
+            requesting ? (
+              <Spinner height={'1.5rem'} />
+            ) : (
+              <ArrowIcon direction='right' />
+            )
+          }
+          disabled={requesting}
+          submit={true}
+          form={'tableEditForm'}
+        />
+      }
+    />
   );
 };
 

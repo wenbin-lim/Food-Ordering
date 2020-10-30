@@ -1,4 +1,5 @@
 @import '_functions';
+@import '_mixins';
 @import '_variables';
 
 :root {
@@ -37,9 +38,26 @@
   --disabled: #{$disabled-color};
   --on-disabled: #{$on-disabled-color};
 
-  // height
+  // sizes
   --vh: 1vh;
+  --padding: #{$padding};
+  --scrollbar-size: #{$scrollbar-size};
+
+  --navbar-height: 0px;
+  --bottomnav-height: 0px;
+
+  --container-padding: #{$container-padding};
   --container-bottom-padding: env(safe-area-inset-bottom);
+}
+
+// Media queries
+/* default CSS will target portrait screens */
+@media only screen and (orientation: landscape) {
+  :root {
+    // sizes
+    --padding: #{$padding * 1.5};
+    --container-padding: #{$container-padding * 1.5};
+  }
 }
 
 // Media queries
@@ -57,20 +75,6 @@
   }
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-
-  scrollbar-width: thin;
-  scrollbar-color: var(--on-background) transparent;
-
-  position: relative;
-
-  user-select: none;
-}
-
 html {
   background-color: var(--background);
   color: var(--on-background);
@@ -79,36 +83,14 @@ html {
   font-size: 16px;
 }
 
-body {
-  touch-action: manipulation;
-  margin: 0;
-  padding: 0;
-}
-
-.app-wrapper {
-  // prevent momentum scrolling
-  position: fixed;
-  top: 0;
-  left: 0;
-
-  width: 100vw;
-  height: calc(100 * var(--vh));
-
-  display: flex;
-  flex-direction: column;
-}
+// Overrides
+@import '_overrides';
 
 // Typography
 @import '_typography';
 
 // utilities
 @import '_utilities';
-
-// Overrides
-@import '_overrides';
-
-// Layout
-@import '_layout.scss';
 
 // components
 @import 'components/_alert';
@@ -118,8 +100,10 @@ body {
 @import 'components/_button';
 @import 'components/_checkbox';
 @import 'components/_chip';
+@import 'components/_container.scss';
 @import 'components/_datetimepicker';
 @import 'components/_dialog';
+@import 'components/_dialogalert';
 @import 'components/_dropdown';
 @import 'components/_icon';
 @import 'components/_imageinput';
@@ -131,9 +115,19 @@ body {
 @import 'components/_radio';
 @import 'components/_range';
 @import 'components/_sidebar';
+@import 'components/_sidesheet';
 @import 'components/_snackbar';
 @import 'components/_switch';
 @import 'components/_tabs';
 
 // additional
+@import 'additional/main/_loginform.scss';
+
+@import 'additional/options/_optionform';
+
 @import 'additional/customer/_customer.scss';
+
+@import 'additional/menu/_foodcard.scss';
+@import 'additional/menu/_fooddialog.scss';
+@import 'additional/menu/_mainmenu.scss';
+@import 'additional/menu/_menu.scss';

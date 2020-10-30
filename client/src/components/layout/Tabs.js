@@ -1,161 +1,131 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  Fragment,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import PropTypes from 'prop-types';
-import { useDrag } from 'react-use-gesture';
 
 // Misc
-import { v4 as uuid } from 'uuid';
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
-// Animations
-import { TweenMax, Power4 } from 'gsap';
+const Tabs = forwardRef(
+  (
+    {
+      wrapper = true,
+      classes,
+      showHeader = true,
+      headerClass,
+      tabs,
+      initialTabIndex = 0,
+    },
+    ref
+  ) => {
+    useImperativeHandle(ref, () => ({
+      changeTab,
+    }));
 
-/* 
-  =====
-  Props
-  =====
-  @name       tabs 
-  @type       array of object {name: String , icon(optional), content: jsx, style, class }
-  @desc       tabs to be generated
-  @required   true
+    const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
 
-  @name       currentTabIndex 
-  @type       number
-  @desc       denotes which tab would be intially shown
-  @required   false
-  @default    0
-*/
-const Tabs = ({ tabs, currentTabIndex = 0, tabContentsWillSlide = true }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(currentTabIndex);
+    const tabActiveLineRef = useRef(null);
 
-  const animationTime = 0.5;
-  const tabContentsRef = useRef(null);
-  const tabActiveLineRef = useRef(null);
+    const changeTab = newIndex =>
+      newIndex >= 0 &&
+      newIndex <= tabs.length - 1 &&
+      setActiveTabIndex(newIndex);
 
-  const changeTab = index => {
-    const prevActiveTabIndex = activeTabIndex;
-    setActiveTabIndex(index);
+    const tabsRef = useRef(null);
+    const tabRef = useRef([]);
 
-    const tabContents = tabContentsRef.current;
-    const tabActiveLine = tabActiveLineRef.current;
+    const tabsObserverRef = useRef(
+      new ResizeObserver(entries => {
+        const tab = tabRef.current[0];
+        const tabActiveLine = tabActiveLineRef.current;
 
-    if (tabContents && tabActiveLine) {
-      TweenMax.fromTo(
-        tabActiveLine,
-        animationTime,
-        {
-          x: `${100 * prevActiveTabIndex}%`,
-        },
-        {
-          x: `${100 * index}%`,
+        if (tab && tabActiveLine) {
+          tabActiveLine.style.width = `${tab.offsetWidth - 1}px`;
         }
-      );
-      if (tabContentsWillSlide) {
-        TweenMax.fromTo(
-          tabContents,
-          animationTime,
-          {
-            x: `${-100 * prevActiveTabIndex}%`,
-          },
-          {
-            x: `${-100 * index}%`,
-          }
-        );
-      }
-    }
-  };
+      })
+    );
 
-  useEffect(() => {
-    if (currentTabIndex !== activeTabIndex) {
-      changeTab(currentTabIndex);
-    }
-  }, [currentTabIndex]);
+    useEffect(() => {
+      const tabs = tabsRef.current;
+      const tabsObserver = tabsObserverRef.current;
 
-  const tabsRef = useRef([]);
+      tabs && tabsObserver.observe(tabs);
 
-  const tabContainerObserver = useRef(
-    new ResizeObserver(entries => {
-      const tab = tabsRef.current[0];
-      const tabActiveLine = tabActiveLineRef.current;
+      return () => tabsObserver.unobserve(tabs);
+    }, [tabsRef, tabsObserverRef]);
 
-      if (tabs && tabActiveLine) {
-        tabActiveLine.style.width = `${tab.offsetWidth - 1}px`;
-      }
-    })
-  );
-
-  const tabContainerRef = useRef(null);
-
-  useEffect(() => {
-    const tabContainer = tabContainerRef.current;
-
-    if (tabContainer) {
-      tabContainerObserver.current.observe(tabContainer);
-    }
-
-    return () => {
-      tabContainerObserver.current.unobserve(tabContainer);
-    };
-  }, [tabContainerRef, tabContainerObserver]);
-
-  return (
-    <main className='tabs-container' ref={tabContainerRef}>
-      <section className='tabs'>
-        {tabs &&
-          tabs.length > 0 &&
-          tabs.map((tab, index) => (
-            <div
-              className={`tab ${
-                activeTabIndex === index ? 'tab-active' : ''
-              }`.trim()}
-              key={uuid()}
-              onClick={() => changeTab(index)}
-              ref={el => (tabsRef.current[index] = el)}
-            >
-              {tab.icon && <div className='tab-icon'>{tab.icon}</div>}
-              {tab.name && <div className='tab-name'> {tab.name}</div>}
-            </div>
-          ))}
-        <div
-          className='tab-active-line'
-          style={{
-            transform: `translateX(${100 * activeTabIndex}%)`,
-          }}
-          ref={tabActiveLineRef}
-        />
-      </section>
-      <div className='tab-contents-wrapper'>
-        <section
-          className='tab-contents'
-          style={{
-            transform: tabContentsWillSlide
-              ? `translateX(${-100 * activeTabIndex}%)`
-              : null,
-          }}
-          ref={tabContentsRef}
-        >
-          {tabs &&
-            tabs.length > 0 &&
-            tabs.map((tab, index) => (
+    const mainContent = Array.isArray(tabs) && tabs.length > 0 && (
+      <Fragment>
+        {showHeader && (
+          <header
+            className={`tabs ${headerClass ? headerClass : ''}`}
+            ref={tabsRef}
+          >
+            {tabs.map((tab, index) => (
               <div
-                className={`tab-content ${
-                  !tabContentsWillSlide
-                    ? activeTabIndex === index
-                      ? 'tab-content-wont-slide-active'
-                      : 'tab-content-wont-slide'
-                    : ''
-                } ${tab.class ? tab.class : ''}`.trim()}
-                key={uuid()}
-                style={tab.style ? tab.style : null}
+                key={`tab-${tab.name}-${index}`}
+                className={sanitizeWhiteSpace(
+                  `tab ${activeTabIndex === index ? 'tab-active' : ''}`
+                )}
+                ref={el => (tabRef.current[index] = el)}
+                onClick={() => changeTab(index)}
               >
-                {tab.content}
+                {tab.icon && <div className='tab-icon'>{tab.icon}</div>}
+                {tab.name && <div className='tab-name'> {tab.name}</div>}
               </div>
             ))}
-        </section>
-      </div>
-    </main>
-  );
-};
+            <div
+              className='tab-active-line'
+              style={{
+                transform: `translateX(${100 * activeTabIndex}%)`,
+              }}
+              ref={tabActiveLineRef}
+            />
+          </header>
+        )}
+        <div className='tab-contents-wrapper'>
+          <section
+            className='tab-contents'
+            style={{ transform: `translateX(${-100 * activeTabIndex}%)` }}
+          >
+            {tabs.map((tab, index) => (
+              <article
+                key={`tab-content-${tab.name}-${index}`}
+                className={sanitizeWhiteSpace(
+                  `tab-content ${tab.class ? tab.class : ''}`
+                )}
+                style={tab.style}
+              >
+                {tab.content}
+              </article>
+            ))}
+          </section>
+        </div>
+      </Fragment>
+    );
+
+    return wrapper ? (
+      <article
+        className={sanitizeWhiteSpace(`tabs-wrapper ${classes ? classes : ''}`)}
+      >
+        {mainContent}
+      </article>
+    ) : (
+      mainContent
+    );
+  }
+);
 
 Tabs.propTypes = {
+  wrapper: PropTypes.bool,
+  classes: PropTypes.string,
+  showHeader: PropTypes.bool,
+  headerClass: PropTypes.string,
   tabs: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string,
@@ -164,8 +134,9 @@ Tabs.propTypes = {
         .isRequired,
       class: PropTypes.string,
       style: PropTypes.object,
-    }).isRequired
+    })
   ).isRequired,
+  initialTabIndex: PropTypes.number,
 };
 
 export default Tabs;

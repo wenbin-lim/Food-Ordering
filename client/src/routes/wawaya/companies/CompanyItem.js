@@ -1,115 +1,88 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
 import Moment from 'react-moment';
-import 'moment-timezone';
 
 // Components
 import ListItem from '../../../components/layout/ListItem';
-import Dialog from '../../../components/layout/Dialog';
-import Button from '../../../components/layout/Button';
+import AlertDialog from '../../../components/layout/AlertDialog';
 
 // Actions
 import { deleteCompany } from '../../../actions/companies';
 
-/* 
-  =====
-  Props
-  =====
-  @name       index
-  @type       number
-  @desc       index for list
-  @required   true
+const CompanyItem = ({ index, company, onClick, deleteCompany }) => {
+  const { _id: companyId, name, displayedName, creationDate } = { ...company };
 
-  @name       company
-  @type       object
-  @desc       company object from Parent
-  @required   true
-
-  @name       deleteCompany
-  @type       function
-  @desc       redux action to delete company by id
-  @required   true
-*/
-const CompanyItem = ({ index, company, deleteCompany }) => {
-  // destructure company obj
-  const { _id: companyId, name, displayedName } = company;
-
-  // Populate list item actions
-  let listItemAction = [
+  let actions = [
     {
       name: 'View',
-      link: `${companyId}`,
+      path: `${companyId}`,
     },
     {
       name: 'Edit',
-      link: `${companyId}/edit`,
+      path: `${companyId}/edit`,
     },
   ];
 
-  if (name !== 'wawaya') {
-    listItemAction = [
-      ...listItemAction,
-      {
-        name: 'Delete',
-        callback: () => setShowDeleteUserAlert(true),
-      },
-    ];
-  }
+  name !== 'wawaya' &&
+    actions.push({
+      name: 'Delete',
+      callback: () => setShowDeleteCompanyAlert(true),
+    });
 
-  const [showDeleteUserAlert, setShowDeleteUserAlert] = useState(false);
+  const [showDeleteCompanyAlert, setShowDeleteCompanyAlert] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const onCompanyDelete = async () => {
+    const deleteCompanySuccess = await deleteCompany(companyId);
+
+    let match = matchPath(
+      {
+        path: `/:companyName/companies/${companyId}`,
+        end: false,
+      },
+      location.pathname
+    );
+
+    return deleteCompanySuccess && match && navigate('', { replace: true });
+  };
 
   return (
     <Fragment>
       <ListItem
-        beforeListContent={<h2 className='heading-2'>{index}</h2>}
+        beforeListContent={<h2 className='list-index'>{index}</h2>}
         listContent={
           <Fragment>
-            <p className='body-1'>{displayedName}</p>
-            {company.creationDate && (
+            <p className='body-1'>
+              <b>{displayedName ? displayedName : 'No name defined'}</b>
+            </p>
+            {creationDate && (
               <p className='body-2'>
                 Created at{' '}
-                <Moment local format='DD/MM HH:mm:ss'>
-                  {company.creationDate}
+                <Moment local format='DD/MM/YY'>
+                  {creationDate}
                 </Moment>
               </p>
             )}
           </Fragment>
         }
-        actions={listItemAction}
+        actions={!onClick ? actions : null}
+        onClick={onClick}
       />
-      {showDeleteUserAlert && (
-        <Dialog
-          content={
-            <h2 className='heading-2 text-center' style={{ padding: '3rem 0' }}>
-              Delete company?
-            </h2>
-          }
-          footer={
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-evenly',
-              }}
-            >
-              <Button
-                btnStyle={'contained'}
-                type={'error'}
-                text={'delete'}
-                additionalStyles={{ flex: '1', marginRight: '1rem' }}
-                onClick={() => deleteCompany(companyId)}
-              />
-              <Button
-                btnStyle={'outline'}
-                type={'background'}
-                text={'Cancel'}
-                additionalStyles={{ flex: '1', marginLeft: '1rem' }}
-                onClick={() => setShowDeleteUserAlert(false)}
-              />
-            </div>
-          }
-          closeDialogHandler={() => setShowDeleteUserAlert(false)}
+      {showDeleteCompanyAlert && (
+        <AlertDialog
+          title={'Delete Company?'}
+          text={'Action cannot be undone'}
+          action={{
+            name: 'delete',
+            type: 'error',
+            callback: onCompanyDelete,
+          }}
+          unmountAlertDialogHandler={() => setShowDeleteCompanyAlert(false)}
         />
       )}
     </Fragment>
@@ -119,6 +92,7 @@ const CompanyItem = ({ index, company, deleteCompany }) => {
 CompanyItem.propTypes = {
   index: PropTypes.number,
   company: PropTypes.object.isRequired,
+  onClick: PropTypes.func,
   deleteCompany: PropTypes.func.isRequired,
 };
 

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// import action types
 import {
   GETTING_USERS,
   GET_USERS,
+  GETTING_USER,
   GET_USER,
   ADDING_USER,
   ADD_USER,
@@ -15,16 +15,16 @@ import {
 } from './types';
 
 // import actions
-import { setSnackbar } from './app';
+import { setSnackbar, setErrorSnackbar } from './app';
 
 // Get users
-export const getUsers = companyId => async dispatch => {
+export const getUsers = company => async dispatch => {
   dispatch({
     type: GETTING_USERS,
   });
 
   try {
-    const params = { companyId };
+    const params = { company };
     const res = await axios.get('/api/users', { params });
 
     dispatch({
@@ -34,9 +34,13 @@ export const getUsers = companyId => async dispatch => {
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    }
+    dispatch({
+      type: USER_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
     return false;
   }
 };
@@ -44,9 +48,28 @@ export const getUsers = companyId => async dispatch => {
 // Get one user by its id
 export const getUser = id => async dispatch => {
   dispatch({
-    type: GET_USER,
-    payload: id,
+    type: GETTING_USER,
   });
+
+  try {
+    const res = await axios.get(`/api/users/${id}`);
+
+    dispatch({
+      type: GET_USER,
+      payload: res.data,
+    });
+
+    return res.data;
+  } catch (err) {
+    dispatch({
+      type: USER_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
+  }
 };
 
 // add a user
@@ -74,30 +97,24 @@ export const addUser = (company, user) => async dispatch => {
       payload: res.data,
     });
 
-    dispatch(setSnackbar('User created!', 'success'));
+    dispatch(setSnackbar(`Added user of name '${user.name}'`, 'success'));
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(
-        setSnackbar('An unexpected error occured. Please try again!', 'error')
-      );
-    } else {
-      dispatch({
-        type: USER_ERROR,
-        payload: {
-          status: err.response.status,
-          data: err.response.data,
-        },
-      });
-    }
+    dispatch({
+      type: USER_ERROR,
+      payload: {
+        status: err.response.status,
+        data: err.response.data,
+      },
+    });
 
     return false;
   }
 };
 
 // edit user
-export const editUser = (userId, user) => async dispatch => {
+export const editUser = (id, user) => async dispatch => {
   dispatch({
     type: EDITING_USER,
   });
@@ -111,28 +128,25 @@ export const editUser = (userId, user) => async dispatch => {
   const body = JSON.stringify(user);
 
   try {
-    const res = await axios.put(`/api/users/${userId}`, body, config);
+    const res = await axios.put(`/api/users/${id}`, body, config);
 
     dispatch({
       type: EDIT_USER,
       payload: res.data,
     });
 
-    dispatch(setSnackbar('User Updated', 'success'));
+    dispatch(setSnackbar(`Updated user of name '${user.name}'`, 'success'));
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    } else {
-      dispatch({
-        type: USER_ERROR,
-        payload: {
-          status: err.response.status,
-          data: err.response.data,
-        },
-      });
-    }
+    console.error(err);
+    dispatch({
+      type: USER_ERROR,
+      payload: {
+        status: err.response.status,
+        data: err.response.data,
+      },
+    });
 
     return false;
   }
@@ -147,14 +161,24 @@ export const deleteUser = id => async dispatch => {
   try {
     const res = await axios.delete(`/api/users/${id}`);
 
+    const { name } = res.data;
+
     dispatch({
       type: DELETE_USER,
-      payload: res.data,
+      payload: id,
     });
 
-    dispatch(setSnackbar('User Deleted', 'success'));
+    dispatch(setSnackbar(`Deleted user of name '${name}'`, 'success'));
+
+    return true;
   } catch (err) {
-    // only error is 500 Server Error
-    dispatch(setSnackbar('An unexpected error occured.', 'error'));
+    dispatch({
+      type: USER_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
   }
 };

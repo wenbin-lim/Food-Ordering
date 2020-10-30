@@ -1,9 +1,10 @@
-// eslint-disable-next-line
 import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useDrag } from 'react-use-gesture';
+
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
 // Misc
 import { v4 as uuid } from 'uuid';
@@ -18,55 +19,28 @@ import MoreIcon from '../icons/MoreIcon';
 import { TweenMax, Power4 } from 'gsap';
 
 /* 
-  =====
-  Props
-  =====
-  @name       beforeListContent
-  @type       jsx
-  @desc       jsx element that appears before the list content
-  
-  @name       listContent
-  @type       jsx
-  @desc       jsx element for list content
-
-  @name       afterListContent
-  @type       jsx
-  @desc       jsx element that appears after the list content
-
-  @name       onClickListItem
-  @type       function
-  @desc       function callback after clicking on list
-  @required   false
-
-  @name       actions
-  @type       array of actions
-  @desc       actions when user swipe on list item or press the more icon
-  @example
-    actions={[
-    {
-      name: 'View',
-      link: `${userId}`,
-    },
-    {
-      name: 'Edit',
-      link: `${userId}/edit`,
-    },
-    {
-      name: 'Delete',
-      callback: () => console.log('delete'),
-    },
-  ]}
-
-  @name       screenOrientation
-  @type       boolean
-  @desc       different list-item-action size for portrait and lanscape
-  @required   true
+  actions={[
+  {
+    name: 'View',
+    path: `${userId}`,
+  },
+  {
+    name: 'Edit',
+    path: `${userId}/edit`,
+  },
+  {
+    name: 'Delete',
+    callback: () => console.log('delete'),
+  },
+]}
 */
 const ListItem = ({
+  classes,
+  color = 'surface1',
   beforeListContent,
   listContent,
   afterListContent,
-  onClickListItem,
+  onClick,
   actions,
 }) => {
   const listItemRef = useRef(null);
@@ -97,45 +71,12 @@ const ListItem = ({
         } else {
           if (movementX < 0) {
             if (Math.abs(movementX) < minSwipeDist) {
-              // snap back to original
-              TweenMax.fromTo(
-                list,
-                0.1,
-                { x: movementX },
-                {
-                  x: 0,
-                  ease: Power4.easeOut,
-                }
-              );
+              TweenMax.fromTo(list, 0.1, { x: movementX }, { x: 0 });
             } else {
               // open fully and show list actions
-              TweenMax.fromTo(
-                list,
-                animationTime,
-                { x: movementX },
-                {
-                  x: -(actionWidth + gap),
-                  ease: Power4.easeOut,
-                }
-              );
-              TweenMax.fromTo(
-                action,
-                animationTime,
-                {
-                  opacity: (Math.abs(movementX) / actionWidth) * opacityFactor,
-                },
-                {
-                  opacity: 1,
-                  ease: Power4.easeOut,
-                  pointerEvents: 'auto',
-                }
-              ).eventCallback('onComplete', () =>
-                ['touchstart', 'click'].map(eventType =>
-                  document.addEventListener(
-                    eventType,
-                    handleClicksOutsideOfListItemAction
-                  )
-                )
+              openListItemActions(
+                movementX,
+                (Math.abs(movementX) / actionWidth) * opacityFactor
               );
             }
             // allow list to scroll after drag action is done
@@ -150,22 +91,36 @@ const ListItem = ({
     }
   );
 
-  const openListItemActions = () => {
+  const openListItemActions = (listCurrXPos = 0, actionCurrOpacity = 0) => {
     const list = listItemRef.current;
     const action = listItemActionsRef.current;
 
     if (list && action) {
       const actionWidth = action.offsetWidth;
 
-      TweenMax.to(list, animationTime, {
-        x: -(actionWidth + gap),
-        ease: Power4.easeOut,
-      });
-      TweenMax.to(action, animationTime, {
-        opacity: 1,
-        ease: Power4.easeOut,
-        pointerEvents: 'auto',
-      }).eventCallback('onComplete', () =>
+      TweenMax.fromTo(
+        list,
+        animationTime,
+        {
+          x: listCurrXPos,
+        },
+        {
+          x: -(actionWidth + gap),
+          ease: Power4.easeOut,
+        }
+      );
+      TweenMax.fromTo(
+        action,
+        animationTime,
+        {
+          opacity: actionCurrOpacity,
+        },
+        {
+          opacity: 1,
+          ease: Power4.easeOut,
+          pointerEvents: 'auto',
+        }
+      ).eventCallback('onComplete', () =>
         ['touchstart', 'click'].map(eventType =>
           document.addEventListener(
             eventType,
@@ -176,17 +131,19 @@ const ListItem = ({
     }
   };
 
-  const closeListItemActions = actionCallback => {
-    const list = listItemRef.current;
-    const action = listItemActionsRef.current;
+  const navigate = useNavigate();
 
-    if (list && action) {
-      TweenMax.to(action, animationTime, {
+  const closeListItemActions = action => {
+    const listItem = listItemRef.current;
+    const listItemAction = listItemActionsRef.current;
+
+    if (listItem && listItemAction) {
+      TweenMax.to(listItemAction, animationTime, {
         opacity: 0,
         ease: Power4.easeOut,
         pointerEvents: 'none',
       });
-      TweenMax.to(list, animationTime, {
+      TweenMax.to(listItem, animationTime, {
         x: 0,
         ease: Power4.easeOut,
       }).eventCallback('onComplete', () => {
@@ -198,9 +155,12 @@ const ListItem = ({
           )
         );
 
-        // call actionCallback if any
-        if (typeof actionCallback === 'function') {
-          actionCallback();
+        const { path, callback } = { ...action };
+
+        if (typeof callback === 'function') {
+          callback();
+        } else if (typeof path === 'string') {
+          navigate(path);
         }
       });
     }
@@ -215,38 +175,29 @@ const ListItem = ({
     }
   };
 
-  const navigate = useNavigate();
-
-  const handleListAction = action => {
-    const { link, callback } = action;
-
-    if (typeof link === 'string') {
-      navigate(link);
-      closeListItemActions();
-    }
-
-    if (typeof callback === 'function') {
-      closeListItemActions(callback);
-    }
-  };
-
   useEffect(() => {
     const list = listItemRef.current;
 
-    if (list && onClickListItem) {
+    if (list && onClick) {
       list.style.cursor = 'pointer';
     }
-  }, [onClickListItem]);
+  }, [onClick]);
 
   return (
-    <div className='list-item-wrapper'>
-      {actions && actions.length > 0 && (
+    <div
+      className={sanitizeWhiteSpace(
+        `list-item-wrapper ${classes ? classes : ''}`
+      )}
+    >
+      {Array.isArray(actions) && actions.length > 0 && (
         <div className='list-item-actions' ref={listItemActionsRef}>
           {actions.map(action => (
             <div
-              className='list-item-action'
+              className={sanitizeWhiteSpace(
+                `list-item-action list-item-${color}`
+              )}
               key={uuid()}
-              onClick={() => handleListAction(action)}
+              onClick={() => closeListItemActions(action)}
             >
               <span className='list-item-action-name'>{action.name}</span>
             </div>
@@ -254,19 +205,22 @@ const ListItem = ({
         </div>
       )}
       <div
-        className='list-item'
+        className={sanitizeWhiteSpace(`list-item list-item-${color}`)}
         ref={listItemRef}
         {...onDrag()}
-        onClick={onClickListItem}
+        onClick={onClick}
       >
         {beforeListContent && (
           <div className='before-list-content'>{beforeListContent}</div>
         )}
+
         {listContent && <div className='list-content'>{listContent}</div>}
+
         {afterListContent && (
           <div className='after-list-content'>{afterListContent}</div>
         )}
-        {actions && actions.length > 0 && (
+
+        {Array.isArray(actions) && actions.length > 0 && (
           <Button icon={<MoreIcon />} onClick={openListItemActions} />
         )}
       </div>
@@ -275,17 +229,32 @@ const ListItem = ({
 };
 
 ListItem.propTypes = {
+  classes: PropTypes.string,
+  color: PropTypes.oneOf([
+    'surface1',
+    'surface2',
+    'surface3',
+    'primary',
+    'secondary',
+    'error',
+    'success',
+    'warning',
+    'background',
+  ]),
   beforeListContent: PropTypes.element,
   listContent: PropTypes.element,
   afterListContent: PropTypes.element,
-  onClickListItem: PropTypes.func,
-  actions: PropTypes.array,
-  screenOrientation: PropTypes.bool,
+  onClick: PropTypes.func,
+  actions: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      path: PropTypes.string,
+      callback: PropTypes.func,
+    }).isRequired
+  ),
 };
 
-const mapStateToProps = state => ({
-  screenOrientation: state.app.screenOrientation,
-});
+const mapStateToProps = state => ({});
 
 const mapDispatchToProps = {};
 

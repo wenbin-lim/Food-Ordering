@@ -1,0 +1,120 @@
+// spacing
+$spacer: 1rem;
+$spacer-x: $spacer;
+$spacer-y: $spacer;
+$spacers: (
+  0: (
+    x: 0,
+    y: 0,
+  ),
+  h: (
+    x: (
+      $spacer-x * 0.5,
+    ),
+    y: (
+      $spacer-y * 0.5,
+    ),
+  ),
+  1: (
+    x: $spacer-x,
+    y: $spacer-y,
+  ),
+  2: (
+    x: (
+      $spacer-x * 1.5,
+    ),
+    y: (
+      $spacer-y * 1.5,
+    ),
+  ),
+  3: (
+    x: (
+      $spacer-x * 3,
+    ),
+    y: (
+      $spacer-y * 3,
+    ),
+  ),
+  4: (
+    x: (
+      $spacer-x * 4,
+    ),
+    y: (
+      $spacer-y * 4,
+    ),
+  ),
+  auto: (
+    x: (
+      auto,
+    ),
+    y: (
+      auto,
+    ),
+  ),
+);
+
+@each $prop, $abbrev in (margin: m, padding: p) {
+  @each $size, $lengths in $spacers {
+    $length-x: map-get($lengths, x);
+    $length-y: map-get($lengths, y);
+
+    .#{$abbrev}-#{$size} {
+      #{$prop}: $length-y $length-x !important;
+    }
+    .#{$abbrev}t-#{$size} {
+      #{$prop}-top: $length-y !important;
+    }
+    .#{$abbrev}r-#{$size} {
+      #{$prop}-right: $length-x !important;
+    }
+    .#{$abbrev}b-#{$size} {
+      #{$prop}-bottom: $length-y !important;
+    }
+    .#{$abbrev}l-#{$size} {
+      #{$prop}-left: $length-x !important;
+    }
+  }
+}
+
+// Shadows
+@mixin box_shadow($level) {
+  @if $level == 1 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  } @else if $level == 2 {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  } @else if $level == 3 {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  } @else if $level == 4 {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  } @else if $level == 5 {
+    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
+  }
+}
+
+$phone-width: 320px;
+$tablet-width: 768px;
+$desktop-width: 1024px;
+
+@mixin media($orientation, $device: false) {
+  @if $device {
+    @if str-index($device, 'phone') {
+      @media only screen and (orientation: $orientation) and (max-width: $tablet-width) {
+        @content;
+      }
+    }
+    @if str-index($device, 'tablet') {
+      @media only screen and (orientation: $orientation) and (min-width: $tablet-width) and (max-width: $desktop-width) {
+        @content;
+      }
+    }
+    @if str-index($device, 'desktop') {
+      @media only screen and (orientation: $orientation) and (min-width: $desktop-width) {
+        @content;
+      }
+    }
+  } @else {
+    @media only screen and (orientation: $orientation) {
+      @content;
+    }
+  }
+}

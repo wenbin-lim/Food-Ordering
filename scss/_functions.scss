@@ -18,7 +18,7 @@ Color brightness is determined by the following formula:
   );
 
   @if abs($color-brightness) < ($light-color/2) {
-    @return #f8f8f8;
+    @return #f5f5f5;
   } @else {
     @return #121212;
   }

@@ -1,18 +1,16 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import Moment from 'react-moment';
-import 'moment-timezone';
-
 // Components
 import Container from '../../../components/layout/Container';
 import Tabs from '../../../components/layout/Tabs';
-import ListItem from '../../../components/layout/ListItem';
-import Preloader from '../../../components/layout/Preloader';
+import ListPreloader from '../../../components/preloaders/ListPreloader';
 import Button from '../../../components/layout/Button';
+import CompanyItem from '../companies/CompanyItem';
 import UserItem from '../../../components/users/UserItem';
+import SearchInput from '../../../components/layout/SearchInput';
 
 // Icons
 import PlusIcon from '../../../components/icons/PlusIcon';
@@ -20,146 +18,116 @@ import PlusIcon from '../../../components/icons/PlusIcon';
 // Actions
 import { getCompany } from '../../../actions/companies';
 import { getUsers } from '../../../actions/users';
-/* 
-  =====
-  Props
-  =====
-  @name       companies
-  @type       object
-  @desc       App level companies state
-  @required   true
 
-  @name       users
-  @type       object
-  @desc       App level users state
-  @required   true
-
-  @name       getUsers
-  @type       function
-  @desc       Redux action from users.js to populate users inside the app level state of users
-  @required   true
-
-  @name       getCompany
-  @type       function
-  @desc       Redux action from companies.js to set company in companies app level state
-  @required   true
-*/
 const Users = ({
-  companies: { company, companies, companiesLoading },
-  users: { users, usersLoading },
+  companies: { companiesLoading, companies, requesting, company },
+  users: { usersLoading, users },
   getUsers,
   getCompany,
 }) => {
-  const navigate = useNavigate();
-
-  const [currentTabIndex, setCurrentTabIndex] = useState(0);
-  const onClickCompanyListItem = async companyId => {
-    // set back to 0 so that can navigate to next tab
-    setCurrentTabIndex(0);
-
-    await getCompany(companyId);
-    const getUsersSuccess = await getUsers(companyId);
-
-    if (getUsersSuccess) {
-      setCurrentTabIndex(1);
-    }
+  const onClickCompanyItem = companyId => {
+    tabsRef.current.changeTab(1);
+    getCompany(companyId);
+    getUsers(companyId);
   };
 
-  const companyList = companiesLoading ? (
-    <Preloader height={24} />
-  ) : companies && companies.length > 0 ? (
+  const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const onSearchCompanies = filteredResult =>
+    setFilteredCompanies(filteredResult);
+
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const onSearchUsers = filteredResult => setFilteredUsers(filteredResult);
+
+  const companyList =
+    companiesLoading || !Array.isArray(companies) ? (
+      <ListPreloader />
+    ) : companies.length > 0 ? (
+      <article className='list p-0'>
+        <header className='list-header'>
+          <div className='list-header-right-content'>
+            <SearchInput
+              name='search'
+              queryFields={['name']}
+              array={companies}
+              onSearch={onSearchCompanies}
+            />
+          </div>
+        </header>
+        {filteredCompanies.map((company, index) => (
+          <CompanyItem
+            key={company._id}
+            index={index + 1}
+            company={company}
+            onClick={() => onClickCompanyItem(company._id)}
+          />
+        ))}
+      </article>
+    ) : (
+      <p className='caption text-center'>No companies found</p>
+    );
+
+  const navigate = useNavigate();
+
+  const usersList = company ? (
     <Fragment>
-      {companies.map((company, index) => (
-        <ListItem
-          key={company._id}
-          beforeListContent={<h2 className='heading-2'>{index + 1}</h2>}
-          listContent={
-            <Fragment>
-              {company.displayedName && (
-                <p className='body-1'>{company.displayedName}</p>
-              )}
-              {company.creationDate && (
-                <p className='body-2'>
-                  Created at{' '}
-                  <Moment local format='DD/MM HH:mm:ss'>
-                    {company.creationDate}
-                  </Moment>
-                </p>
-              )}
-            </Fragment>
-          }
-          onClickListItem={() => onClickCompanyListItem(company._id)}
-        />
-      ))}
+      <Button
+        classes={'list-add-btn'}
+        fill={'contained'}
+        type={'primary'}
+        icon={<PlusIcon />}
+        onClick={() => navigate('add')}
+      />
+      <article className='list p-0'>
+        {usersLoading || !Array.isArray(users) ? (
+          <ListPreloader />
+        ) : users.length > 0 ? (
+          <Fragment>
+            <header className='list-header'>
+              <h3 className='list-header-left-content heading-3'>
+                {!requesting && company.displayedName}
+              </h3>
+              <div className='list-header-right-content'>
+                <SearchInput
+                  name='search'
+                  queryFields={['name']}
+                  array={users}
+                  onSearch={onSearchUsers}
+                />
+              </div>
+            </header>
+            {filteredUsers.map(user => (
+              <UserItem key={user._id} user={user} />
+            ))}
+          </Fragment>
+        ) : (
+          <p className='caption text-center'>No users found</p>
+        )}
+      </article>
     </Fragment>
   ) : (
-    <p className='caption text-center'>No companies found</p>
+    <p className='caption text-center'>Please select a company first</p>
   );
 
-  const usersList = (
-    <Fragment>
-      {company && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1rem',
-          }}
-        >
-          <h2 className='heading-2'>{company.displayedName}</h2>
-          <Button
-            btnStyle={'contained'}
-            type={'primary'}
-            text={'user'}
-            icon={<PlusIcon />}
-            leadingIcon={true}
-            onClick={() => navigate('add')}
-          />
-        </div>
-      )}
-      {usersLoading ? (
-        <Preloader height={24} />
-      ) : users && users.length > 0 ? (
-        <Fragment>
-          {users.map(user => (
-            <UserItem key={user._id} user={user} />
-          ))}
-        </Fragment>
-      ) : company ? (
-        <p className='caption text-center'>No users found</p>
-      ) : (
-        <p className='caption text-center'>Please select a company first</p>
-      )}
-    </Fragment>
-  );
+  const tabsRef = useRef(null);
 
   const tabs = [
     {
       name: 'Companies',
       content: companyList,
-      style: {
-        paddingBottom: '2rem',
-      },
+      class: 'list-wrapper',
     },
     {
       name: 'Users',
       content: usersList,
-      style: {
-        paddingBottom: '2rem',
-      },
+      class: 'list-wrapper',
     },
   ];
 
   return (
     <Container
-      parentContent={
-        <Tabs
-          tabs={tabs}
-          currentTabIndex={currentTabIndex}
-          tabContentsWillSlide={false}
-        />
-      }
+      parentClass={'tabs-wrapper'}
+      parentContent={<Tabs wrapper={false} ref={tabsRef} tabs={tabs} />}
+      childClass={'sidesheet'}
       childContent={<Outlet />}
       parentSize={1}
       childSize={1}

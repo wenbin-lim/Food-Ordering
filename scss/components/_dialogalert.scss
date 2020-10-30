@@ -1,0 +1,29 @@
+.dialog-alert {
+  width: $min-dialog-size;
+  max-width: 80vw; // for mobile
+
+  padding: var(--padding);
+
+  border-radius: 12px;
+
+  .dialog-alert-content {
+    margin-bottom: var(--padding);
+
+    .dialog-alert-content-title {
+      @include heading-3;
+    }
+
+    .dialog-alert-content-text {
+      @include body-2;
+    }
+  }
+
+  .dialog-alert-btn-group {
+    display: flex;
+    flex-direction: row-reverse;
+
+    .dialog-alert-btn-confirm {
+      margin-left: 1rem;
+    }
+  }
+}

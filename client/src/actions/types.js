@@ -3,15 +3,14 @@
 // auth
 export const NO_TOKEN = 'NO_TOKEN';
 export const LOAD_TOKEN = 'LOAD_TOKEN';
+export const LOAD_TOKEN_FAIL = 'LOAD_TOKEN_FAIL';
 export const LOGGING_IN = 'LOGGING_IN';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAIL = 'LOGIN_FAIL';
 export const LOGOUT = 'LOGOUT';
-export const REGISTER_SUCCESS = 'REGISTER_SUCCCESS';
-export const REGISTER_FAIL = 'REGISTER_FAIL';
-export const SET_AUTH_LOADING = 'SET_AUTH_LOADING';
 
 // Companies
+export const GETTING_COMPANIES = 'GETTING_COMPANIES';
 export const GET_COMPANIES = 'GET_COMPANIES';
 export const GETTING_COMPANY = 'GETTING_COMPANY';
 export const GET_COMPANY = 'GET_COMPANY';
@@ -39,6 +38,7 @@ export const USER_ERROR = 'USER_ERROR';
 // Tables
 export const GETTING_TABLES = 'GETTING_TABLES';
 export const GET_TABLES = 'GET_TABLES';
+export const GETTING_TABLE = 'GETTING_TABLE';
 export const GET_TABLE = 'GET_TABLE';
 export const ADDING_TABLE = 'ADDING_TABLE';
 export const ADD_TABLE = 'ADD_TABLE';
@@ -47,6 +47,45 @@ export const EDIT_TABLE = 'EDIT_TABLE';
 export const DELETING_TABLE = 'DELETING_TABLE';
 export const DELETE_TABLE = 'DELETE_TABLE';
 export const TABLE_ERROR = 'TABLE_ERROR';
+
+// Menus
+export const GETTING_MENUS = 'GETTING_MENUS';
+export const GET_MENUS = 'GET_MENUS';
+export const GETTING_MENU = 'GETTING_MENU';
+export const GET_MENU = 'GET_MENU';
+export const ADDING_MENU = 'ADDING_MENU';
+export const ADD_MENU = 'ADD_MENU';
+export const EDITING_MENU = 'EDITING_MENU';
+export const EDIT_MENU = 'EDIT_MENU';
+export const DELETING_MENU = 'DELETING_MENU';
+export const DELETE_MENU = 'DELETE_MENU';
+export const MENU_ERROR = 'MENU_ERROR';
+
+// Customisations
+export const GETTING_CUSTOMISATIONS = 'GETTING_CUSTOMISATIONS';
+export const GET_CUSTOMISATIONS = 'GET_CUSTOMISATIONS';
+export const GETTING_CUSTOMISATION = 'GETTING_CUSTOMISATION';
+export const GET_CUSTOMISATION = 'GET_CUSTOMISATION';
+export const ADDING_CUSTOMISATION = 'ADDING_CUSTOMISATION';
+export const ADD_CUSTOMISATION = 'ADD_CUSTOMISATION';
+export const EDITING_CUSTOMISATION = 'EDITING_CUSTOMISATION';
+export const EDIT_CUSTOMISATION = 'EDIT_CUSTOMISATION';
+export const DELETING_CUSTOMISATION = 'DELETING_CUSTOMISATION';
+export const DELETE_CUSTOMISATION = 'DELETE_CUSTOMISATION';
+export const CUSTOMISATION_ERROR = 'CUSTOMISATION_ERROR';
+
+// Foods
+export const GETTING_FOODS = 'GETTING_FOODS';
+export const GET_FOODS = 'GET_FOODS';
+export const GETTING_FOOD = 'GETTING_FOOD';
+export const GET_FOOD = 'GET_FOOD';
+export const ADDING_FOOD = 'ADDING_FOOD';
+export const ADD_FOOD = 'ADD_FOOD';
+export const EDITING_FOOD = 'EDITING_FOOD';
+export const EDIT_FOOD = 'EDIT_FOOD';
+export const DELETING_FOOD = 'DELETING_FOOD';
+export const DELETE_FOOD = 'DELETE_FOOD';
+export const FOOD_ERROR = 'FOOD_ERROR';
 
 // App
 export const GET_COMPANIES_PUBLIC = 'GET_COMPANIES_PUBLIC';

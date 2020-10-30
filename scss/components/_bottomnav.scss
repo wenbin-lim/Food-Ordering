@@ -1,18 +1,21 @@
 /* Variables */
-$bottom-nav-y-padding: 8px;
-$bottom-nav-x-padding: 8px;
+$bottom-nav-padding: calc(var(--padding) / 2);
 
 .bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
   background-color: var(--surface1);
   color: var(--on-surface);
+  // z-index: 1;
 
+  // to center bottom nav items since there is a max-width
   display: flex;
   justify-content: center;
 
   .bottom-nav-items {
-    padding: 0 $bottom-nav-x-padding;
-    padding-top: $bottom-nav-y-padding;
-    padding-bottom: Max(env(safe-area-inset-bottom), $bottom-nav-y-padding);
+    padding: $bottom-nav-padding;
+    padding-bottom: calc(env(safe-area-inset-bottom) + #{$bottom-nav-padding});
 
     width: 100%;
     max-width: $max-container-size;

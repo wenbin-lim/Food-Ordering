@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// import action types
 import {
+  GETTING_COMPANIES,
   GET_COMPANIES,
+  GETTING_COMPANY,
   GET_COMPANY,
   ADDING_COMPANY,
   ADD_COMPANY,
@@ -14,10 +15,14 @@ import {
 } from '../actions/types';
 
 // import actions
-import { setSnackbar } from './app';
+import { setSnackbar, setErrorSnackbar } from './app';
 
 // Get companies
 export const getCompanies = () => async dispatch => {
+  dispatch({
+    type: GETTING_COMPANIES,
+  });
+
   try {
     const res = await axios.get('/api/companies');
 
@@ -25,23 +30,49 @@ export const getCompanies = () => async dispatch => {
       type: GET_COMPANIES,
       payload: res.data,
     });
+
+    return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    }
+    dispatch({
+      type: COMPANY_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
   }
 };
 
 // Get company by id
-export const getCompany = id => dispatch => {
+export const getCompany = id => async dispatch => {
   dispatch({
-    type: GET_COMPANY,
-    payload: id,
+    type: GETTING_COMPANY,
   });
+
+  try {
+    const res = await axios.get(`/api/companies/${id}`);
+
+    dispatch({
+      type: GET_COMPANY,
+      payload: res.data,
+    });
+
+    return res.data;
+  } catch (err) {
+    dispatch({
+      type: COMPANY_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
+  }
 };
 
 // Add new company
-export const addCompany = newCompany => async dispatch => {
+export const addCompany = company => async dispatch => {
   dispatch({
     type: ADDING_COMPANY,
   });
@@ -52,31 +83,27 @@ export const addCompany = newCompany => async dispatch => {
     },
   };
 
-  const body = JSON.stringify(newCompany);
+  const body = JSON.stringify(company);
 
   try {
-    const res = await axios.post(`/api/companies/`, body, config);
+    const res = await axios.post(`/api/companies`, body, config);
 
     dispatch({
       type: ADD_COMPANY,
       payload: res.data,
     });
 
-    dispatch(setSnackbar('Company Added', 'success'));
+    dispatch(setSnackbar(`Added company of name '${company.name}'`, 'success'));
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    } else {
-      dispatch({
-        type: COMPANY_ERROR,
-        payload: {
-          status: err.response.status,
-          data: err.response.data,
-        },
-      });
-    }
+    dispatch({
+      type: COMPANY_ERROR,
+      payload: {
+        status: err.response.status,
+        data: err.response.data,
+      },
+    });
 
     return false;
   }
@@ -94,8 +121,6 @@ export const editCompany = (id, company) => async dispatch => {
     },
   };
 
-  console.log('er');
-
   const body = JSON.stringify(company);
 
   try {
@@ -106,21 +131,19 @@ export const editCompany = (id, company) => async dispatch => {
       payload: res.data,
     });
 
-    dispatch(setSnackbar('Company Edited', 'success'));
+    dispatch(
+      setSnackbar(`Updated company of name '${company.name}'`, 'success')
+    );
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    } else {
-      dispatch({
-        type: COMPANY_ERROR,
-        payload: {
-          status: err.response.status,
-          data: err.response.data,
-        },
-      });
-    }
+    dispatch({
+      type: COMPANY_ERROR,
+      payload: {
+        status: err.response.status,
+        data: err.response.data,
+      },
+    });
 
     return false;
   }
@@ -135,14 +158,26 @@ export const deleteCompany = id => async dispatch => {
   try {
     const res = await axios.delete(`/api/companies/${id}`);
 
+    const { displayedName } = res.data;
+
     dispatch({
       type: DELETE_COMPANY,
-      payload: res.data,
+      payload: id,
     });
 
-    dispatch(setSnackbar('Company Deleted', 'success'));
+    dispatch(
+      setSnackbar(`Deleted company of name '${displayedName}'`, 'success')
+    );
+
+    return true;
   } catch (err) {
-    // only error is 500 Server Error
-    dispatch(setSnackbar('An unexpected error occured.', 'error'));
+    dispatch({
+      type: COMPANY_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
   }
 };

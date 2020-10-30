@@ -48,7 +48,6 @@ export const SocialMediaButtons = ({ socialMediaLinks }) => {
   ) : null;
 };
 
-// eslint-disable-next-line
 SocialMediaButtons.propTypes = {
   socialMediaLinks: PropTypes.shape({
     facebook: PropTypes.string,

@@ -1,73 +1,97 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { useDrag } from 'react-use-gesture';
+
+// Animations
+import { TweenMax } from 'gsap';
+
+// Components
+import Button from './Button';
 
 // Actions
 import { removeSnackbar } from '../../actions/app';
+
 /* 
-  =====
-  Props
-  =====
-  @name       snackbars
-  @type       array of snackbar
-  @desc       from App level appp state 
-  @required   true
-
-  @name       removeSnackbar
-  @type       function
-  @desc       to remove snackbar on click
-  @required   true
+  snackbarObj
+  msg: String,
+  type: String of 'primary', 'secondary', 'error', 'success', 'warning'
+  action: {
+    name: String,
+    callback: function
+  }
+  timeout: Number 
 */
-
-// Todo add actions in snackbar
 export const Snackbar = ({ snackbars, removeSnackbar }) => {
-  const snackbarsRef = useRef([]);
+  const onDrag = useDrag(
+    ({ event, down, movement: [movementX] }) => {
+      event.stopPropagation();
 
-  const swipeToRemove = (e, id) => {
-    // touchstart begins
-    const snackbar = snackbarsRef.current[id];
-    const initialX = e.touches[0].clientX;
-    let distanceMoved = 0;
+      const minSwipeDist = 60;
+      const target = event.target;
+      const snackbarId = target.id;
+      const snackbar = document.getElementById(snackbarId);
 
-    // add event listener for touchmove to move the snackbar
-    // touchmove function
-    const handleTouchMove = touchmoveEvt => {
-      let newX = touchmoveEvt.touches[0].clientX;
-      distanceMoved = initialX - newX;
-      snackbar.style.transform = `translateX(${-distanceMoved}px)`;
-      snackbar.style.opacity = `${1 - Math.abs(distanceMoved) / 100}`;
-    };
+      if (snackbar) {
+        if (down) {
+          if (movementX < 0) {
+            snackbar.style.transform = `translateX(${movementX}px)`;
+            snackbar.style.opacity = `${1 - Math.abs(movementX) / 100}`;
 
-    const handleTouchEnd = touchendEvt => {
-      if (touchendEvt.cancelable) {
-        touchendEvt.preventDefault();
+            document.body.style.overflow = 'hidden';
+          }
+        } else {
+          if (movementX < 0) {
+            if (Math.abs(movementX) < minSwipeDist) {
+              TweenMax.fromTo(
+                snackbar,
+                0.1,
+                {
+                  x: movementX,
+                  opacity: 1 - Math.abs(movementX) / 100,
+                },
+                { x: 0, opacity: 1 }
+              );
+            } else {
+              removeSnackbar(snackbar.id);
+            }
+            document.body.style.overflow = 'auto';
+          }
+        }
       }
+    },
+    { axis: 'x', eventOptions: { passive: false } }
+  );
 
-      if (Math.abs(distanceMoved) > 60) {
-        // remove this snackbar
-        removeSnackbar(id);
-      } else {
-        // return snackbar back to original pos
-        snackbar.style.transform = `translateX(0px)`;
-        snackbar.style.opacity = 1;
-      }
-    };
+  const snackbarActionHandler = (e, id, callback) => {
+    e.stopPropagation();
 
-    snackbar.addEventListener('touchmove', handleTouchMove);
-    snackbar.addEventListener('touchend', handleTouchEnd);
+    if (typeof callback === 'function') {
+      callback();
+    }
+    removeSnackbar(id);
   };
 
   return (
     <div className='snackbar-wrapper'>
       {snackbars.map(snackbar => (
         <div
-          className={`snackbar snackbar-${snackbar.type}`}
+          id={snackbar.id}
           key={snackbar.id}
-          ref={el => (snackbarsRef.current[snackbar.id] = el)}
-          onTouchStart={e => swipeToRemove(e, snackbar.id)}
-          onClick={e => removeSnackbar(snackbar.id)}
+          className={`snackbar snackbar-${snackbar.type}`}
+          {...onDrag()}
         >
           {snackbar.msg}
+          {snackbar.action && (
+            <Button
+              classes='snackbar-action-btn'
+              small={true}
+              text={snackbar.action.name}
+              onClick={e =>
+                snackbarActionHandler(e, snackbar.id, snackbar.action.callback)
+              }
+            />
+          )}
         </div>
       ))}
     </div>

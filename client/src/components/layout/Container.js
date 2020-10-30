@@ -1,40 +1,9 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
-/* 
-  =====
-  Props
-  =====
-  @name       parentContent
-  @type       jsx or string
-  @desc       parent jsx content 
-  @required   true
-  
-  @name       childContent
-  @type       jsx or string
-  @desc       child jsx content, used for router outlet
-  @required   false
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
-  @name       parentSize
-  @type       number
-  @desc       defines the flex size of the parent content, used for landscape mode only
-  @required   false
-
-  @name       childSize
-  @type       number
-  @desc       defines the flex size of the child content, used for landscape mode only
-  @required   false
-
-  @name       parentStyle
-  @type       css style object
-  @desc       additional styles for parent 
-  @required   false
-
-  @name       childStyle
-  @type       css style object
-  @desc       additional styles for child 
-  @required   false
-*/
 const Container = ({
   parentContent,
   childContent,
@@ -44,22 +13,46 @@ const Container = ({
   childClass,
   parentStyle,
   childStyle,
+  screenOrientation,
 }) => {
   return (
-    <main className='container'>
-      <section
-        className={`parent ${parentClass ? parentClass : ''}`.trim()}
-        style={{ ...parentStyle, flex: parentSize || 1 }}
-      >
-        {parentContent}
-      </section>
-      <section
-        className={`child ${childClass ? childClass : ''}`.trim()}
-        style={{ ...childStyle, flexGrow: childSize || 1 }}
-      >
-        {childContent}
-      </section>
-    </main>
+    <section
+      className={sanitizeWhiteSpace(
+        `container ${
+          childContent ? 'with-child' : `${parentClass ? parentClass : ''}`
+        }`
+      )}
+      style={!childContent ? parentStyle : null}
+    >
+      {!childContent ? (
+        parentContent
+      ) : (
+        <Fragment>
+          <article
+            className={sanitizeWhiteSpace(
+              `parent ${parentClass ? parentClass : ''}`
+            )}
+            style={{
+              ...parentStyle,
+              flex: !screenOrientation && parentSize ? parentSize : null,
+            }}
+          >
+            {parentContent}
+          </article>
+          <article
+            className={sanitizeWhiteSpace(
+              `child ${childClass ? childClass : ''}`
+            )}
+            style={{
+              ...childStyle,
+              flex: !screenOrientation && childSize ? childSize : null,
+            }}
+          >
+            {childContent}
+          </article>
+        </Fragment>
+      )}
+    </section>
   );
 };
 
@@ -69,8 +62,17 @@ Container.propTypes = {
   childContent: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   parentSize: PropTypes.number,
   childSize: PropTypes.number,
+  parentClass: PropTypes.string,
+  childClass: PropTypes.string,
   parentStyle: PropTypes.object,
   childStyle: PropTypes.object,
+  screenOrientation: PropTypes.bool.isRequired,
 };
 
-export default Container;
+const mapStateToProps = state => ({
+  screenOrientation: state.app.screenOrientation,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Container);

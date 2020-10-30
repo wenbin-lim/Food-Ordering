@@ -1,144 +1,91 @@
 import React, { useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { useParams } from 'react-router-dom';
-
-import Moment from 'react-moment';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // Actions
 import { getCompany } from '../../../actions/companies';
 
 // Components
-import Header from '../../../components/layout/Header';
+import SideSheet from '../../../components/layout/SideSheet';
 import Spinner from '../../../components/layout/Spinner';
+import SocialMediaButtons from '../../../components/layout/SocialMediaButtons';
 
-/* 
-  =====
-  Props
-  =====
-  @name       getCompany 
-  @type       function
-  @desc       redux action to retrieve company info from redux state
-  @required   true
-
-  @name       companies 
-  @type       object
-  @desc       app level companies state
-  @required   true
-*/
-
-const CompanyInfo = ({ getCompany, companies: { company } }) => {
+const CompanyInfo = ({ getCompany, companies: { requesting, company } }) => {
   let { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getCompany(id);
+
+    // eslint-disable-next-line
   }, [id]);
 
-  return (
-    <div
-      style={{
-        height: '100%',
-        display: 'grid',
-        gridTemplateRows: 'auto 1fr auto',
-      }}
-    >
-      <Header title={'Company Info'} closeActionCallback={'../'} />
+  const {
+    _id: companyId,
+    name,
+    displayedName,
+    logo: { small: logoSmall, large: logoLarge } = {},
+    socialMediaLinks,
+  } = { ...company };
 
-      <div
-        style={{
-          userSelect: 'auto',
-        }}
-      >
-        {company && (
-          <div style={{ padding: '1rem' }}>
-            {company.name && (
-              <Fragment>
-                <p className='caption'>Name</p>
-                <p className='body-1' style={{ marginBottom: '1rem' }}>
-                  {company.name}
-                </p>
-              </Fragment>
-            )}
+  const closeSideSheet = () => navigate('../');
 
-            {company.displayedName && (
-              <Fragment>
-                <p className='caption'>Displayed Name</p>
-                <p className='body-1' style={{ marginBottom: '1rem' }}>
-                  {company.displayedName}
-                </p>
-              </Fragment>
-            )}
-
-            {company.creationDate && (
-              <Fragment>
-                <p className='caption'>Created at</p>
-                <p className='body-1' style={{ marginBottom: '1rem' }}>
-                  <Moment format='DD-MM-YYYY'>{company.creationDate}</Moment>
-                </p>
-              </Fragment>
-            )}
-
-            {company.logo && (
-              <Fragment>
-                <p className='caption' style={{ marginBottom: '0.5rem' }}>
-                  Logos
-                </p>
-                <div
-                  style={{
-                    marginBottom: '1rem',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    placeItems: 'center',
-                  }}
-                >
-                  {company.logo.large && (
-                    <img
-                      src={company.logo.large}
-                      alt='large_logo'
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '100px',
-                      }}
-                    />
-                  )}
-                  {company.logo.small && (
-                    <img
-                      src={company.logo.small}
-                      alt='small_logo'
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '100px',
-                      }}
-                    />
-                  )}
-                </div>
-
-                {company.socialMediaLinks && (
-                  <Fragment>
-                    <p className='caption'>Social Media Links</p>
-                    {company.socialMediaLinks.facebook && (
-                      <p className='body-2' style={{ marginBottom: '0.5rem' }}>
-                        {company.socialMediaLinks.facebook}
-                      </p>
-                    )}
-                    {company.socialMediaLinks.instagram && (
-                      <p className='body-2' style={{ marginBottom: '0.5rem' }}>
-                        {company.socialMediaLinks.instagram}
-                      </p>
-                    )}
-                    {company.socialMediaLinks.twitter && (
-                      <p className='body-2' style={{ marginBottom: '0.5rem' }}>
-                        {company.socialMediaLinks.twitter}
-                      </p>
-                    )}
-                  </Fragment>
-                )}
-              </Fragment>
-            )}
+  const sideSheetContent =
+    requesting || companyId !== id ? (
+      <Spinner />
+    ) : (
+      <Fragment>
+        {name && (
+          <div className='row'>
+            <div className='col'>
+              <p className='caption'>Route name</p>
+              <p className='body-1'>{name}</p>
+            </div>
           </div>
         )}
-      </div>
-    </div>
+
+        {displayedName && (
+          <div className='row'>
+            <div className='col'>
+              <p className='caption'>Company name</p>
+              <p className='body-1'>{displayedName}</p>
+            </div>
+          </div>
+        )}
+
+        {logoSmall && (
+          <div className='row'>
+            <div className='col'>
+              <p className='caption'>Logo (small)</p>
+              <img src={logoSmall} alt='company_logo_small' />
+            </div>
+          </div>
+        )}
+
+        {logoLarge && (
+          <div className='row'>
+            <div className='col'>
+              <p className='caption'>Logo (large)</p>
+              <img src={logoLarge} alt='company_logo_large' />
+            </div>
+          </div>
+        )}
+      </Fragment>
+    );
+
+  return (
+    <SideSheet
+      wrapper={false}
+      headerTitle={!requesting || companyId === id ? displayedName : null}
+      headerContent={
+        (!requesting || companyId === id) && socialMediaLinks ? (
+          <SocialMediaButtons socialMediaLinks={socialMediaLinks} />
+        ) : null
+      }
+      closeSideSheetHandler={closeSideSheet}
+      content={sideSheetContent}
+    />
   );
 };
 

@@ -1,0 +1,15 @@
+.optionform {
+  width: $min-dialog-size;
+  max-width: 80vw; // for mobile
+
+  border-radius: 36px;
+  overflow: hidden;
+
+  .optionform-content {
+    padding: var(--padding);
+
+    .row:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+  }
+}

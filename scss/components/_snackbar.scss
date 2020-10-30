@@ -30,8 +30,11 @@ $snackbar-colors: 'primary', 'secondary', 'error', 'success', 'warning';
   pointer-events: none;
 
   .snackbar {
-    min-width: 95vw;
-    max-width: 95vw;
+    width: 95vw;
+
+    @include media(landscape) {
+      max-width: 50vw;
+    }
 
     background-color: var(--surface3);
     color: var(--on-surface);
@@ -40,13 +43,13 @@ $snackbar-colors: 'primary', 'secondary', 'error', 'success', 'warning';
 
     border-radius: $snackbar-border-radius;
 
+    @include box-shadow(2);
+
     opacity: 1;
     animation: snackbarAnimationIn 0.5s ease-in-out;
 
     cursor: pointer;
     pointer-events: auto;
-
-    transition: transform 0.3s;
 
     &:not(:last-child) {
       margin-bottom: 0.5rem;
@@ -58,15 +61,15 @@ $snackbar-colors: 'primary', 'secondary', 'error', 'success', 'warning';
         color: var(--on-#{$i});
       }
     }
-  }
-}
 
-// Media queries
-/* default CSS will target portrait screens */
-@media only screen and (orientation: landscape) {
-  .snackbar-wrapper {
-    .snackbar {
-      min-width: 40vw;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+
+    .snackbar-msg {
+    }
+
+    .snackbar-action-btn {
     }
   }
 }

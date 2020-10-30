@@ -1,19 +1,10 @@
+/* eslint-disable */
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 // Components
 import Container from '../../../components/layout/Container';
 
-/* 
-  =====
-  Props
-  =====
-  @name       Prop 
-  @type       type
-  @desc       description
-  @required   true
-  @default    none
-*/
 const Dashboard = ({}) => {
   return (
     <Container

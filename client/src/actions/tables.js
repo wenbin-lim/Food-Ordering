@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
   GETTING_TABLES,
   GET_TABLES,
+  GETTING_TABLE,
   GET_TABLE,
   ADDING_TABLE,
   ADD_TABLE,
@@ -14,16 +15,16 @@ import {
 } from './types';
 
 // import actions
-import { setSnackbar } from './app';
+import { setSnackbar, setErrorSnackbar } from './app';
 
 // get list of tables of the company
-export const getTables = companyId => async dispatch => {
+export const getTables = company => async dispatch => {
   dispatch({
     type: GETTING_TABLES,
   });
 
   try {
-    const params = { companyId };
+    const params = { company };
     const res = await axios.get('/api/tables', { params });
 
     dispatch({
@@ -33,9 +34,13 @@ export const getTables = companyId => async dispatch => {
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    }
+    dispatch({
+      type: TABLE_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
     return false;
   }
 };
@@ -43,9 +48,32 @@ export const getTables = companyId => async dispatch => {
 // Get one table by its id
 export const getTable = id => async dispatch => {
   dispatch({
-    type: GET_TABLE,
-    payload: id,
+    type: GETTING_TABLE,
   });
+
+  try {
+    const res = await axios.get(`/api/tables/${id}`);
+
+    dispatch({
+      type: GET_TABLE,
+      payload: res.data,
+    });
+
+    return res.data;
+  } catch (err) {
+    if (err.response.status === 500 || err.response.status === 404) {
+      dispatch(setSnackbar(err.response.data, 'error'));
+    }
+
+    dispatch({
+      type: TABLE_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
+  }
 };
 
 // add a table
@@ -73,30 +101,24 @@ export const addTable = (company, table) => async dispatch => {
       payload: res.data,
     });
 
-    dispatch(setSnackbar('Table created!', 'success'));
+    dispatch(setSnackbar(`Added table of name '${table.name}'`, 'success'));
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(
-        setSnackbar('An unexpected error occured. Please try again!', 'error')
-      );
-    } else {
-      dispatch({
-        type: TABLE_ERROR,
-        payload: {
-          status: err.response.status,
-          data: err.response.data,
-        },
-      });
-    }
+    dispatch({
+      type: TABLE_ERROR,
+      payload: {
+        status: err.response.status,
+        data: err.response.data,
+      },
+    });
 
     return false;
   }
 };
 
 // edit table
-export const editTable = (tableId, table) => async dispatch => {
+export const editTable = (id, table) => async dispatch => {
   dispatch({
     type: EDITING_TABLE,
   });
@@ -110,28 +132,24 @@ export const editTable = (tableId, table) => async dispatch => {
   const body = JSON.stringify(table);
 
   try {
-    const res = await axios.put(`/api/tables/${tableId}`, body, config);
+    const res = await axios.put(`/api/tables/${id}`, body, config);
 
     dispatch({
       type: EDIT_TABLE,
       payload: res.data,
     });
 
-    dispatch(setSnackbar('Table Updated', 'success'));
+    dispatch(setSnackbar(`Updated table of name '${table.name}'`, 'success'));
 
     return true;
   } catch (err) {
-    if (err.response.status === 500) {
-      dispatch(setSnackbar('An unexpected error occured.', 'error'));
-    } else {
-      dispatch({
-        type: TABLE_ERROR,
-        payload: {
-          status: err.response.status,
-          data: err.response.data,
-        },
-      });
-    }
+    dispatch({
+      type: TABLE_ERROR,
+      payload: {
+        status: err.response.status,
+        data: err.response.data,
+      },
+    });
 
     return false;
   }
@@ -146,15 +164,24 @@ export const deleteTable = id => async dispatch => {
   try {
     const res = await axios.delete(`/api/tables/${id}`);
 
-    console.log(res.data);
+    const { name } = res.data;
+
     dispatch({
       type: DELETE_TABLE,
-      payload: res.data,
+      payload: id,
     });
 
-    dispatch(setSnackbar('Table Deleted', 'success'));
+    dispatch(setSnackbar(`Deleted table of name '${name}'`, 'success'));
+
+    return true;
   } catch (err) {
-    // only error is 500 Server Error
-    dispatch(setSnackbar('An unexpected error occured.', 'error'));
+    dispatch({
+      type: TABLE_ERROR,
+      payload: null,
+    });
+
+    dispatch(setErrorSnackbar(err.response.data, err.response.status));
+
+    return false;
   }
 };

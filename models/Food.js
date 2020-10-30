@@ -36,32 +36,62 @@ const FoodSchema = mongoose.Schema({
     required: true,
     min: 0,
   },
-  image: String,
   availability: {
     type: Boolean,
     default: true,
+    required: true,
   },
+  minQty: {
+    type: Number,
+    required: true,
+    min: 1,
+    default: 1,
+  },
+  maxQty: {
+    type: Number,
+    required: true,
+    min: 1,
+    default: 1,
+  },
+  image: String,
   promotionPrice: Number,
   portionSize: Number,
   desc: String,
-  allergics: [String],
+  allergics: [
+    {
+      type: String,
+      trim: true,
+      set: allergy => allergy.replace(/\s+/g, ' '),
+    },
+  ],
   preparationTime: String,
   tags: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Tag',
+      type: String,
+      trim: true,
+      set: tag => tag.replace(/\s+/g, ' '),
     },
   ],
-  foodGroup: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'FoodGroup',
-  },
+  menus: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Menu',
+    },
+  ],
   customisations: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Customisation',
     },
   ],
+  allowAdditionalInstruction: {
+    type: Boolean,
+    default: false,
+  },
+  creationDate: {
+    type: Date,
+    default: Date.now,
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',

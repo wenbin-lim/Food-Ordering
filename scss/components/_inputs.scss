@@ -4,8 +4,8 @@ $input-field-border-radius: 2rem;
 $input-field-border-size: 2px;
 
 .input-group {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-gap: 8px;
 
   @include input-label;
 

@@ -1,0 +1,79 @@
+.foodcard {
+  border-radius: 8px;
+  overflow: hidden;
+
+  cursor: pointer;
+
+  @include box-shadow(2);
+
+  display: grid;
+  grid-template-rows: 2fr 1fr;
+
+  .foodcard-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    img {
+      // set position static for image if not safari's overflow hidden wont work
+      position: static;
+      max-width: 100%;
+      min-width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .foodcard-content {
+    background-color: var(--surface1);
+
+    padding-left: 8px;
+    padding-right: 8px;
+
+    @include media(landscape) {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    display: grid;
+    align-content: space-evenly;
+
+    .foodcard-name,
+    .foodcard-price {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .foodcard-name {
+      @include caption;
+
+      @include media(landscape) {
+        font-size: 1rem;
+      }
+    }
+
+    .foodcard-price {
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+
+      .original-price {
+        @include body-2;
+        text-decoration: line-through;
+        color: var(--disabled);
+
+        margin-left: 4px;
+      }
+
+      .current-price {
+        @include heading-3;
+
+        @include media(portrait) {
+          font-size: 1.2rem;
+        }
+      }
+    }
+  }
+}

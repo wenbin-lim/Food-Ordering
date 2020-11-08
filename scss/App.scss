@@ -105,6 +105,7 @@ html {
 @import 'components/_dialog';
 @import 'components/_dialogalert';
 @import 'components/_dropdown';
+@import 'components/_flippable';
 @import 'components/_icon';
 @import 'components/_imageinput';
 @import 'components/_inputs';
@@ -127,7 +128,9 @@ html {
 
 @import 'additional/customer/_customer.scss';
 
-@import 'additional/menu/_foodcard.scss';
-@import 'additional/menu/_fooddialog.scss';
-@import 'additional/menu/_mainmenu.scss';
 @import 'additional/menu/_menu.scss';
+
+@import 'additional/food/_foodcard.scss';
+@import 'additional/food/_food.scss';
+
+@import 'additional/orders/_orderitem.scss';

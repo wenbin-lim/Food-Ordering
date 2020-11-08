@@ -31,15 +31,22 @@ import Contact from './routes/main/Contact';
 // import OrderNow from './routes/ordernow/OrderNow';
 
 // Customer App Pages
+import CustomerLogin from './routes/customer/CustomerLogin';
 import CustomerAppWrapper from './routes/customer/CustomerAppWrapper';
 import CustomerTakeaway from './routes/customer/CustomerTakeaway';
 import CustomerLanding from './routes/customer/CustomerLanding';
-import Cart from './routes/customer/Cart';
 
 // Company/Main App Pages
 import CompanyAppWrapper from './routes/company/CompanyAppWrapper';
 import CompanyLanding from './routes/company/CompanyLanding';
 import Dashboard from './routes/company/admin/Dashboard';
+
+import CompanyUsers from './routes/company/users/CompanyUsers';
+import CompanyTables from './routes/company/tables/CompanyTables';
+import CompanyMenus from './routes/company/menus/CompanyMenus';
+import CompanyFoods from './routes/company/foods/CompanyFoods';
+import CompanyCustomisations from './routes/company/customisations/CompanyCustomisations';
+
 import MainMenu from './components/menus/MainMenu';
 import Menu from './components/menus/Menu';
 import Notifications from './routes/company/notifications/Notifications';
@@ -129,37 +136,99 @@ const App = () => {
             <Route path='login' element={<Login />} />
             <Route path='about' element={<About />} />
             <Route path='contact' element={<Contact />} />
+            <Route
+              path='takeaway/:companyName'
+              element={<CustomerTakeaway />}
+            />
           </Route>
 
+          <Route path='dinein' element={<CustomerLogin />} />
+
           <CustomerRoute
-            path='ordernow/:companyName'
+            path='dinein/:companyName'
             component={CustomerAppWrapper}
           >
-            <CustomerRoute path='' component={CustomerTakeaway} />
-            <CustomerRoute path='table' minAccessLevel={1} component={Outlet}>
-              <CustomerRoute path='' component={CustomerLanding} />
-              <CustomerRoute path='menu' component={Menu} />
-              <CustomerRoute path='cart' component={Cart} />
-            </CustomerRoute>
+            <CustomerRoute path='' component={CustomerLanding} />
+            <CustomerRoute path='menu' component={MainMenu} />
+            <CustomerRoute path='menu/:id' component={Menu} />
           </CustomerRoute>
 
           <CompanyRoute path='/:companyName' component={CompanyAppWrapper}>
             <CompanyRoute path='' component={CompanyLanding} />
 
-            <CompanyRoute path='menus' component={Outlet}>
+            <CompanyRoute path='admin' minAccess={3} component={Dashboard} />
+
+            <CompanyRoute path='users' minAccess={3} component={CompanyUsers}>
+              <CompanyRoute path='add' minAccess={3} component={UserAdd} />
+              <CompanyRoute path=':id' minAccess={3} component={UserInfo} />
+              <CompanyRoute
+                path=':id/edit'
+                minAccess={3}
+                component={UserEdit}
+              />
+            </CompanyRoute>
+
+            <CompanyRoute path='tables' minAccess={3} component={CompanyTables}>
+              <CompanyRoute path='add' minAccess={3} component={TableAdd} />
+              <CompanyRoute path=':id' minAccess={3} component={TableInfo} />
+              <CompanyRoute
+                path=':id/edit'
+                minAccess={3}
+                component={TableEdit}
+              />
+            </CompanyRoute>
+
+            <CompanyRoute path='menus' minAccess={3} component={CompanyMenus}>
+              <CompanyRoute path='add' minAccess={3} component={MenuAdd} />
+              <CompanyRoute path=':id' minAccess={3} component={MenuInfo} />
+              <CompanyRoute
+                path=':id/edit'
+                minAccess={3}
+                component={MenuEdit}
+              />
+            </CompanyRoute>
+
+            <CompanyRoute path='foods' minAccess={3} component={CompanyFoods}>
+              <CompanyRoute path='add' minAccess={3} component={FoodAdd} />
+              <CompanyRoute path=':id' minAccess={3} component={FoodInfo} />
+              <CompanyRoute
+                path=':id/edit'
+                minAccess={3}
+                component={FoodEdit}
+              />
+            </CompanyRoute>
+
+            <CompanyRoute
+              path='customisations'
+              minAccess={3}
+              component={CompanyCustomisations}
+            >
+              <CompanyRoute
+                path='add'
+                minAccess={3}
+                component={CustomisationAdd}
+              />
+              <CompanyRoute
+                path=':id'
+                minAccess={3}
+                component={CustomisationInfo}
+              />
+              <CompanyRoute
+                path=':id/edit'
+                minAccess={3}
+                component={CustomisationEdit}
+              />
+            </CompanyRoute>
+
+            <CompanyRoute path='menu' component={Outlet}>
               <CompanyRoute path='' component={MainMenu} />
               <CompanyRoute path=':id' component={Menu} />
             </CompanyRoute>
 
-            <CompanyRoute path='admin' access={3} component={Dashboard} />
-            <CompanyRoute
-              path='notifications'
-              access={1}
-              component={Notifications}
-            />
-            <CompanyRoute path='tables' component={Tables} />
+            {/* <CompanyRoute path='tables' component={Tables} /> */}
             <CompanyRoute path='orders' component={Orders} />
             <CompanyRoute path='bills' component={Bills} />
+            <CompanyRoute path='notifications' component={Notifications} />
           </CompanyRoute>
 
           <WawayaRoute path='/wawaya' component={WawayaAppWrapper}>

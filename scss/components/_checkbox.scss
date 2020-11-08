@@ -4,63 +4,85 @@ $checkbox-input-bg-color: var(--secondary);
 $checkbox-input-color: var(--on-secondary);
 
 .checkbox-group {
+  display: grid;
+  grid-gap: 4px;
   user-select: none;
 
   @include input-label;
 
-  .checkbox-input {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-
-    cursor: pointer;
-
-    &.checkbox-input-inline {
-      display: inline-grid;
-      margin-right: 1rem;
-    }
-
-    .checkbox-wrapper {
-      width: $checkbox-input-size;
-      height: $checkbox-input-size;
-
+  .checkbox-inputs {
+    .checkbox-input {
       display: grid;
-      place-items: center;
+      grid-template-columns: auto 1fr;
+      align-items: center;
 
-      .checkbox {
-        width: 30%;
-        height: 30%;
+      cursor: pointer;
 
-        box-shadow: 0px 0px 0px 2px currentColor;
-        border-radius: 10%;
+      &.checkbox-input-inline {
+        display: inline-grid;
+        margin-right: 1rem;
+      }
+
+      .checkbox-wrapper {
+        width: $checkbox-input-size;
+        height: $checkbox-input-size;
 
         display: grid;
         place-items: center;
 
-        svg,
-        .icon {
-          width: 80%;
-          height: 80%;
-          stroke-width: 5;
+        .checkbox {
+          width: 30%;
+          height: 30%;
 
-          opacity: 0;
-        }
+          box-shadow: 0px 0px 0px 2px currentColor;
+          border-radius: 10%;
 
-        &.checked {
-          box-shadow: 0px 0px 0px 2px $checkbox-input-bg-color;
-          background-color: $checkbox-input-bg-color;
+          display: grid;
+          place-items: center;
 
           svg,
           .icon {
-            stroke: $checkbox-input-color;
-            opacity: 1;
+            width: 80%;
+            height: 80%;
+            stroke-width: 5;
+
+            opacity: 0;
+          }
+
+          &.checkbox-ordered {
+            width: 50%;
+            height: 50%;
+
+            // border-radius: 50%;
+
+            .checkbox-value-index {
+              display: none;
+
+              @include body-2;
+              font-weight: bold;
+            }
+          }
+
+          &.checked {
+            box-shadow: 0px 0px 0px 2px $checkbox-input-bg-color;
+            background-color: $checkbox-input-bg-color;
+
+            svg,
+            .icon {
+              stroke: $checkbox-input-color;
+              opacity: 1;
+            }
+
+            .checkbox-value-index {
+              display: block;
+            }
           }
         }
       }
-    }
 
-    .checkbox-input-key {
-      @include body-1;
+      .checkbox-input-key {
+        @include body-1;
+      }
     }
   }
 }

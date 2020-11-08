@@ -21,7 +21,7 @@ const MenuInfo = ({ menus: { requesting, menu }, getMenu }) => {
     // eslint-disable-next-line
   }, [id]);
 
-  const { _id: menuId, name, availability, isMain, index, foods } = {
+  const { _id: menuId, name, availability, index, foods } = {
     ...menu,
   };
 
@@ -35,19 +35,8 @@ const MenuInfo = ({ menus: { requesting, menu }, getMenu }) => {
         {typeof index === 'number' && (
           <div className='row'>
             <div className='col'>
-              <p className='caption'>Position in Sidebar Menu</p>
+              <p className='caption'>Menu Index</p>
               <p className='body-1'>{index}</p>
-            </div>
-          </div>
-        )}
-
-        {typeof isMain === 'boolean' && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Displayed in Main Menu ?</p>
-              <span className={`badge badge-${isMain ? 'success' : 'error'}`}>
-                {isMain ? 'Yes' : 'No'}
-              </span>
             </div>
           </div>
         )}
@@ -55,7 +44,7 @@ const MenuInfo = ({ menus: { requesting, menu }, getMenu }) => {
         {Array.isArray(foods) && (
           <div className='row'>
             <div className='col'>
-              <p className='caption'>Foods under this menu</p>
+              <p className='caption mb-h'>Foods under this menu</p>
               {foods.length > 0 ? (
                 foods.map(food => (
                   <FoodItem

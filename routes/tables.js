@@ -45,9 +45,7 @@ router.get('/', auth(true, accessLevel.admin), async (req, res) => {
   try {
     const { company } = req.query;
 
-    let tables = await Table.find({ company }).sort({
-      creationDate: -1,
-    });
+    let tables = await Table.find({ company });
 
     res.json(tables);
   } catch (err) {
@@ -115,10 +113,14 @@ router.get(
     }
 
     try {
-      let table = await Table.findById(req.params.id).populate(
-        'company',
-        'displayedName'
-      );
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let table = await Table.findOne(query);
 
       if (!table) {
         return res.status(404).send('Table not found');
@@ -155,7 +157,14 @@ router.put(
     }
 
     try {
-      let table = await Table.findById(req.params.id);
+      const { access: userAccess, company } = req;
+
+      let query =
+        userAccess < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let table = await Table.findOne(query);
 
       if (!table) {
         return res.status(404).send('Table not found');
@@ -194,7 +203,14 @@ router.delete(
     }
 
     try {
-      let deletedTable = await Table.findByIdAndRemove(req.params.id);
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let deletedTable = await Table.findOneAndRemove(query);
 
       if (!deletedTable) {
         return res.status(404).send('Table not found');

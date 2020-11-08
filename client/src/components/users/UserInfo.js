@@ -12,11 +12,7 @@ import { getUser } from '../../actions/users';
 import SideSheet from '../layout/SideSheet';
 import Spinner from '../layout/Spinner';
 
-const UserInfo = ({
-  auth: { access: authAccess },
-  users: { requesting, user },
-  getUser,
-}) => {
+const UserInfo = ({ userAccess, users: { requesting, user }, getUser }) => {
   let { id } = useParams();
   const navigate = useNavigate();
 
@@ -46,7 +42,7 @@ const UserInfo = ({
           </div>
         )}
 
-        {authAccess === 99 && access && (
+        {userAccess === 99 && access && (
           <div className='row'>
             <div className='col'>
               <p className='caption'>Access</p>
@@ -97,7 +93,7 @@ const UserInfo = ({
 };
 
 UserInfo.propTypes = {
-  auth: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
   getUser: PropTypes.func.isRequired,
   users: PropTypes.object.isRequired,
 };

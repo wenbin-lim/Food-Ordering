@@ -47,9 +47,7 @@ router.get('/', auth(true, accessLevel.admin), async (req, res) => {
   try {
     const { company } = req.query;
 
-    let users = await User.find({ company })
-      .select('-password')
-      .sort({ creationDate: -1 });
+    let users = await User.find({ company }).select('-password');
 
     res.json(users);
   } catch (err) {
@@ -171,9 +169,14 @@ router.get(
     }
 
     try {
-      let user = await User.findById(req.params.id)
-        .select('-password')
-        .populate('company', 'displayedName');
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let user = await User.findOne(query).select('-password');
 
       if (!user) {
         return res.status(404).send('User not found');
@@ -231,7 +234,14 @@ router.put(
     let errors = validationResult(req).array();
 
     try {
-      let user = await User.findById(req.params.id);
+      const { access: userAccess, company } = req;
+
+      let query =
+        userAccess < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let user = await User.findOne(query);
 
       if (!user) {
         return res.status(404).send('User not found');
@@ -306,7 +316,14 @@ router.delete(
     }
 
     try {
-      let deletedUser = await User.findByIdAndRemove(req.params.id);
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let deletedUser = await User.findOneAndRemove(query);
 
       if (!deletedUser) {
         return res.status(404).send('User not found');

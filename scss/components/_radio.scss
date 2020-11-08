@@ -3,70 +3,74 @@ $radio-input-size: $icon-size;
 $radio-input-color: var(--secondary);
 
 .radio-group {
+  display: grid;
+  grid-gap: 4px;
   user-select: none;
 
   @include input-label;
 
-  .radio-input {
-    display: flex;
+  .radio-inputs {
+    .radio-input {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
 
-    &.radio-input-inline {
-      display: inline-flex;
-      margin-right: 1rem;
-    }
-
-    align-items: center;
-
-    input {
-      position: relative;
-      width: $radio-input-size;
-      height: $radio-input-size;
-
-      @include body-1();
-
-      cursor: pointer;
-
-      &:before,
-      &:after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-
-        border-radius: 50%;
+      &.radio-input-inline {
+        display: inline-grid;
+        margin-right: 1rem;
       }
 
-      &:before {
-        width: 25%;
-        height: 25%;
-        box-shadow: 0px 0px 0px 2px currentColor;
-      }
+      input {
+        position: relative;
+        width: $radio-input-size;
+        height: $radio-input-size;
 
-      &:after {
-        width: 0;
-        height: 0;
-      }
+        @include body-1();
 
-      &:checked {
+        cursor: pointer;
+
+        &:before,
+        &:after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+
+          border-radius: 50%;
+        }
+
         &:before {
-          box-shadow: 0px 0px 0px 2px $radio-input-color;
+          width: 25%;
+          height: 25%;
+          box-shadow: 0px 0px 0px 2px currentColor;
         }
 
         &:after {
-          width: calc(25% - 4px);
-          height: calc(25% - 4px);
-          background-color: $radio-input-color;
+          width: 0;
+          height: 0;
+        }
+
+        &:checked {
+          &:before {
+            box-shadow: 0px 0px 0px 2px $radio-input-color;
+          }
+
+          &:after {
+            width: calc(25% - 4px);
+            height: calc(25% - 4px);
+            background-color: $radio-input-color;
+          }
         }
       }
-    }
 
-    .radio-input-key {
-      @include body-1;
+      .radio-input-key {
+        @include body-1;
 
-      // override from label
-      text-transform: none;
-      cursor: pointer;
+        // override from label
+        text-transform: none;
+        cursor: pointer;
+      }
     }
   }
 }

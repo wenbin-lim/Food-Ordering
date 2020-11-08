@@ -22,7 +22,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 import useInputError from '../../hooks/useInputError';
 
 const UserAdd = ({
-  auth: { access: authAccess, company: authCompany },
+  userAccess,
+  userCompanyId,
   companies: { company },
   users: { requesting, errors },
   addUser,
@@ -57,15 +58,14 @@ const UserAdd = ({
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (authAccess === 99 && !company)
+    if (userAccess === 99 && !company)
       return setSnackbar('Select a company first!', 'error');
 
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     let newUser = formData;
 
-    if (authAccess < 99) {
+    if (userAccess < 99) {
       newUser = {
         ...formData,
         access: formData.role.indexOf('admin') >= 0 ? 3 : 2,
@@ -123,7 +123,7 @@ const UserAdd = ({
         </div>
       </div>
 
-      {authAccess === 99 && (
+      {userAccess === 99 && (
         <div className='row'>
           <div className='col'>
             <RadioInput
@@ -217,9 +217,10 @@ const UserAdd = ({
 };
 
 UserAdd.propTypes = {
-  auth: PropTypes.object.isRequired,
-  users: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
+  userCompanyId: PropTypes.string.isRequired,
   companies: PropTypes.object.isRequired,
+  users: PropTypes.object.isRequired,
   addUser: PropTypes.func.isRequired,
   setSnackbar: PropTypes.func.isRequired,
 };

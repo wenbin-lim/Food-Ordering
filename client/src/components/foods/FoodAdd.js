@@ -26,7 +26,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 import useInputError from '../../hooks/useInputError';
 
 const FoodAdd = ({
-  auth: { access: authAccess, company: authCompany },
+  userAccess,
+  userCompanyId,
   companies: { company },
   menus: { menus: availableMenus },
   customisations: { customisations: availableCustomisations },
@@ -37,14 +38,13 @@ const FoodAdd = ({
   setSnackbar,
 }) => {
   useEffect(() => {
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     getMenus(companyId);
     getCustomisations(companyId);
 
     // eslint-disable-next-line
-  }, [authCompany, company]);
+  }, [userCompanyId, company]);
 
   const [inputErrorMessages] = useInputError(
     {
@@ -103,11 +103,10 @@ const FoodAdd = ({
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (authAccess === 99 && !company)
+    if (userAccess === 99 && !company)
       return setSnackbar('Select a company first!', 'error');
 
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     const addFoodSuccess = await addFood(companyId, {
       ...formData,
@@ -300,6 +299,7 @@ const FoodAdd = ({
             }))}
             value={customisations}
             onChangeHandler={onChange}
+            ordered={true}
           />
         ) : (
           <p className='caption'>No customisations found</p>
@@ -377,11 +377,12 @@ const FoodAdd = ({
 };
 
 FoodAdd.propTypes = {
-  auth: PropTypes.object.isRequired,
-  foods: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
+  userCompanyId: PropTypes.string.isRequired,
   companies: PropTypes.object.isRequired,
   menus: PropTypes.object.isRequired,
   customisations: PropTypes.object.isRequired,
+  foods: PropTypes.object.isRequired,
   getMenus: PropTypes.func.isRequired,
   getCustomisations: PropTypes.func.isRequired,
   addFood: PropTypes.func.isRequired,

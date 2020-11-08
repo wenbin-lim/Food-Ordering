@@ -9,6 +9,7 @@ import tables from './tables';
 import menus from './menus';
 import customisations from './customisations';
 import foods from './foods';
+import customer from './customer';
 
 export default combineReducers({
   users,
@@ -19,4 +20,5 @@ export default combineReducers({
   menus,
   customisations,
   foods,
+  customer,
 });

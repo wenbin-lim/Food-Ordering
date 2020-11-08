@@ -35,6 +35,7 @@ $sidebar-item-height: 48px;
     display: grid;
     grid-template-rows: auto 1fr auto;
     grid-template-areas: 'sidebar-header' 'sidebar-content' 'sidebar-footer';
+    grid-gap: var(--padding);
 
     .sidebar-logo {
       max-width: 100%;
@@ -45,42 +46,53 @@ $sidebar-item-height: 48px;
       @extend .invert-in-dark-mode;
     }
 
-    .sidebar-link {
-      @include button-text;
+    .sidebar-content-divider {
+      margin-top: var(--padding);
+      margin-bottom: var(--padding);
+    }
+
+    .sidebar-link-group {
+      padding: 0 var(--padding);
       height: $sidebar-item-height;
-
       display: flex;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
-
       cursor: pointer;
 
-      &.sidebar-link-active {
-        color: var(--secondary);
+      .sidebar-link-icon {
+        height: $icon-size;
+
+        display: grid;
+        place-items: center;
+
+        margin-right: $icon-size / 4;
+      }
+
+      .sidebar-link {
+        flex: 1;
+        @include button-text;
+        display: grid;
+        align-items: center;
       }
     }
 
-    .sidebar-header,
-    .sidebar-content,
-    .sidebar-footer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
     .sidebar-header {
+      display: flex;
       grid-area: sidebar-header;
+      justify-content: center;
     }
 
     .sidebar-content {
+      display: flex;
       grid-area: sidebar-content;
 
       flex-direction: column;
-      overflow-y: auto;
+      overflow: auto;
+      @include hide-scrollbar;
     }
 
     .sidebar-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       grid-area: sidebar-footer;
 
       flex-direction: column;

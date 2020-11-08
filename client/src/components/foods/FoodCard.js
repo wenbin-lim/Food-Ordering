@@ -5,6 +5,9 @@ import { connect } from 'react-redux';
 // Components
 import FoodDialog from './FoodDialog';
 
+// Icons
+import ImageIcon from '../icons/ImageIcon';
+
 const FoodCard = ({ food, screenOrientation }) => {
   const { _id: foodId, name, price, promotionPrice, image } = food;
 
@@ -14,7 +17,11 @@ const FoodCard = ({ food, screenOrientation }) => {
     <Fragment>
       <div className='foodcard' onClick={() => setshowFoodDialog(true)}>
         <div className='foodcard-image'>
-          <img src={image} alt={`${name}-foodimage-${foodId}`} />
+          {image ? (
+            <img src={image} alt={`${name}-foodimage-${foodId}`} />
+          ) : (
+            <ImageIcon width={64} />
+          )}
         </div>
         <div className='foodcard-content'>
           <p className='foodcard-name'>{name}</p>
@@ -36,7 +43,7 @@ const FoodCard = ({ food, screenOrientation }) => {
         <FoodDialog
           food={food}
           fullscreen={screenOrientation}
-          closeFoodDialogHandler={() => setshowFoodDialog(false)}
+          unmountHandler={() => setshowFoodDialog(false)}
         />
       )}
     </Fragment>
@@ -45,6 +52,7 @@ const FoodCard = ({ food, screenOrientation }) => {
 
 FoodCard.propTypes = {
   food: PropTypes.object.isRequired,
+  screenOrientation: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => ({

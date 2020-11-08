@@ -10,20 +10,32 @@ const WawayaRoute = ({
   component: Component,
   path,
   auth,
-  loading,
-  access,
-  authCompany,
   children,
   ...rest
 }) => {
+  const { loading, user } = auth;
+  const { _id: userId, access: userAccess, company: userCompany } = { ...user };
+  const { _id: userCompanyId, name: userCompanyName } = { ...userCompany };
+
   return loading ? (
     <Spinner fullscreen={true} />
-  ) : access === 99 && authCompany && authCompany.name === 'wawaya' ? (
-    <Route path={path} element={<Component auth={auth} {...rest} />}>
+  ) : userAccess === 99 && userCompanyName === 'wawaya' ? (
+    <Route
+      path={path}
+      element={
+        <Component
+          userId={userId}
+          userAccess={userAccess}
+          userCompanyId={userCompanyId}
+          userCompanyName={userCompanyName}
+          {...rest}
+        />
+      }
+    >
       {children}
     </Route>
   ) : (
-    <Navigate to='/' />
+    <Navigate to='/' replace={true} />
   );
 };
 
@@ -31,16 +43,10 @@ WawayaRoute.propTypes = {
   component: PropTypes.elementType.isRequired,
   path: PropTypes.string.isRequired,
   auth: PropTypes.object.isRequired,
-  loading: PropTypes.bool.isRequired,
-  access: PropTypes.number.isRequired,
-  authCompany: PropTypes.object,
 };
 
 const mapStateToProps = state => ({
   auth: state.auth,
-  loading: state.auth.loading,
-  access: state.auth.access,
-  authCompany: state.auth.company,
 });
 
 const mapDispatchToProps = {};

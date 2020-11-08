@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const ImageIcon = ({ width = 24, height = 24 }) => {
+const ImageIcon = ({ width = 24 }) => {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
       width={width}
-      height={height}
+      height={width}
       viewBox='0 0 24 24'
       fill='none'
       stroke='currentColor'

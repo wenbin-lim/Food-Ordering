@@ -22,7 +22,7 @@ import ArrowIcon from '../icons/ArrowIcon';
 import useInputError from '../../hooks/useInputError';
 
 const UserEdit = ({
-  auth: { access: authAccess },
+  userAccess,
   users: { requesting, user, errors },
   getUser,
   editUser,
@@ -88,7 +88,7 @@ const UserEdit = ({
 
     let newUser = formData;
 
-    if (authAccess < 99) {
+    if (userAccess < 99) {
       newUser = {
         ...formData,
         access: formData.role.indexOf('admin') >= 0 ? 3 : 2,
@@ -146,7 +146,7 @@ const UserEdit = ({
         </div>
       </div>
 
-      {authAccess === 99 && (
+      {userAccess === 99 && (
         <div className='row'>
           <div className='col'>
             <RadioInput
@@ -253,6 +253,7 @@ const UserEdit = ({
 };
 
 UserEdit.propTypes = {
+  userAccess: PropTypes.number.isRequired,
   users: PropTypes.object.isRequired,
   getUser: PropTypes.func.isRequired,
   editUser: PropTypes.func.isRequired,

@@ -25,12 +25,11 @@ const mongoose = require('mongoose');
 // 3. unique(Boolean)
 // ====================================================================================================
 const OrderSchema = mongoose.Schema({
-  orders: [
+  items: [
     {
       food: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Food',
-        required: true,
       },
       status: {
         type: String,

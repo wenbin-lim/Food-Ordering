@@ -1,63 +1,39 @@
 .customer-qr-landing {
+  height: calc(var(--vh) * 100);
+
   display: grid;
-  overflow: hidden;
+
+  @include media(portrait) {
+    grid-template-rows: 3fr 2fr;
+  }
+
+  @include media(landscape) {
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 128px;
+  }
 
   .table-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
+    align-content: center;
     text-align: center;
-    overflow: hidden;
-
-    padding: 2rem 0;
+    grid-gap: 8px;
 
     .table-info-caption {
-      letter-spacing: 1.5px;
+      @include heading-2;
       text-transform: uppercase;
     }
 
     .table-info-name {
-      overflow-y: auto;
+      line-height: 100%;
     }
   }
 
   .button-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 48px;
-    padding: 0 10vw;
+    display: grid;
+    align-content: center;
+    grid-gap: 16px;
 
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      margin: 8px 0;
-    }
-  }
-}
-
-// Media queries
-/* default CSS will target portrait screens */
-@media only screen and (orientation: portrait) {
-  .customer-qr-landing {
-    grid-template-rows: 1fr auto;
-  }
-}
-
-@media only screen and (orientation: landscape) {
-  .customer-qr-landing {
-    grid-template-columns: 1fr 1fr;
-    margin-bottom: 64px;
-
-    .table-info {
-      padding: 0 5vw;
-    }
-
-    .button-group {
-      margin-bottom: 0;
-      justify-content: center;
-      padding: 0 5vw;
-    }
+    padding-left: var(--padding);
+    padding-right: var(--padding);
   }
 }

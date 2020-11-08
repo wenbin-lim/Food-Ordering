@@ -1,0 +1,83 @@
+$orderitem-status-colors: 'error', 'success', 'warning';
+
+.orderitem {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+
+  display: grid;
+  grid-template-rows: auto auto;
+  row-gap: 8px;
+
+  @include media(portrait) {
+    grid-template-columns: 5fr 2fr 3fr;
+  }
+
+  @include media(landscape) {
+    grid-template-columns: 7fr 1fr 2fr;
+  }
+
+  align-items: center;
+
+  grid-template-areas:
+    'orderitem-statusbar orderitem-statusbar orderitem-statusbar'
+    'orderitem-info orderitem-qty orderitem-price';
+
+  .orderitem-statusbar {
+    grid-area: orderitem-statusbar;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    @each $i in $orderitem-status-colors {
+      .orderitem-status-#{$i} {
+        background-color: var(--#{$i});
+        color: var(--on-#{$i});
+
+        width: 0.8em;
+        height: 0.8em;
+        border-radius: 50%;
+      }
+    }
+
+    .orderitem-date {
+      @include body-2;
+      font-size: 0.5em;
+      opacity: 0.3;
+    }
+  }
+
+  .orderitem-info {
+    grid-area: orderitem-info;
+    .orderitem-info-name {
+      @include body-1;
+      line-height: 100%;
+    }
+
+    .orderitem-info-customisation {
+      @include body-2;
+      opacity: 0.7;
+    }
+
+    .orderitem-info-additionalinstruction {
+      @extend .badge;
+      @extend .badge-small;
+      background-color: var(--surface1);
+      color: var(--on-surface);
+    }
+  }
+
+  .orderitem-qty,
+  .orderitem-price {
+    @include caption;
+    text-transform: none;
+    text-align: right;
+  }
+
+  .orderitem-qty {
+    grid-area: orderitem-qty;
+  }
+  .orderitem-price {
+    grid-area: orderitem-price;
+  }
+}

@@ -42,7 +42,7 @@ const Tables = ({
     companiesLoading || !Array.isArray(companies) ? (
       <ListPreloader />
     ) : companies.length > 0 ? (
-      <article className='list p-0'>
+      <article className='list'>
         <header className='list-header'>
           <div className='list-header-right-content'>
             <SearchInput
@@ -78,7 +78,7 @@ const Tables = ({
         onClick={() => navigate('add')}
       />
 
-      <article className='list p-0'>
+      <article className='list'>
         {tablesLoading || !Array.isArray(tables) ? (
           <ListPreloader />
         ) : tables.length > 0 ? (

@@ -27,55 +27,29 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
     // eslint-disable-next-line
   }, []);
 
+  const navLinks = [
+    'companies',
+    'users',
+    'tables',
+    'menus',
+    'foods',
+    'customisations',
+  ];
+
   const navbarLeftContent = (
     <Fragment>
       <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
-      {!screenOrientation && (
-        <Fragment>
+      {!screenOrientation &&
+        navLinks.map((link, index) => (
           <NavLink
-            to='companies'
+            key={`navlink_to_${link}_${index}`}
+            to={link}
             className='navbar-link button-text'
             activeClassName='navbar-link-active'
           >
-            Companies
+            {link}
           </NavLink>
-          <NavLink
-            to='users'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            Users
-          </NavLink>
-          <NavLink
-            to='tables'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            Tables
-          </NavLink>
-          <NavLink
-            to='menus'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            Menus
-          </NavLink>
-          <NavLink
-            to='foods'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            Foods
-          </NavLink>
-          <NavLink
-            to='customisations'
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
-          >
-            Customisations
-          </NavLink>
-        </Fragment>
-      )}
+        ))}
     </Fragment>
   );
 
@@ -92,30 +66,10 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
               name: 'Dashboard',
               path: '',
             },
-            {
-              name: 'Companies',
-              path: 'companies',
-            },
-            {
-              name: 'Users',
-              path: 'users',
-            },
-            {
-              name: 'Tables',
-              path: 'tables',
-            },
-            {
-              name: 'Menus',
-              path: 'menus',
-            },
-            {
-              name: 'Foods',
-              path: 'foods',
-            },
-            {
-              name: 'Customisations',
-              path: 'customisations',
-            },
+            ...navLinks.map(link => ({
+              name: link,
+              path: link,
+            })),
           ]}
           unmountSidebarHandler={() => setShowSidebar(false)}
         />
@@ -126,13 +80,12 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
 };
 
 WawayaAppWrapper.propTypes = {
-  auth: PropTypes.object.isRequired,
+  screenOrientation: PropTypes.bool.isRequired,
   logout: PropTypes.func.isRequired,
   getCompanies: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
-  auth: state.auth,
   screenOrientation: state.app.screenOrientation,
 });
 

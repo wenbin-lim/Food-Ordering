@@ -1,0 +1,44 @@
+.flippable-wrapper {
+  overflow: visible !important;
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  .flippable-front-face,
+  .flippable-back-face {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+    backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    transition: transform 0.8s ease-in-out;
+  }
+
+  .flippable-front-face {
+    &.shown {
+      transform: perspective(30cm) rotateY(0deg);
+      z-index: 1;
+    }
+
+    &.hidden {
+      transform: perspective(30cm) rotateY(180deg);
+      z-index: -1;
+    }
+  }
+
+  .flippable-back-face {
+    &.shown {
+      transform: perspective(30cm) rotateY(0deg);
+      z-index: 1;
+    }
+
+    &.hidden {
+      transform: perspective(30cm) rotateY(-180deg);
+      z-index: -1;
+    }
+  }
+}

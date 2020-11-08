@@ -42,11 +42,10 @@ const { cloudinary } = require('../config/cloudinary');
 // ====================================================================================================
 // Routes
 // ====================================================================================================
-
 // @route    GET api/foods
 // @desc     List all foods
-// @access   Private for customer and above
-router.get('/', auth(true, accessLevel.customer), async (req, res) => {
+// @access   Private for staff and above
+router.get('/', auth(true, accessLevel.staff), async (req, res) => {
   try {
     const { company } = req.query;
 
@@ -239,10 +238,14 @@ router.get(
     }
 
     try {
-      let food = await Food.findById(req.params.id).populate(
-        'company',
-        'displayedName'
-      );
+      const { access: userAccess, company } = req;
+
+      let query =
+        userAccess < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let food = await Food.findOne(query);
 
       if (!food) {
         return res.status(404).send('Food not found');
@@ -333,7 +336,14 @@ router.put(
     let errors = validationResult(req).array();
 
     try {
-      let food = await Food.findById(req.params.id).populate('company', 'name');
+      const { access: userAccess, company: userCompanyId } = req;
+
+      let query =
+        userAccess < accessLevel.wawaya
+          ? { _id: req.params.id, company: userCompanyId }
+          : { _id: req.params.id };
+
+      let food = await Food.findOne(query).populate('company', 'name');
 
       if (!food) {
         return res.status(404).send('Food not found');
@@ -455,7 +465,14 @@ router.delete(
     }
 
     try {
-      const deletedFood = await Food.findByIdAndRemove(req.params.id).populate(
+      const { access: userAccess, company: userCompanyId } = req;
+
+      let query =
+        userAccess < accessLevel.wawaya
+          ? { _id: req.params.id, company: userCompanyId }
+          : { _id: req.params.id };
+
+      const deletedFood = await Food.findOneAndRemove(query).populate(
         'company',
         'name'
       );

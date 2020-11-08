@@ -38,6 +38,7 @@ const ListItem = ({
   classes,
   color = 'surface1',
   beforeListContent,
+  listContentClass,
   listContent,
   afterListContent,
   onClick,
@@ -214,7 +215,15 @@ const ListItem = ({
           <div className='before-list-content'>{beforeListContent}</div>
         )}
 
-        {listContent && <div className='list-content'>{listContent}</div>}
+        {listContent && (
+          <div
+            className={sanitizeWhiteSpace(
+              `list-content ${listContentClass ? listContentClass : ''}`
+            )}
+          >
+            {listContent}
+          </div>
+        )}
 
         {afterListContent && (
           <div className='after-list-content'>{afterListContent}</div>
@@ -242,6 +251,7 @@ ListItem.propTypes = {
     'background',
   ]),
   beforeListContent: PropTypes.element,
+  listContentClass: PropTypes.string,
   listContent: PropTypes.element,
   afterListContent: PropTypes.element,
   onClick: PropTypes.func,

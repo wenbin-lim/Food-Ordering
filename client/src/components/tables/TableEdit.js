@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -94,7 +94,7 @@ const TableEdit = ({
           type={'primary'}
           block={true}
           blockBtnBottom={true}
-          text={'add'}
+          text={'edit'}
           icon={
             requesting ? (
               <Spinner height={'1.5rem'} />

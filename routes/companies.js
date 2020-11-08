@@ -52,9 +52,7 @@ router.get('/', auth(false, wawayaAccess), async (req, res) => {
       selectQuery = '';
     }
 
-    let companies = await Company.find()
-      .select(selectQuery)
-      .sort({ creationDate: -1 });
+    let companies = await Company.find().select(selectQuery);
 
     res.json(companies);
   } catch (err) {

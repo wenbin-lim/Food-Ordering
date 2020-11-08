@@ -30,26 +30,37 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
     // token exists, user has private access
     try {
       const decodedToken = jwt.verify(token, config.get('jwtSecret'));
-      const { auth, access, company } = decodedToken;
+      const { user, table } = decodedToken;
 
-      if (access < minAccessLevel) {
-        return res.status(401).send('Unauthorized');
-      }
+      if (user) {
+        const {
+          _id: userId,
+          access,
+          company: { _id: companyId },
+        } = user;
 
-      if (company) {
-        const { _id: companyId, name: companyName } = company;
+        if (access < minAccessLevel) {
+          return res.status(401).send('Unauthorized');
+        }
 
-        req.companyName = companyName;
         req.company = companyId;
+        req.access = access;
+        req.user = userId;
+      } else if (table) {
+        if (customerAccess < minAccessLevel) {
+          console.log('here 2');
+          return res.status(401).send('Unauthorized');
+        }
+
+        const {
+          _id: tableId,
+          company: { _id: companyId },
+        } = table;
+
+        req.company = companyId;
+        req.access = customerAccess;
+        req.table = tableId;
       }
-
-      req.access = access ? access : publicAccess;
-
-      req.auth = auth;
-
-      delete decodedToken.iat;
-      req.decodedToken = decodedToken;
-      req.token = token;
 
       next();
     } catch (err) {

@@ -12,6 +12,12 @@ $sidesheet-color: var(--on-surface);
   display: grid;
   grid-template-rows: auto 1fr auto;
 
+  @include media(landscape) {
+    border-radius: $sidesheet-border-radius;
+    margin-top: var(--padding);
+    margin-bottom: var(--padding);
+  }
+
   .sidesheet-header {
     padding-top: 24px;
     padding-bottom: 20px; // account for grid gap
@@ -65,14 +71,5 @@ $sidesheet-color: var(--on-surface);
     .row:not(:first-child) {
       margin-top: 1rem;
     }
-  }
-}
-
-// Media queries
-@media only screen and (orientation: landscape) {
-  .sidesheet {
-    border-radius: $sidesheet-border-radius;
-    margin-top: var(--padding);
-    margin-bottom: var(--padding);
   }
 }

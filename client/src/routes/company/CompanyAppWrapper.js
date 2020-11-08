@@ -1,7 +1,13 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import {
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+  matchPath,
+} from 'react-router-dom';
 
 // Components
 import Navbar from '../../components/layout/Navbar';
@@ -18,121 +24,192 @@ import FoodOrderIcon from '../../components/icons/FoodOrderIcon';
 import FoodBillIcon from '../../components/icons/FoodBillIcon';
 import LogoutIcon from '../../components/icons/LogoutIcon';
 
+import UsersIcon from '../../components/icons/UsersIcon';
+import TableIcon from '../../components/icons/TableIcon';
+import FlipBookIcon from '../../components/icons/FlipBookIcon';
+import FoodIcon from '../../components/icons/FoodIcon';
+import FoodCustomisationIcon from '../../components/icons/FoodCustomisationIcon';
+
 // Actions
 import { logout } from '../../actions/auth';
 import { getMenus } from '../../actions/menus';
-import { getFoods } from '../../actions/foods';
 
-export const CompanyAppWrapper = ({
-  auth: { company, auth },
-  menus,
+const CompanyAppWrapper = ({
+  userCompany,
+  userAccess,
+  userRole,
+  userCompanyName,
+  userCompanyId,
+  menus: { menusLoading, menus },
+  screenOrientation,
   logout,
   getMenus,
-  getFoods,
 }) => {
-  const { role: authRole } = auth;
-  const { _id: companyId, name: companyName, socialMediaLinks } = company;
+  const {
+    socialMediaLinks,
+    logo: { small: logoSmall, large: logoLarge } = {},
+  } = userCompany;
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const locationMatch = link => {
-    return location.pathname === `/${companyName}/${link}`;
-  };
+  const locationMatch = link =>
+    matchPath(
+      {
+        path: `${userCompanyName}/${link}`,
+        end: false,
+      },
+      location.pathname
+    )
+      ? true
+      : false;
 
-  const adminNavItem = (
-    <Button
-      icon={<HomeIcon active={locationMatch('admin')} />}
-      onClick={() => navigate(`admin`)}
-    />
+  const adminNavLinks = [
+    {
+      name: 'users',
+      path: 'users',
+      icon: <UsersIcon />,
+    },
+    {
+      name: 'tables',
+      path: 'tables',
+      icon: <TableIcon />,
+    },
+    {
+      name: 'menus',
+      path: 'menus',
+      icon: <FlipBookIcon />,
+    },
+    {
+      name: 'foods',
+      path: 'foods',
+      icon: <FoodIcon />,
+    },
+    {
+      name: 'customisations',
+      path: 'customisations',
+      icon: <FoodCustomisationIcon />,
+    },
+  ];
+
+  const navbarLeftContent = (
+    <Fragment>
+      <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
+      {!screenOrientation &&
+        userAccess === 3 &&
+        adminNavLinks.map((link, index) => (
+          <NavLink
+            key={`adminnavlink_to_${link.name}_${index}`}
+            to={link.path}
+            className='navbar-link button-text'
+            activeClassName='navbar-link-active'
+          >
+            {link.name}
+          </NavLink>
+        ))}
+    </Fragment>
   );
 
-  const tablesNavItem = (
-    <Button
-      icon={<FoodTableIcon active={locationMatch('tables')} />}
-      onClick={() => navigate(`tables`)}
-    />
-  );
-
-  const ordersNavItem = (
-    <Button
-      icon={<FoodOrderIcon active={locationMatch('orders')} />}
-      onClick={() => navigate(`orders`)}
-    />
-  );
-
-  const billsNavItem = (
-    <Button
-      icon={<FoodBillIcon active={locationMatch('bills')} />}
-      onClick={() => navigate(`bills`)}
-    />
-  );
-
-  const notificationsNavItem = (
-    <Button
-      icon={<BellIcon active={locationMatch('notifications')} />}
-      onClick={() => navigate(`notifications`)}
-    />
-  );
+  const bottomNavLinks = [
+    {
+      role: 'admin',
+      path: 'admin',
+      icon: <HomeIcon active={locationMatch('admin')} />,
+    },
+    {
+      role: 'waiter',
+      path: 'waiter',
+      icon: <FoodTableIcon active={locationMatch('waiter')} />,
+    },
+    {
+      role: 'kitchen',
+      path: 'kitchen',
+      icon: <FoodOrderIcon active={locationMatch('orders')} />,
+    },
+    {
+      role: 'cashier',
+      path: 'cashier',
+      icon: <FoodBillIcon active={locationMatch('bills')} />,
+    },
+  ];
 
   const bottomNavItems = (
     <Fragment>
-      {authRole.indexOf('admin') >= 0 ? (
-        <Fragment>
-          {adminNavItem}
-          {tablesNavItem}
-          {ordersNavItem}
-          {billsNavItem}
-        </Fragment>
-      ) : (
-        <Fragment>
-          {authRole.indexOf('waiter') >= 0 ? tablesNavItem : null}
-          {authRole.indexOf('kitchen') >= 0 ? ordersNavItem : null}
-          {authRole.indexOf('cashier') >= 0 ? billsNavItem : null}
-        </Fragment>
+      {bottomNavLinks.map(
+        (link, index) =>
+          (userAccess === 3 || userRole.indexOf(link.role) >= 0) && (
+            <Button
+              key={`bottomnavlink_to_${link.name}_${index}`}
+              icon={link.icon}
+              onClick={() => navigate(link.path)}
+            />
+          )
       )}
-      {notificationsNavItem}
+      <Button
+        icon={<BellIcon active={locationMatch('notifications')} />}
+        onClick={() => navigate(`notifications`)}
+      />
     </Fragment>
   );
 
   useEffect(() => {
-    getMenus(companyId);
-    getFoods(companyId);
+    getMenus(userCompanyId);
 
     // eslint-disable-next-line
   }, []);
 
   const [showSidebar, setShowSidebar] = useState(false);
+  const sidebarRef = useRef(null);
 
-  const sidebarHeader = company.logo && (
-    <img
-      className='sidebar-logo invert-in-dark-mode'
-      src={company.logo.large ? company.logo.large : company.logo.small}
-      alt='logo'
-    />
+  const sidebarHeader = (
+    <Fragment>
+      {(logoSmall || logoLarge) && (
+        <img
+          className='sidebar-logo invert-in-dark-mode'
+          src={logoLarge ? logoLarge : logoSmall}
+          alt='logo'
+          onClick={() =>
+            sidebarRef.current && sidebarRef.current.closeSidebar('')
+          }
+        />
+      )}
+    </Fragment>
   );
 
-  const sidebarLinks = [
-    {
-      name: 'Main Menu',
-      link: 'menus',
-    },
-    ...menus.map(menu => ({
-      name: menu.name,
-      link: `menus/${menu._id}`,
-    })),
-  ];
+  const sidebarLinks =
+    !menusLoading && Array.isArray(menus)
+      ? [
+          ...(userAccess === 3 &&
+            adminNavLinks.map(link => ({
+              icon: link.icon,
+              name: link.name,
+              path: link.path,
+            }))),
+          userAccess === 3 && {
+            divider: true,
+          },
+          {
+            name: 'Main Menu',
+            path: 'menu',
+          },
+          ...menus
+            .filter(menu => menu.availability)
+            .map(menu => ({
+              name: menu.name,
+              path: `menu/${menu._id}`,
+            })),
+        ]
+      : [];
 
   return (
     <Fragment>
       <Navbar
-        leftContent={
-          <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
-        }
+        leftContent={navbarLeftContent}
         rightContent={<Button icon={<LogoutIcon />} onClick={() => logout()} />}
       />
       {showSidebar && (
         <Sidebar
+          ref={sidebarRef}
           headerContent={sidebarHeader}
           sidebarLinks={sidebarLinks}
           socialMediaLinks={socialMediaLinks}
@@ -146,21 +223,25 @@ export const CompanyAppWrapper = ({
 };
 
 CompanyAppWrapper.propTypes = {
-  auth: PropTypes.object.isRequired,
-  menus: PropTypes.array.isRequired,
+  userCompany: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
+  userRole: PropTypes.array.isRequired,
+  userCompanyName: PropTypes.string.isRequired,
+  userCompanyId: PropTypes.string.isRequired,
+  menus: PropTypes.object.isRequired,
+  screenOrientation: PropTypes.bool.isRequired,
   logout: PropTypes.func.isRequired,
   getMenus: PropTypes.func.isRequired,
-  getFoods: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
-  menus: state.menus.menus,
+  menus: state.menus,
+  screenOrientation: state.app.screenOrientation,
 });
 
 const mapDispatchToProps = {
   logout,
   getMenus,
-  getFoods,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CompanyAppWrapper);

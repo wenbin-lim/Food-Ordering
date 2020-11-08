@@ -24,13 +24,13 @@ const jwt = require('jsonwebtoken');
 // Variables
 // ====================================================================================================
 const router = express.Router();
-const customerAccessLevel = config.get('accessLevel.customer');
 
 // ====================================================================================================
 // Models
 // ====================================================================================================
 const User = require('../models/User');
 const Table = require('../models/Table');
+const Bill = require('../models/Bill');
 
 // ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
@@ -46,11 +46,36 @@ const auth = require('../middleware/auth');
 // @access   Private
 router.get('/', auth(true), async (req, res) => {
   try {
-    // look at auth middleware to see what is sent
-    res.json({
-      token: req.token,
-      ...req.decodedToken,
-    });
+    const { user, table } = req;
+
+    if (user) {
+      // need to authenticate to db in case user is already deleted and token is still there
+      let user = await User.findById(req.user)
+        .select('-password')
+        .populate('company', 'name');
+
+      return res.json({ user });
+    } else if (table) {
+      let table = await Table.findById(req.table)
+        .populate('company', 'name')
+        .populate({
+          path: 'bill',
+          populate: {
+            path: 'orders',
+            populate: {
+              path: 'customisations food',
+              populate: {
+                path: 'customisation customisations',
+                model: 'Customisation',
+              },
+            },
+          },
+        });
+
+      let bill = table?.bill;
+
+      return res.json({ table, bill });
+    }
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -76,10 +101,7 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      let user = await User.findOne({ username }).populate(
-        'company',
-        'name logo socialMediaLinks'
-      );
+      let user = await User.findOne({ username }).populate('company', 'name');
 
       // check if user exists with input username
       if (!user) {
@@ -94,14 +116,8 @@ router.post(
       }
 
       // return jwt back to user
-      const payload = {
-        auth: {
-          id: user.id,
-          role: user.role,
-        },
-        access: user.access,
-        company: user.company,
-      };
+      delete user.password;
+      const payload = { user };
 
       jwt.sign(
         payload,
@@ -112,10 +128,7 @@ router.post(
         (err, token) => {
           if (err) throw err;
 
-          res.json({
-            token,
-            ...payload,
-          });
+          res.json({ token, user });
         }
       );
     } catch (err) {
@@ -125,14 +138,18 @@ router.post(
   }
 );
 
-// @route    POST api/auth/table
-// @desc     Authenticate table & get token
+// @route    POST api/auth/customer
+// @desc     Authenticate customer & get token
 // @access   Public
 router.post(
-  '/table',
+  '/customer',
   [
-    check('tableId', 'Invalid Credentials').not().isEmpty().isMongoId(),
-    check('companyId', 'Invalid Credentials').not().isEmpty().isMongoId(),
+    check('tableId', 'Invalid Credentials')
+      .exists({ checkFalsy: true })
+      .isMongoId(),
+    check('companyId', 'Invalid Credentials')
+      .exists({ checkFalsy: true })
+      .isMongoId(),
   ],
   async (req, res) => {
     const errors = validationResult(req).array();
@@ -147,32 +164,49 @@ router.post(
       let table = await Table.findOne({
         _id: tableId,
         company: companyId,
-      }).populate('company', 'name logo socialMediaLinks');
+      })
+        .populate('company', 'name')
+        .populate({
+          path: 'bill',
+          populate: {
+            path: 'orders',
+            populate: {
+              path: 'customisations food',
+              populate: {
+                path: 'customisation customisations',
+                model: 'Customisation',
+              },
+            },
+          },
+        });
 
       // check if table exists
       if (!table) {
-        return res.status(403).json('No table exists');
+        return res.status(403).json('Invalid Credentials');
       }
 
-      // return jwt back to user
-      const payload = {
-        auth: {
-          id: tableId,
-          name: table.name,
-        },
-        access: customerAccessLevel,
-        company: table.company,
-      };
+      let { bill } = table;
+
+      if (!bill) {
+        bill = new Bill({ company: companyId, orders: [] });
+        await bill.save();
+
+        table.bill = bill;
+        await table.save();
+      }
+
+      // return jwt back to customer
+      const payload = { table };
 
       jwt.sign(
         payload,
         config.get('jwtSecret'),
         {
-          expiresIn: 10,
+          // expiresIn: 10,
         },
         (err, token) => {
           if (err) throw err;
-          res.json({ token, ...payload });
+          res.json({ token, table, bill });
         }
       );
     } catch (err) {

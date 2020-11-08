@@ -15,7 +15,6 @@ import Tabs from '../layout/Tabs';
 import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
 import Button from '../layout/Button';
-import RadioInput from '../layout/RadioInput';
 import SwitchInput from '../layout/SwitchInput';
 import Options from './options/Options';
 
@@ -52,13 +51,13 @@ const CustomisationEdit = ({
     name: '',
     title: '',
     availability: true,
-    selection: 'nolimit',
-    min: '0',
-    max: '0',
+    optional: false,
+    min: '1',
+    max: '1',
     options: [],
   });
 
-  let { name, title, availability, selection, min, max, options } = formData;
+  let { name, title, availability, optional, min, max, options } = formData;
 
   useEffect(() => {
     const {
@@ -66,7 +65,7 @@ const CustomisationEdit = ({
       name,
       title,
       availability,
-      selection,
+      optional,
       min,
       max,
       options,
@@ -77,7 +76,7 @@ const CustomisationEdit = ({
         name: name ? name : '',
         title: title ? title : '',
         availability: typeof availability === 'boolean' ? availability : true,
-        selection: selection ? selection : 'nolimit',
+        optional: typeof optional === 'boolean' ? optional : true,
         min: typeof min === 'number' ? min.toString() : '0',
         max: typeof max === 'number' ? max.toString() : '0',
         options: Array.isArray(options) ? options : [],
@@ -143,69 +142,41 @@ const CustomisationEdit = ({
 
       <div className='row'>
         <div className='col'>
-          <RadioInput
-            label={'Option selection type'}
-            required={true}
-            name={'selection'}
-            inputs={[
-              {
-                key: 'No limit',
-                value: 'nolimit',
-              },
-              {
-                key: 'Min',
-                value: 'min',
-              },
-              {
-                key: 'Max',
-                value: 'max',
-              },
-              {
-                key: 'Range',
-                value: 'range',
-              },
-            ]}
-            value={selection}
+          <SwitchInput
+            label={'optional'}
+            name={'optional'}
+            value={optional}
             onChangeHandler={onChange}
           />
         </div>
       </div>
 
-      {selection !== 'nolimit' && (
-        <div className='row'>
-          {(selection === 'range' || selection === 'min') && (
-            <div
-              className={`col ${selection === 'range' ? 'pr-h' : ''}`.trim()}
-            >
-              <TextInput
-                label={'min selection'}
-                required={true}
-                name={'min'}
-                type={'numeric'}
-                value={min}
-                onChangeHandler={onChange}
-                error={inputErrorMessages.min}
-              />
-            </div>
-          )}
-
-          {(selection === 'range' || selection === 'max') && (
-            <div
-              className={`col ${selection === 'range' ? 'pl-h' : ''}`.trim()}
-            >
-              <TextInput
-                label={'max selection'}
-                required={true}
-                name={'max'}
-                type={'numeric'}
-                value={max}
-                onChangeHandler={onChange}
-                error={inputErrorMessages.max}
-              />
-            </div>
-          )}
+      <div className='row'>
+        {typeof optional === 'boolean' && !optional && (
+          <div className='col pr-h'>
+            <TextInput
+              label={'min selection'}
+              required={true}
+              name={'min'}
+              type={'numeric'}
+              value={min}
+              onChangeHandler={onChange}
+              error={inputErrorMessages.min}
+            />
+          </div>
+        )}
+        <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
+          <TextInput
+            label={'max selection'}
+            required={true}
+            name={'max'}
+            type={'numeric'}
+            value={max}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.max}
+          />
         </div>
-      )}
+      </div>
     </Fragment>
   );
 

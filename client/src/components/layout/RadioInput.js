@@ -33,52 +33,56 @@ const RadioInput = ({
     <div className='radio-group'>
       <label htmlFor={name}>
         <span>{label}</span>
-        {required && <span className='required-input'>* required</span>}
+        {required && <span className='required-input' />}
       </label>
 
-      {inputs.map(input => (
-        <div
-          className={`radio-input ${inline ? 'radio-input-inline' : ''}`.trim()}
-          key={uuid()}
-        >
-          <input
-            type='radio'
-            name={name}
-            id={`${name}-radio-input-${input.value}`}
-            value={input.value}
-            checked={input.value === value}
-            onChange={onChange}
-          />
-          <label
-            htmlFor={`${name}-radio-input-${input.value}`}
-            className='radio-input-key'
-          >
-            {input.key}
-          </label>
-        </div>
-      ))}
-
       {(informationText || error) && (
-        <p className={`input-${error ? 'error-' : ''}message`}>
+        <span className={`input-${error ? 'error-' : ''}message`}>
           {error ? error : informationText}
-        </p>
+        </span>
       )}
+
+      <div className='radio-inputs'>
+        {inputs.map(input => (
+          <div
+            className={`radio-input ${
+              inline ? 'radio-input-inline' : ''
+            }`.trim()}
+            key={uuid()}
+          >
+            <input
+              type='radio'
+              name={name}
+              id={`${name}-radio-input-${input.value}`}
+              value={input.value}
+              checked={input.value === value}
+              onChange={onChange}
+            />
+            <label
+              htmlFor={`${name}-radio-input-${input.value}`}
+              className='radio-input-key'
+            >
+              {input.key}
+            </label>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
 RadioInput.propTypes = {
   label: PropTypes.string,
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   required: PropTypes.bool,
   inputs: PropTypes.arrayOf(
     PropTypes.shape({
-      key: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
+      key: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+      value: PropTypes.string,
     })
-  ).isRequired,
-  value: PropTypes.string.isRequired,
-  onChangeHandler: PropTypes.func.isRequired,
+  ),
+  value: PropTypes.string,
+  onChangeHandler: PropTypes.func,
   informationText: PropTypes.string,
   error: PropTypes.string,
   inline: PropTypes.bool,

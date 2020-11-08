@@ -25,7 +25,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 import useInputError from '../../hooks/useInputError';
 
 const MenuAdd = ({
-  auth: { access: authAccess, company: authCompany },
+  userAccess,
+  userCompanyId,
   companies: { company },
   foods: { foods: availableFoods },
   menus: { requesting, errors },
@@ -34,24 +35,22 @@ const MenuAdd = ({
   setSnackbar,
 }) => {
   useEffect(() => {
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     getFoods(companyId);
 
     // eslint-disable-next-line
-  }, [authCompany, company]);
+  }, [userCompanyId, company]);
 
   const [inputErrorMessages] = useInputError({ name: '' }, errors);
 
   const [formData, setFormData] = useState({
     name: '',
     availability: true,
-    isMain: false,
     foods: [],
   });
 
-  const { name, availability, isMain, foods } = formData;
+  const { name, availability, foods } = formData;
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
@@ -61,11 +60,10 @@ const MenuAdd = ({
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (authAccess === 99 && !company)
+    if (userAccess === 99 && !company)
       return setSnackbar('Select a company first!', 'error');
 
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     const addMenuSuccess = await addMenu(companyId, formData);
 
@@ -98,18 +96,6 @@ const MenuAdd = ({
             value={name}
             onChangeHandler={onChange}
             error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Display in main menu page'}
-            name={'isMain'}
-            value={isMain}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.isMain}
           />
         </div>
       </div>
@@ -193,10 +179,11 @@ const MenuAdd = ({
 };
 
 MenuAdd.propTypes = {
-  auth: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
+  userCompanyId: PropTypes.string.isRequired,
+  companies: PropTypes.object,
   foods: PropTypes.object.isRequired,
   menus: PropTypes.object.isRequired,
-  companies: PropTypes.object,
   getFoods: PropTypes.func.isRequired,
   addMenu: PropTypes.func.isRequired,
   setSnackbar: PropTypes.func.isRequired,

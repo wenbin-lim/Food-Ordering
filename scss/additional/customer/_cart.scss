@@ -1,0 +1,45 @@
+.cart {
+  // remove from dialog
+  background: none !important;
+  box-shadow: none !important;
+
+  .cart-front,
+  .cart-back {
+    // remove margin from sidesheet
+    margin: 0 !important;
+
+    .cart-tabs {
+      margin-top: var(--padding);
+      width: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      @include caption;
+
+      .cart-tab {
+        padding: 8px 16px;
+        border-radius: 2rem;
+
+        cursor: pointer;
+
+        transition: background-color 0.8s, color 0.8s;
+
+        &.active {
+          background-color: var(--secondary);
+          color: var(--on-secondary);
+        }
+      }
+    }
+
+    .cart-bottom-btn {
+      .cart-bottom-btn-price {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .cart-front {
+  }
+
+  .cart-back {
+  }
+}

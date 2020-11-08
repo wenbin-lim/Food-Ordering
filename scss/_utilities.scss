@@ -36,19 +36,22 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 }
 
 // inputs
-@mixin input-label($marginBottom: 0) {
+@mixin input-label($justifyContent: 'flex-start', $marginBottom: 0) {
   label {
     display: flex;
-    justify-content: space-between;
+    justify-content: $justifyContent;
     align-items: center;
     margin-bottom: $marginBottom;
 
     @include caption;
 
     .required-input {
-      color: var(--error);
-      font-size: 0.7em;
-      text-transform: none;
+      margin-left: 4px;
+      width: 0.8em;
+      height: 0.8em;
+      background-color: var(--error);
+      border-radius: 50%;
+      align-self: start;
     }
   }
 }
@@ -56,11 +59,14 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 .input-message {
   @include body-2;
   color: inherit;
+  justify-self: start;
 }
 
 .input-error-message {
   @include body-2;
-  color: var(--error);
+  @extend .badge;
+  @extend .badge-error;
+  justify-self: start;
 }
 
 // Media
@@ -83,6 +89,8 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 
 // scrollbar
 @mixin custom_scrollbar {
+  -webkit-overflow-scrolling: touch;
+
   &::-webkit-scrollbar {
     width: var(--scrollbar-size);
     height: var(--scrollbar-size);
@@ -96,6 +104,14 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
       border-radius: 4px;
     }
   }
+}
+
+@mixin hide_scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 // grid system with flexbox

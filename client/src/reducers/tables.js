@@ -55,7 +55,7 @@ export default (state = initialState, action) => {
     case ADD_TABLE:
       return {
         ...state,
-        tables: Array.isArray(state.tables) && [payload, ...state.tables],
+        tables: Array.isArray(state.tables) && [...state.tables, payload],
         requesting: false,
       };
     case EDIT_TABLE:

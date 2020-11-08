@@ -15,6 +15,9 @@
   place-items: center;
 
   .dialog {
+    max-width: $max-dialog-size;
+    max-height: 80vh;
+
     @include box-shadow(4);
 
     background: var(--background);
@@ -23,8 +26,8 @@
     transform: scale(0.3);
 
     &.dialog-fullscreen {
-      width: 100vw;
-      height: 100vh;
+      min-width: 100vw !important;
+      min-height: calc(var(--vh) * 100) !important;
 
       // before animation state
       transform: translateX(100%);

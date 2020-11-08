@@ -49,31 +49,23 @@ const MenuEdit = ({
   const [formData, setFormData] = useState({
     name: '',
     availability: true,
-    isMain: false,
     index: '',
     foods: [],
   });
 
-  const { name, availability, isMain, index, foods } = formData;
+  const { name, availability, index, foods } = formData;
 
   useEffect(() => {
-    let {
-      _id: menuId,
-      name,
-      availability,
-      isMain,
-      index,
-      foods,
-      company: { _id: companyId } = {},
-    } = { ...menu };
+    let { _id: menuId, name, availability, index, foods, company } = {
+      ...menu,
+    };
 
     if (menuId === id) {
-      getFoods(companyId);
+      getFoods(company);
 
       setFormData({
         name: name ? name : '',
         availability: typeof availability === 'boolean' ? availability : true,
-        isMain: typeof isMain === 'boolean' ? isMain : false,
         index: typeof index === 'number' ? index.toString() : index,
         foods: Array.isArray(foods) ? foods.map(food => food._id) : [],
       });
@@ -128,25 +120,13 @@ const MenuEdit = ({
       <div className='row'>
         <div className='col'>
           <TextInput
-            label={'Sidebar Menu Position'}
+            label={'Menu Position'}
             required={true}
             name={'index'}
             type={'numeric'}
             value={index}
             onChangeHandler={onChange}
             error={inputErrorMessages.index}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Display in main menu page'}
-            name={'isMain'}
-            value={isMain}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.isMain}
           />
         </div>
       </div>
@@ -174,6 +154,7 @@ const MenuEdit = ({
             }))}
             value={foods}
             onChangeHandler={onChange}
+            ordered={true}
           />
         ) : (
           <p className='caption text-center mt-1'>No food found</p>

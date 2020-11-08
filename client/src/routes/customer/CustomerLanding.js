@@ -6,21 +6,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Container from '../../components/layout/Container';
 import Button from '../../components/layout/Button';
 
-/* 
-  =====
-  Props
-  =====
-  @name       auth 
-  @type       object
-  @desc       auth state from CustomerRoute
-  @required   true
-
-  @name       company 
-  @type       object
-  @desc       company state from CustomerRoute
-  @required   true
-*/
-export const CustomerLanding = ({ auth: { company, auth } }) => {
+const CustomerLanding = ({ customerTableName }) => {
   const navigate = useNavigate();
   const tableInfoNameRef = useRef(null);
 
@@ -40,34 +26,34 @@ export const CustomerLanding = ({ auth: { company, auth } }) => {
         tableInfoName.style.fontSize = '10rem';
       }
     }
-  }, [auth.name]);
+  }, [customerTableName]);
 
   const parentContent = (
     <Fragment>
       <section className='table-info'>
-        <h2 className='table-info-caption heading-2'>TABLE</h2>
+        <h2 className='table-info-caption'>TABLE</h2>
         <p className='table-info-name' ref={tableInfoNameRef}>
-          {auth.name}
+          {customerTableName}
         </p>
       </section>
       <section className='button-group'>
         <Button
           text={'ORDER'}
-          btnStyle={'contained'}
+          fill={'contained'}
           type={'primary'}
           block={true}
           onClick={() => navigate(`menu`)}
         />
         <Button
           text={'ASSISTANCE'}
-          btnStyle={'contained'}
+          fill={'contained'}
           type={'primary'}
           block={true}
           // onClick={() => navigate(`/${company.name}/table/menu`)}
         />
         <Button
           text={'PAY BILL'}
-          btnStyle={'contained'}
+          fill={'contained'}
           type={'primary'}
           block={true}
           // onClick={() => navigate(`/${company.name}/table/menu`)}
@@ -76,6 +62,7 @@ export const CustomerLanding = ({ auth: { company, auth } }) => {
       <Outlet />
     </Fragment>
   );
+
   return (
     <Container
       parentClass={'customer-qr-landing'}
@@ -85,7 +72,7 @@ export const CustomerLanding = ({ auth: { company, auth } }) => {
 };
 
 CustomerLanding.propTypes = {
-  auth: PropTypes.object.isRequired,
+  customerTableName: PropTypes.string.isRequired,
 };
 
 export default CustomerLanding;

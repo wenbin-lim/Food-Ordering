@@ -39,10 +39,6 @@ const MenuSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  isMain: {
-    type: Boolean,
-    required: true,
-  },
   foods: [
     {
       type: mongoose.Schema.Types.ObjectId,

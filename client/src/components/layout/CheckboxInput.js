@@ -3,13 +3,15 @@ import PropTypes from 'prop-types';
 
 import { v4 as uuid } from 'uuid';
 
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
+
 // Icons
 import CheckIcon from '../icons/CheckIcon';
 
 /*
   inputs = [
     {
-      key: 'string',
+      key: 'string' or jsx,
       value: 'string',
     }
   ]
@@ -29,9 +31,10 @@ const CheckboxInput = ({
   error,
   inline = false,
   max,
+  ordered = false,
 }) => {
   const [maxSelection] = useState(
-    typeof max === 'number' ? max : inputs.length
+    typeof max === 'number' && max > 0 ? max : inputs.length
   );
 
   const onClick = (e, newValue) => {
@@ -49,51 +52,68 @@ const CheckboxInput = ({
     <div className='checkbox-group'>
       <label htmlFor={name}>
         <span>{label}</span>
-        {required && <span className='required-input'>* required</span>}
+        {required && <span className='required-input' />}
       </label>
 
-      {inputs &&
-        inputs.map(input => (
-          <div
-            className={`checkbox-input ${
-              inline ? 'checkbox-input-inline' : ''
-            }`.trim()}
-            key={uuid()}
-            onClick={e => onClick(e, input.value)}
-          >
-            <div className='checkbox-wrapper'>
-              <div
-                className={`checkbox ${
-                  value.indexOf(input.value) >= 0 && 'checked'
-                }`}
-              >
-                <CheckIcon />
-              </div>
-            </div>
-            <div className='checkbox-input-key'>{input.key}</div>
-          </div>
-        ))}
-
       {(informationText || error) && (
-        <p className={`input-${error ? 'error-' : ''}message`}>
+        <span className={`input-${error ? 'error-' : ''}message`}>
           {error ? error : informationText}
-        </p>
+        </span>
       )}
+
+      <div className='checkbox-inputs'>
+        {inputs &&
+          inputs.map(input => (
+            <div
+              className={`checkbox-input ${
+                inline ? 'checkbox-input-inline' : ''
+              }`.trim()}
+              key={uuid()}
+              onClick={e => onClick(e, input.value)}
+            >
+              <div className='checkbox-wrapper'>
+                <div
+                  className={sanitizeWhiteSpace(
+                    `checkbox
+                  ${ordered ? 'checkbox-ordered' : ''}
+                  ${value.indexOf(input.value) >= 0 ? 'checked' : ''}
+                  `
+                  )}
+                >
+                  {ordered ? (
+                    <span className='checkbox-value-index'>
+                      {value.indexOf(input.value) + 1}
+                    </span>
+                  ) : (
+                    <CheckIcon />
+                  )}
+                </div>
+              </div>
+              <div className='checkbox-input-key'>{input.key}</div>
+            </div>
+          ))}
+      </div>
     </div>
   );
 };
 
 CheckboxInput.propTypes = {
   label: PropTypes.string,
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   required: PropTypes.bool,
-  inputs: PropTypes.array.isRequired,
-  value: PropTypes.array.isRequired,
-  onChangeHandler: PropTypes.func.isRequired,
+  inputs: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+      value: PropTypes.string,
+    })
+  ),
+  value: PropTypes.array,
+  onChangeHandler: PropTypes.func,
   informationText: PropTypes.string,
   error: PropTypes.string,
   inline: PropTypes.bool,
   max: PropTypes.number,
+  ordered: PropTypes.bool,
 };
 
 export default CheckboxInput;

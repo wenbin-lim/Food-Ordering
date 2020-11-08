@@ -18,5 +18,7 @@
     "staff": 2,
     "admin": 3,
     "wawaya": 99
-  }
+  },
+  "foodStatus": "added,preparing,hold,ready,served,cancelled,rejected,removed",
+  "paymentMethods": "cash,visa,master"
 }

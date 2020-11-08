@@ -9,47 +9,63 @@ import Spinner from '../components/layout/Spinner';
 const CustomerRoute = ({
   component: Component,
   path,
-  minAccessLevel = 0,
-  loading,
+  companiesLoading,
   companies,
-  auth,
+  customer,
   children,
   ...rest
 }) => {
   const { companyName } = useParams();
 
-  const company = companies.find(company => company.name === companyName);
+  // companies is loaded with getCompaniesPublic in App.js
+  const foundCompany = companies.find(company => company.name === companyName);
+  const { _id: foundCompanyId } = { ...foundCompany };
 
-  if (loading) {
-    return <Spinner fullscreen={true} />;
-  } else {
-    if (company) {
-      if (auth.access >= minAccessLevel) {
-        return (
-          <Route
-            path={path}
-            element={<Component auth={auth} company={company} {...rest} />}
-          >
-            {children}
-          </Route>
-        );
+  const { loading: customerLoading, table } = customer;
+  const {
+    _id: customerId,
+    name: customerTableName,
+    company: customerCompany,
+  } = { ...table };
+  const { _id: customerCompanyId, name: customerCompanyName } = {
+    ...customerCompany,
+  };
+
+  return companiesLoading || customerLoading ? (
+    <Spinner fullscreen={true} />
+  ) : foundCompanyId === customerCompanyId ? (
+    <Route
+      path={path}
+      element={
+        <Component
+          customerId={customerId}
+          customerTableName={customerTableName}
+          customerCompanyId={customerCompanyId}
+          customerCompanyName={customerCompanyName}
+          customerCompany={foundCompany}
+          {...rest}
+        />
       }
-    }
-    return <Navigate to='/' />;
-  }
+    >
+      {children}
+    </Route>
+  ) : (
+    <Navigate to='/' replace={true} />
+  );
 };
 
 CustomerRoute.propTypes = {
   component: PropTypes.elementType.isRequired,
   path: PropTypes.string.isRequired,
-  minAccessLevel: PropTypes.number,
+  companiesLoading: PropTypes.bool.isRequired,
   companies: PropTypes.array.isRequired,
+  customer: PropTypes.object,
 };
 
 const mapStateToProps = state => ({
-  loading: state.app.companiesLoading,
   companies: state.app.companies,
-  auth: state.auth,
+  companiesLoading: state.app.companiesLoading,
+  customer: state.customer,
 });
 
 const mapDispatchToProps = {};

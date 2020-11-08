@@ -13,7 +13,6 @@ import Tabs from '../layout/Tabs';
 import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
 import Button from '../layout/Button';
-import RadioInput from '../layout/RadioInput';
 import SwitchInput from '../layout/SwitchInput';
 import Options from './options/Options';
 
@@ -24,7 +23,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 import useInputError from '../../hooks/useInputError';
 
 const CustomisationAdd = ({
-  auth: { access: authAccess, company: authCompany },
+  userAccess,
+  userCompanyId,
   companies: { company },
   customisations: { requesting, errors },
   addCustomisation,
@@ -44,28 +44,26 @@ const CustomisationAdd = ({
     name: '',
     title: '',
     availability: true,
-    selection: 'nolimit',
-    min: '0',
-    max: '0',
+    optional: false,
+    min: '1',
+    max: '1',
     options: [],
   });
 
-  let { name, title, availability, selection, min, max, options } = formData;
+  let { name, title, availability, optional, min, max, options } = formData;
 
-  const onChange = ({ name, value }) => {
+  const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
-  };
 
   const navigate = useNavigate();
 
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (authAccess === 99 && !company)
+    if (userAccess === 99 && !company)
       return setSnackbar('Select a company first!', 'error');
 
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     const addCustomisationSuccess = await addCustomisation(companyId, formData);
 
@@ -117,69 +115,41 @@ const CustomisationAdd = ({
 
       <div className='row'>
         <div className='col'>
-          <RadioInput
-            label={'Option selection type'}
-            required={true}
-            name={'selection'}
-            inputs={[
-              {
-                key: 'No limit',
-                value: 'nolimit',
-              },
-              {
-                key: 'Min',
-                value: 'min',
-              },
-              {
-                key: 'Max',
-                value: 'max',
-              },
-              {
-                key: 'Range',
-                value: 'range',
-              },
-            ]}
-            value={selection}
+          <SwitchInput
+            label={'optional'}
+            name={'optional'}
+            value={optional}
             onChangeHandler={onChange}
           />
         </div>
       </div>
 
-      {selection !== 'nolimit' && (
-        <div className='row'>
-          {(selection === 'range' || selection === 'min') && (
-            <div
-              className={`col ${selection === 'range' ? 'pr-h' : ''}`.trim()}
-            >
-              <TextInput
-                label={'min selection'}
-                required={true}
-                name={'min'}
-                type={'numeric'}
-                value={min}
-                onChangeHandler={onChange}
-                error={inputErrorMessages.min}
-              />
-            </div>
-          )}
-
-          {(selection === 'range' || selection === 'max') && (
-            <div
-              className={`col ${selection === 'range' ? 'pl-h' : ''}`.trim()}
-            >
-              <TextInput
-                label={'max selection'}
-                required={true}
-                name={'max'}
-                type={'numeric'}
-                value={max}
-                onChangeHandler={onChange}
-                error={inputErrorMessages.max}
-              />
-            </div>
-          )}
+      <div className='row'>
+        {typeof optional === 'boolean' && !optional && (
+          <div className='col pr-h'>
+            <TextInput
+              label={'min selection'}
+              required={true}
+              name={'min'}
+              type={'numeric'}
+              value={min}
+              onChangeHandler={onChange}
+              error={inputErrorMessages.min}
+            />
+          </div>
+        )}
+        <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
+          <TextInput
+            label={'max selection'}
+            required={true}
+            name={'max'}
+            type={'numeric'}
+            value={max}
+            onChangeHandler={onChange}
+            error={inputErrorMessages.max}
+          />
         </div>
-      )}
+      </div>
     </Fragment>
   );
 
@@ -239,9 +209,10 @@ const CustomisationAdd = ({
 };
 
 CustomisationAdd.propTypes = {
-  auth: PropTypes.object.isRequired,
-  customisations: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
+  userCompanyId: PropTypes.string.isRequired,
   companies: PropTypes.object.isRequired,
+  customisations: PropTypes.object.isRequired,
   addCustomisation: PropTypes.func.isRequired,
   setSnackbar: PropTypes.func.isRequired,
 };

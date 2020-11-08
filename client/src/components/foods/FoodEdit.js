@@ -108,12 +108,12 @@ const FoodEdit = ({
       image,
       menus,
       customisations,
-      company: { _id: companyId } = {},
+      company,
     } = { ...food };
 
     if (foodId === id) {
-      getMenus(companyId);
-      getCustomisations(companyId);
+      getMenus(company);
+      getCustomisations(company);
 
       setFormData({
         availability: typeof availability === 'boolean' ? availability : true,
@@ -342,6 +342,7 @@ const FoodEdit = ({
             }))}
             value={customisations}
             onChangeHandler={onChange}
+            ordered={true}
           />
         ) : (
           <p className='caption'>No customisations found</p>

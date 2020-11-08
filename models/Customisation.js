@@ -42,8 +42,8 @@ const CustomisationSchema = mongoose.Schema({
     default: true,
     required: true,
   },
-  selection: {
-    type: String,
+  optional: {
+    type: Boolean,
     required: true,
   },
   options: [
@@ -68,10 +68,14 @@ const CustomisationSchema = mongoose.Schema({
   min: {
     type: Number,
     required: true,
+    min: 0,
+    default: 0,
   },
   max: {
     type: Number,
     required: true,
+    min: 1,
+    default: 1,
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,

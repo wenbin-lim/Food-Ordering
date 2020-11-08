@@ -1,8 +1,7 @@
 import {
-  LOAD_TOKEN,
-  LOAD_TOKEN_FAIL,
   NO_TOKEN,
-  LOGGING_IN,
+  TOKEN_LOADED,
+  TOKEN_INVALID,
   LOGIN_SUCCESS,
   LOGIN_FAIL,
   LOGOUT,
@@ -10,9 +9,7 @@ import {
 
 const initialState = {
   loading: true,
-  auth: null,
-  access: 0,
-  company: null,
+  user: null,
   errors: null,
 };
 
@@ -20,28 +17,28 @@ export default (state = initialState, action) => {
   const { type, payload } = action;
 
   switch (type) {
-    case LOGGING_IN:
-      localStorage.removeItem('token');
-      return {
-        ...initialState,
-      };
-    case LOAD_TOKEN:
-    case LOGIN_SUCCESS:
-      localStorage.setItem('token', payload.token);
-      delete payload.token;
+    case TOKEN_LOADED:
       return {
         ...state,
-        ...payload,
         loading: false,
+        user: payload.user,
       };
-    case LOAD_TOKEN_FAIL:
+    case LOGIN_SUCCESS:
+      localStorage.setItem('token', payload.token);
+      return {
+        ...state,
+        loading: false,
+        user: payload.user,
+      };
     case NO_TOKEN:
+    case TOKEN_INVALID:
     case LOGIN_FAIL:
     case LOGOUT:
       localStorage.removeItem('token');
       return {
-        ...initialState,
+        ...state,
         loading: false,
+        user: null,
         errors: payload,
       };
     default:

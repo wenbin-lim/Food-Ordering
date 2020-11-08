@@ -20,7 +20,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 import useInputError from '../../hooks/useInputError';
 
 const TableAdd = ({
-  auth: { access: authAccess, company: authCompany },
+  userAccess,
+  userCompanyId,
   companies: { company },
   tables: { requesting, errors },
   addTable,
@@ -42,11 +43,10 @@ const TableAdd = ({
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (authAccess === 99 && !company)
+    if (userAccess === 99 && !company)
       return setSnackbar('Select a company first!', 'error');
 
-    let companyId =
-      company && authAccess === 99 ? company._id : authCompany._id;
+    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
 
     const addTableSuccess = await addTable(companyId, formData);
 
@@ -103,9 +103,10 @@ const TableAdd = ({
 };
 
 TableAdd.propTypes = {
-  auth: PropTypes.object.isRequired,
-  tables: PropTypes.object.isRequired,
+  userAccess: PropTypes.number.isRequired,
+  userCompanyId: PropTypes.string.isRequired,
   companies: PropTypes.object.isRequired,
+  tables: PropTypes.object.isRequired,
   addTable: PropTypes.func.isRequired,
   setSnackbar: PropTypes.func.isRequired,
 };

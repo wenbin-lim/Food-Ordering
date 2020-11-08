@@ -2,10 +2,13 @@
 // Packages
 // ====================================================================================================
 const mongoose = require('mongoose');
+const config = require('config');
 
 // ====================================================================================================
 // Variables
 // ====================================================================================================
+const foodStatus = config.get('foodStatus');
+const paymentMethods = config.get('paymentMethods');
 
 // ====================================================================================================
 // Define Schema
@@ -27,30 +30,33 @@ const mongoose = require('mongoose');
 const BillSchema = mongoose.Schema({
   total: {
     type: Number,
-    required: true,
     min: 0,
+    default: 0,
   },
   gst: {
     type: Number,
-    required: true,
     min: 0,
+    default: 0,
   },
   serviceCharge: {
     type: Number,
-    required: true,
     min: 0,
+    default: 0,
   },
   paymentMethod: {
     type: String,
-    required: true,
+    enum: paymentMethods.split(','),
   },
   discountCode: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DiscountCode',
   },
-  date: {
-    type: date,
+  startTime: {
+    type: Date,
     default: Date.now,
+  },
+  endTime: {
+    type: Date,
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
@@ -59,15 +65,44 @@ const BillSchema = mongoose.Schema({
   },
   orders: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Order',
-      required: true,
+      food: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Food',
+      },
+      quantity: {
+        type: Number,
+        min: 1,
+        default: 1,
+      },
+      price: {
+        type: Number,
+        min: 0,
+        default: 0,
+      },
+      customisations: [
+        {
+          customisation: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Customisation',
+          },
+          optionsChosen: [],
+        },
+      ],
+      additionalInstruction: String,
+      status: {
+        type: String,
+        enum: Object.keys(foodStatus),
+        default: foodStatus.added,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
     },
   ],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
   },
 });
 

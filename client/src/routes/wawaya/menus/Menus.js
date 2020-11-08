@@ -42,7 +42,7 @@ const Menus = ({
     companiesLoading || !Array.isArray(companies) ? (
       <ListPreloader />
     ) : companies.length > 0 ? (
-      <article className='list p-0'>
+      <article className='list'>
         <header className='list-header'>
           <div className='list-header-right-content'>
             <SearchInput
@@ -77,7 +77,7 @@ const Menus = ({
         icon={<PlusIcon />}
         onClick={() => navigate('add')}
       />
-      <article className='list p-0'>
+      <article className='list'>
         {menusLoading ? (
           <ListPreloader />
         ) : menus.length > 0 ? (

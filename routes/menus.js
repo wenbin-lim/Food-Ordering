@@ -76,10 +76,6 @@ router.post(
       'availability',
       'An unexpected error occured, please try again later!'
     ).isBoolean(),
-    check(
-      'isMain',
-      'An unexpected error occured, please try again later!'
-    ).isBoolean(),
     body('foods').toArray(),
     check(
       'foods.*',
@@ -93,7 +89,7 @@ router.post(
     ).isMongoId(),
   ],
   async (req, res) => {
-    const { name, availability, isMain, foods, company } = req.body;
+    const { name, availability, foods, company } = req.body;
 
     let errors = validationResult(req).array();
 
@@ -110,7 +106,6 @@ router.post(
         name,
         availability,
         index,
-        isMain,
         foods,
         company,
       });
@@ -145,9 +140,14 @@ router.get(
     }
 
     try {
-      let menu = await Menu.findById(req.params.id)
-        .populate('company', 'displayedName')
-        .populate('foods');
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let menu = await Menu.findOne(query).populate('foods');
 
       if (!menu) {
         return res.status(404).send('Menu not found');
@@ -181,11 +181,6 @@ router.put(
       min: 1,
       allow_leading_zeroes: false,
     }),
-    check(
-      'isMain',
-      'An unexpected error occured, please try again later!'
-    ).isBoolean(),
-
     body('foods').toArray(),
     check(
       'foods.*',
@@ -195,18 +190,19 @@ router.put(
       .isMongoId(),
   ],
   async (req, res) => {
-    let {
-      name,
-      availability,
-      index: newIndex,
-      isMain,
-      foods: newFoods,
-    } = req.body;
+    let { name, availability, index: newIndex, foods: newFoods } = req.body;
 
     let errors = validationResult(req).array();
 
     try {
-      let menu = await Menu.findById(req.params.id);
+      const { access, company: userCompanyId } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company: userCompanyId }
+          : { _id: req.params.id };
+
+      let menu = await Menu.findOne(query);
 
       if (!menu) {
         return res.status(404).send('Menu not found');
@@ -225,8 +221,8 @@ router.put(
       if (newIndex > menus.length) {
         errors.push({
           location: 'body',
-          msg: `Index cannot be more than ${foodgroups.length}`,
-          param: 'sidebarIndex',
+          msg: `Index cannot be more than ${menus.length}`,
+          param: 'index',
         });
       }
 
@@ -302,7 +298,6 @@ router.put(
       menu.name = name;
       menu.index = newIndex;
       menu.availability = availability;
-      menu.isMain = isMain;
       menu.foods = newFoods;
 
       await menu.save();
@@ -338,7 +333,14 @@ router.delete(
     }
 
     try {
-      const deletedMenu = await Menu.findByIdAndRemove(req.params.id);
+      const { access, company: userCompanyId } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company: userCompanyId }
+          : { _id: req.params.id };
+
+      const deletedMenu = await Menu.findOneAndRemove(query);
 
       if (!deletedMenu) {
         return res.status(404).send('Menu not found');

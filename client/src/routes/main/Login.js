@@ -17,7 +17,7 @@ import { login } from '../../actions/auth';
 // Custom Hooks
 import useInputError from '../../hooks/useInputError';
 
-const Login = ({ auth: { loading, errors, access, company }, login }) => {
+const Login = ({ auth: { loading, errors, user }, login }) => {
   const [inputErrorMessages] = useInputError(
     {
       username: '',
@@ -41,14 +41,18 @@ const Login = ({ auth: { loading, errors, access, company }, login }) => {
     login(username, password);
   };
 
-  if (!loading && company && access > 2) {
-    return <Navigate to={`/${company.name}`} />;
+  if (user) {
+    const {
+      company: { name: companyName },
+    } = user;
+
+    return <Navigate to={`/${companyName}`} />;
     // do further navigation in future
   }
 
   return (
     <form className='loginform' onSubmit={e => onSubmit(e)}>
-      <section className='loginform-header'>Login now</section>
+      <header className='loginform-header'>Login now</header>
       <section className='loginform-content'>
         <TextInput
           label={'username'}
@@ -56,8 +60,7 @@ const Login = ({ auth: { loading, errors, access, company }, login }) => {
           type={'text'}
           value={username}
           onChangeHandler={onChange}
-          validity={!inputErrorMessages.username}
-          errorMessage={inputErrorMessages.username}
+          error={inputErrorMessages.username}
         />
 
         <TextInput
@@ -66,12 +69,11 @@ const Login = ({ auth: { loading, errors, access, company }, login }) => {
           type={'password'}
           value={password}
           onChangeHandler={onChange}
-          validity={!inputErrorMessages.password}
-          errorMessage={inputErrorMessages.password}
+          error={inputErrorMessages.password}
         />
       </section>
 
-      <section className='loginform-footer'>
+      <footer className='loginform-footer'>
         <Button
           fill={'contained'}
           type={'primary'}
@@ -88,7 +90,7 @@ const Login = ({ auth: { loading, errors, access, company }, login }) => {
           }
           disabled={loading}
         />
-      </section>
+      </footer>
     </form>
   );
 };

@@ -54,7 +54,7 @@ const TextInput = ({
     <div className='input-group'>
       <label htmlFor={name}>
         <span>{label}</span>
-        {required && <span className='required-input'>* required</span>}
+        {required && <span className='required-input' />}
       </label>
 
       <div
@@ -67,6 +67,7 @@ const TextInput = ({
           type={inputType}
           value={value}
           pattern={inputType === 'numeric' ? '[0-9]*' : null}
+          step={inputType === 'number' ? 'any' : null}
           onChange={onChange}
           onKeyPress={onKeyPress}
           className={error ? 'invalid' : ''}
@@ -81,9 +82,9 @@ const TextInput = ({
       </div>
 
       {(informationText || error) && (
-        <p className={`input-${error ? 'error-' : ''}message`}>
+        <span className={`input-${error ? 'error-' : ''}message`}>
           {error ? error : informationText}
-        </p>
+        </span>
       )}
     </div>
   );

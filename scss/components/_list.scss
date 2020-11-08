@@ -11,9 +11,6 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
   position: relative;
   height: 100%;
 
-  // remove padding from .parent and add to .list instead
-  padding: 0 !important;
-
   display: flex;
   flex-direction: column;
 
@@ -46,11 +43,12 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 
   .list {
     flex: 1;
-    overflow: auto;
 
+    overflow: auto;
     @include custom_scrollbar;
 
-    padding: var(--padding);
+    // dont know why the scrollbar in ios keep appearing below the list
+    padding-right: var(--scrollbar-size);
 
     .list-item-wrapper {
       margin-bottom: $list-item-gap;

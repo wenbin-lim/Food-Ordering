@@ -36,6 +36,10 @@ const TableSchema = mongoose.Schema({
     ref: 'Company',
     required: true,
   },
+  bill: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bill',
+  },
   creationDate: {
     type: Date,
     default: Date.now,

@@ -28,6 +28,7 @@ const accessLevel = config.get('accessLevel');
 // Models
 // ====================================================================================================
 const Customisation = require('../models/Customisation');
+const Food = require('../models/Food');
 
 // ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
@@ -42,8 +43,8 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 // @route    GET api/customisations
 // @desc     List all customisations
-// @access   Private for customer and above
-router.get('/', auth(false, accessLevel.customer), async (req, res) => {
+// @access   Private for staff and above
+router.get('/', auth(false, accessLevel.staff), async (req, res) => {
   try {
     const { company } = req.query;
 
@@ -72,16 +73,16 @@ router.post(
     check('name', 'Please enter a name').exists({ checkFalsy: true }),
     check('title', 'Please enter a title').exists({ checkFalsy: true }),
     check(
-      'selection',
+      'optional',
       'An unexpected error occured, please try again later!'
-    ).exists({ checkFalsy: true }),
+    ).isBoolean(),
     body('options').toArray(),
     check('min', 'Value must be a whole number').isInt({
       min: 0,
       allow_leading_zeroes: false,
     }),
-    check('max', 'Value must be a whole number').isInt({
-      min: 0,
+    check('max', 'Value must be a whole number that is more than 1').isInt({
+      min: 1,
       allow_leading_zeroes: false,
     }),
     check(
@@ -94,7 +95,7 @@ router.post(
       name,
       title,
       availability,
-      selection,
+      optional,
       options,
       min,
       max,
@@ -103,7 +104,7 @@ router.post(
 
     let errors = validationResult(req).array();
 
-    if (selection === 'range' && parseInt(max) < parseInt(min)) {
+    if (!optional && parseInt(max) < parseInt(min)) {
       errors.push({
         location: 'body',
         msg: `Max value cannot be lesser than min value of ${min}`,
@@ -140,16 +141,6 @@ router.post(
     }
 
     try {
-      // sanitize min and max
-      if (selection === 'nolimit') {
-        min = 0;
-        max = 0;
-      } else if (selection === 'min') {
-        max = 0;
-      } else if (selection === 'max') {
-        min = 0;
-      }
-
       // sanitize options by replacing the given uuid into mongoid
       if (options) {
         options = options.map(option => {
@@ -163,9 +154,9 @@ router.post(
       let customisation = new Customisation({
         name,
         title,
-        selection,
+        optional,
         availability,
-        min,
+        min: optional ? 0 : min,
         max,
         options,
         company,
@@ -202,11 +193,14 @@ router.get(
     }
 
     try {
-      // get a single customisation
-      let customisation = await Customisation.findById(req.params.id).populate(
-        'company',
-        'displayedName'
-      );
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let customisation = await Customisation.findOne(query);
 
       if (!customisation) {
         return res.status(404).send('Customisation not found');
@@ -238,25 +232,25 @@ router.put(
     check('name', 'Please enter a name').exists({ checkFalsy: true }),
     check('title', 'Please enter a title').exists({ checkFalsy: true }),
     check(
-      'selection',
+      'optional',
       'An unexpected error occured, please try again later!'
-    ).exists({ checkFalsy: true }),
+    ).isBoolean(),
     body('options').toArray(),
     check('min', 'Value must be a whole number').isInt({
       min: 0,
       allow_leading_zeroes: false,
     }),
-    check('max', 'Value must be a whole number').isInt({
-      min: 0,
+    check('max', 'Value must be a whole number that is more than 1').isInt({
+      min: 1,
       allow_leading_zeroes: false,
     }),
   ],
   async (req, res) => {
-    let { name, title, availability, selection, options, min, max } = req.body;
+    let { name, title, availability, optional, options, min, max } = req.body;
 
     let errors = validationResult(req).array();
 
-    if (selection === 'range' && parseInt(max) < parseInt(min)) {
+    if (!optional && parseInt(max) < parseInt(min)) {
       errors.push({
         location: 'body',
         msg: `Max value cannot be lesser than min value of ${min}`,
@@ -293,20 +287,17 @@ router.put(
     }
 
     try {
-      let customisation = await Customisation.findById(req.params.id);
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let customisation = await Customisation.findOne(query);
 
       if (!customisation) {
         return res.status(404).send('Customisation not found');
-      }
-
-      // sanitize min and max
-      if (selection === 'nolimit') {
-        min = 0;
-        max = 0;
-      } else if (selection === 'min') {
-        max = 0;
-      } else if (selection === 'max') {
-        min = 0;
       }
 
       // sanitize options
@@ -321,9 +312,9 @@ router.put(
 
       customisation.name = name;
       customisation.title = title;
-      customisation.selection = selection;
+      customisation.optional = optional;
       customisation.availability = availability;
-      customisation.min = min;
+      customisation.min = optional ? 0 : min;
       customisation.max = max;
       customisation.options = options;
 
@@ -358,15 +349,27 @@ router.delete(
     }
 
     try {
-      let deleteCustomisation = await Customisation.findByIdAndRemove(
-        req.params.id
-      );
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let deleteCustomisation = await Customisation.findOneAndRemove(query);
 
       if (!deleteCustomisation) {
         return res.status(404).send('Customisation not found');
       }
 
       res.json(deleteCustomisation);
+
+      await Food.updateMany(
+        { customisations: req.params.id },
+        {
+          $pull: { customisations: req.params.id },
+        }
+      );
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

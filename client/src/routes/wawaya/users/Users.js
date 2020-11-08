@@ -42,7 +42,7 @@ const Users = ({
     companiesLoading || !Array.isArray(companies) ? (
       <ListPreloader />
     ) : companies.length > 0 ? (
-      <article className='list p-0'>
+      <article className='list'>
         <header className='list-header'>
           <div className='list-header-right-content'>
             <SearchInput
@@ -77,7 +77,7 @@ const Users = ({
         icon={<PlusIcon />}
         onClick={() => navigate('add')}
       />
-      <article className='list p-0'>
+      <article className='list'>
         {usersLoading || !Array.isArray(users) ? (
           <ListPreloader />
         ) : users.length > 0 ? (

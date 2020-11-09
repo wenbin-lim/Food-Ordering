@@ -14,6 +14,9 @@ import {
 import { Provider } from 'react-redux';
 import store from './store';
 
+// React query devtools
+import { ReactQueryDevtools } from 'react-query-devtools';
+
 // Auth components
 import WawayaRoute from './routing/WawayaRoute';
 import CustomerRoute from './routing/CustomerRoute';
@@ -58,7 +61,7 @@ import Orders from './routes/company/orders/Orders';
 import WawayaAppWrapper from './routes/wawaya/WawayaAppWrapper';
 import WawayaDashboard from './routes/wawaya/WawayaDashboard';
 import Companies from './routes/wawaya/companies/Companies';
-import CompanyInfo from './routes/wawaya/companies/CompanyInfo';
+import Company from './routes/wawaya/companies/Company';
 import CompanyAdd from './routes/wawaya/companies/CompanyAdd';
 import CompanyEdit from './routes/wawaya/companies/CompanyEdit';
 import Users from './routes/wawaya/users/Users';
@@ -113,7 +116,7 @@ const App = () => {
 
     // store
     // populate list of companies in app level app state for route population
-    store.dispatch(getCompaniesPublic());
+    // store.dispatch(getCompaniesPublic());
     store.dispatch(loadToken());
 
     return () => {
@@ -129,7 +132,7 @@ const App = () => {
     <Provider store={store}>
       <Router>
         <Routes>
-          <Route path='*' element={<Navigate to='/' />} />
+          {/* <Route path='*' element={<Navigate to='/' />} /> */}
 
           <Route path='/' element={<MainAppWrapper />}>
             <Route path='' element={<Landing />} />
@@ -232,11 +235,11 @@ const App = () => {
           </CompanyRoute>
 
           <WawayaRoute path='/wawaya' component={WawayaAppWrapper}>
-            <WawayaRoute path='' component={WawayaDashboard} />
+            <WawayaRoute path='/' component={WawayaDashboard} />
 
             <WawayaRoute path='companies' component={Companies}>
               <WawayaRoute path='add' component={CompanyAdd} />
-              <WawayaRoute path=':id' component={CompanyInfo} />
+              <WawayaRoute path=':id' component={Company} />
               <WawayaRoute path=':id/edit' component={CompanyEdit} />
             </WawayaRoute>
 
@@ -273,6 +276,9 @@ const App = () => {
         </Routes>
       </Router>
       <Snackbar />
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </Provider>
   );
 };

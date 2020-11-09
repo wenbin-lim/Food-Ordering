@@ -22,8 +22,7 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
   useEffect(() => {
     // redux companies state is required in most routes
     // hence getCompanies here to start off
-    getCompanies();
-
+    // getCompanies();
     // eslint-disable-next-line
   }, []);
 
@@ -42,10 +41,10 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
       {!screenOrientation &&
         navLinks.map((link, index) => (
           <NavLink
-            key={`navlink_to_${link}_${index}`}
+            key={`navlink-${link}-${index}`}
             to={link}
-            className='navbar-link button-text'
-            activeClassName='navbar-link-active'
+            className='navbar-link'
+            activeClassName='active'
           >
             {link}
           </NavLink>

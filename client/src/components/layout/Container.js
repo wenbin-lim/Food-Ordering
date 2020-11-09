@@ -1,78 +1,102 @@
-import React, { Fragment } from 'react';
+import { useEffect, createElement } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
 const Container = ({
-  parentContent,
-  childContent,
-  parentSize,
-  childSize,
-  parentClass,
-  childClass,
-  parentStyle,
-  childStyle,
-  screenOrientation,
+  elementType = 'section',
+  className,
+  style,
+  sidesheet,
+  children,
 }) => {
-  return (
-    <section
-      className={sanitizeWhiteSpace(
-        `container ${
-          childContent ? 'with-child' : `${parentClass ? parentClass : ''}`
+  return createElement(
+    elementType,
+    {
+      className: sanitizeWhiteSpace(
+        `container ${sidesheet ? `enable-sidesheet` : ''} ${
+          className ? className : ''
         }`
-      )}
-      style={!childContent ? parentStyle : null}
-    >
-      {!childContent ? (
-        parentContent
-      ) : (
-        <Fragment>
-          <article
-            className={sanitizeWhiteSpace(
-              `parent ${parentClass ? parentClass : ''}`
-            )}
-            style={{
-              ...parentStyle,
-              flex: !screenOrientation && parentSize ? parentSize : null,
-            }}
-          >
-            {parentContent}
-          </article>
-          <article
-            className={sanitizeWhiteSpace(
-              `child ${childClass ? childClass : ''}`
-            )}
-            style={{
-              ...childStyle,
-              flex: !screenOrientation && childSize ? childSize : null,
-            }}
-          >
-            {childContent}
-          </article>
-        </Fragment>
-      )}
-    </section>
+      ),
+      style: {
+        ...style,
+      },
+    },
+    children
   );
 };
 
 Container.propTypes = {
-  parentContent: PropTypes.oneOfType([PropTypes.element, PropTypes.string])
-    .isRequired,
-  childContent: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  parentSize: PropTypes.number,
-  childSize: PropTypes.number,
-  parentClass: PropTypes.string,
-  childClass: PropTypes.string,
-  parentStyle: PropTypes.object,
-  childStyle: PropTypes.object,
-  screenOrientation: PropTypes.bool.isRequired,
+  elementType: PropTypes.string,
+  className: PropTypes.string,
+  gridLayout: PropTypes.arrayOf(PropTypes.number),
 };
 
-const mapStateToProps = state => ({
-  screenOrientation: state.app.screenOrientation,
-});
+// default size from defined class is flex-grow = 1
+const Parent = ({
+  elementType = 'article',
+  className,
+  style,
+  size,
+  children,
+}) => {
+  return createElement(
+    elementType,
+    {
+      className: sanitizeWhiteSpace(
+        `container-parent ${className ? className : ''}`
+      ),
+      style: {
+        ...style,
+        flex: typeof size === 'number' && size > 0 ? size : null,
+      },
+    },
+    children
+  );
+};
 
-const mapDispatchToProps = {};
+Parent.propTypes = {
+  elementType: PropTypes.string,
+  className: PropTypes.string,
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Container);
+// default size from defined class is flex-grow = 1
+const Child = ({
+  elementType = 'article',
+  className,
+  style,
+  size,
+  children,
+}) => {
+  const screenOrientation = useSelector(state => state.app.screenOrientation);
+
+  useEffect(() => {
+    document.body.style.overflow =
+      screenOrientation && children ? 'hidden' : 'auto';
+  }, [children]);
+
+  return createElement(
+    elementType,
+    {
+      className: sanitizeWhiteSpace(
+        `container-child ${className ? className : ''}`
+      ),
+      style: {
+        ...style,
+        flex: typeof size === 'number' && size > 0 ? size : null,
+      },
+    },
+    children
+  );
+};
+
+Child.propTypes = {
+  elementType: PropTypes.string,
+  className: PropTypes.string,
+};
+
+Container.Parent = Parent;
+Container.Child = Child;
+
+export default Container;

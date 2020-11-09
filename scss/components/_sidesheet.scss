@@ -1,33 +1,33 @@
 // variables
-$sidesheet-border-radius: 36px;
-$sidesheet-bg-color: var(--surface1);
-$sidesheet-color: var(--on-surface);
-
 .sidesheet {
-  z-index: $sheet-elevation;
+  background-color: var(--background);
+  color: var(--on-background);
+  @include box-shadow(3);
 
-  background-color: $sidesheet-bg-color;
-  color: $sidesheet-color;
+  @include media(landscape) {
+    border-radius: 24px;
+  }
 
   display: grid;
   grid-template-rows: auto 1fr auto;
-
-  @include media(landscape) {
-    border-radius: $sidesheet-border-radius;
-    margin-top: var(--padding);
-    margin-bottom: var(--padding);
-  }
+  grid-template-areas:
+    'sidesheet-header'
+    'sidesheet-content'
+    'sidesheet-footer';
 
   .sidesheet-header {
-    padding-top: 24px;
-    padding-bottom: 20px; // account for grid gap
-    padding-left: 12px;
-    padding-right: 12px;
+    grid-area: sidesheet-header;
 
-    background-color: var(--primary);
-    color: var(--on-primary);
+    background-color: var(--surface2);
+    color: var(--on-surface);
 
-    border-radius: 0 0 24px 24px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 
     display: grid;
     grid-template-columns: $icon-size 1fr $icon-size;
@@ -35,18 +35,16 @@ $sidesheet-color: var(--on-surface);
     grid-template-areas:
       'sidesheet-header-close-btn sidesheet-header-title sidesheet-header-more-btn'
       'sidesheet-header-content sidesheet-header-content sidesheet-header-content';
-    row-gap: 4px;
-    align-items: center;
 
     .sidesheet-header-close-btn {
       grid-area: sidesheet-header-close-btn;
     }
 
     .sidesheet-header-title {
+      align-self: center;
       grid-area: sidesheet-header-title;
 
-      @include heading-2;
-      font-size: 2rem !important;
+      @include heading-3;
       text-align: center;
     }
 
@@ -56,20 +54,26 @@ $sidesheet-color: var(--on-surface);
 
     .sidesheet-header-content {
       grid-area: sidesheet-header-content;
-
-      display: flex;
-      justify-content: space-around;
+      margin-top: 8px;
     }
   }
 
   .sidesheet-content {
-    padding: 1rem;
+    grid-area: sidesheet-content;
+
+    padding: var(--padding);
 
     overflow: auto;
     @include custom-scrollbar;
 
+    .input-group:not(:first-child),
+    .image-input-group:not(:first-child),
     .row:not(:first-child) {
       margin-top: 1rem;
     }
+  }
+
+  .sidesheet-footer {
+    grid-area: sidesheet-footer;
   }
 }

@@ -15,20 +15,34 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
   flex-direction: column;
 
   .list-header {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: 'list-header-left-content list-header-right-content';
-    column-gap: 16px;
-    align-items: center;
-
+    // stay consisten with .list
+    padding-left: var(--scrollbar-size);
+    padding-right: var(--scrollbar-size);
     margin-bottom: 1rem;
 
-    .list-header-left-content {
-      grid-area: list-header-left-content;
+    @include media(landscape) {
+      display: grid;
+      grid-template-areas: 'list-header-title list-header-search';
+      grid-template-columns: 1fr auto;
+      justify-content: space-between;
+      align-items: center;
+
+      .list-header-title {
+        grid-area: list-header-title;
+      }
+
+      .list-header-search {
+        grid-area: list-header-search;
+        max-width: 250px;
+      }
     }
 
-    .list-header-right-content {
-      grid-area: list-header-right-content;
+    .list-header-title {
+      @include heading-2;
+
+      @include media(portrait) {
+        margin-bottom: 0.3rem;
+      }
     }
   }
 
@@ -48,6 +62,7 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
     @include custom_scrollbar;
 
     // dont know why the scrollbar in ios keep appearing below the list
+    padding-left: var(--scrollbar-size);
     padding-right: var(--scrollbar-size);
 
     .list-item-wrapper {

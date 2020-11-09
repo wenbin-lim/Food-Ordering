@@ -1,33 +1,26 @@
-.loginform {
-  width: 100%;
+.login {
   max-width: 500px;
-  margin: auto;
-  margin-top: 128px;
 
-  display: grid;
-  grid-template-rows: auto 200px auto;
-  row-gap: 8px;
+  display: flex;
+  flex-direction: column;
 
-  border-radius: 48px;
-  overflow: hidden;
-
-  .loginform-header {
+  .login-header {
     @include heading-1;
     text-align: center;
+
+    margin-top: 32px;
   }
 
-  .loginform-content {
-    padding: 4px;
+  .login-content {
+    padding-top: var(--padding);
+    padding-bottom: var(--padding);
 
-    & > *:not(:last-child) {
-      margin-bottom: 16px;
-    }
+    display: grid;
+    row-gap: 8px;
   }
-}
 
-// Media queries
-@media only screen and (orientation: landscape) {
-  .loginform {
-    margin-top: 64px;
+  .login-footer {
+    border-bottom-left-radius: 48px !important;
+    border-bottom-right-radius: 48px !important;
   }
 }

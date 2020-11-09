@@ -5,7 +5,7 @@ $input-field-border-size: 2px;
 
 .input-group {
   display: grid;
-  grid-gap: 8px;
+  grid-gap: 4px;
 
   @include input-label;
 
@@ -20,7 +20,7 @@ $input-field-border-size: 2px;
 
       @include body-1;
 
-      background-color: var(--surface2);
+      background-color: var(--surface1);
       color: var(--on-surface);
 
       border-radius: $input-field-border-radius;

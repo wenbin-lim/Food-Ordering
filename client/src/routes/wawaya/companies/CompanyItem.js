@@ -1,19 +1,30 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
 import Moment from 'react-moment';
+
+// Actions
+import { setSnackbar } from '../../../actions/app';
 
 // Components
 import ListItem from '../../../components/layout/ListItem';
 import AlertDialog from '../../../components/layout/AlertDialog';
 
-// Actions
-import { deleteCompany } from '../../../actions/companies';
+// Custom Hooks
+import useErrors from '../../../hooks/useErrors';
+import useDeleteOne from '../../../query/hooks/useDeleteOne';
 
-const CompanyItem = ({ index, company, onClick, deleteCompany }) => {
-  const { _id: companyId, name, displayedName, creationDate } = { ...company };
+const CompanyItem = ({ index, data, onClick }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  const [deleteCompany, { error }] = useDeleteOne('companies');
+  useErrors(error);
+
+  const { _id: companyId, name, displayedName, creationDate } = { ...data };
 
   let actions = [
     {
@@ -34,11 +45,13 @@ const CompanyItem = ({ index, company, onClick, deleteCompany }) => {
 
   const [showDeleteCompanyAlert, setShowDeleteCompanyAlert] = useState(false);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const onCompanyDelete = async () => {
     const deleteCompanySuccess = await deleteCompany(companyId);
+
+    deleteCompanySuccess &&
+      dispatch(
+        setSnackbar(`Deleted company of name '${displayedName}'`, 'success')
+      );
 
     let match = matchPath(
       {
@@ -91,15 +104,8 @@ const CompanyItem = ({ index, company, onClick, deleteCompany }) => {
 
 CompanyItem.propTypes = {
   index: PropTypes.number,
-  company: PropTypes.object.isRequired,
+  data: PropTypes.object,
   onClick: PropTypes.func,
-  deleteCompany: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = {
-  deleteCompany,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CompanyItem);
+export default CompanyItem;

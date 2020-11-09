@@ -4,36 +4,39 @@
   margin: 0 auto;
   min-height: calc(var(--vh) * 100);
 
-  padding-left: Max(var(--padding), env(safe-area-inset-left));
-  padding-right: Max(var(--padding), env(safe-area-inset-right));
+  padding-left: Max(env(safe-area-inset-left, var(--padding)));
+  padding-right: Max(env(safe-area-inset-right, var(--padding)));
   padding-top: calc(var(--navbar-height) + var(--padding));
   padding-bottom: calc(
     var(--bottomnav-height) + env(safe-area-inset-bottom) + var(--padding)
   );
 
-  &.with-child {
+  &.enable-sidesheet {
     height: calc(var(--vh) * 100);
 
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    padding-top: var(--navbar-height);
-    padding-bottom: calc(var(--bottomnav-height) + env(safe-area-inset-bottom));
 
     @include media(landscape) {
       display: flex;
     }
 
-    .parent,
-    .child {
+    .container-parent,
+    .container-child {
       overflow: auto;
       @include custom_scrollbar;
     }
 
-    .parent {
-      padding: var(--padding);
+    .container-parent {
+      padding-left: var(--padding);
+      padding-right: var(--padding);
+
+      @include media(landscape) {
+        flex: 3;
+      }
     }
 
-    .child {
+    .container-child {
       @include media(portrait) {
         position: fixed;
         top: 0;
@@ -52,6 +55,7 @@
       }
 
       @include media(landscape) {
+        flex: 2;
         max-width: 0;
         opacity: 0;
 
@@ -59,8 +63,8 @@
         will-change: max-width, opacity;
 
         &:not(:empty) {
-          margin-right: var(--container-padding);
-          margin-left: var(--scrollbar-size);
+          margin-left: var(--padding);
+          margin-right: var(--padding);
 
           max-width: 100%;
           opacity: 1;

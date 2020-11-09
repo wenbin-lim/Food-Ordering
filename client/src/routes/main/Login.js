@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 // Components
+import Container from '../../components/layout/Container';
 import TextInput from '../../components/layout/TextInput';
 import Button from '../../components/layout/Button';
 import Spinner from '../../components/layout/Spinner';
@@ -11,7 +12,7 @@ import Spinner from '../../components/layout/Spinner';
 // Icons
 import ArrowIcon from '../../components/icons/ArrowIcon';
 
-// actions
+// Actions
 import { login } from '../../actions/auth';
 
 // Custom Hooks
@@ -47,13 +48,12 @@ const Login = ({ auth: { loading, errors, user }, login }) => {
     } = user;
 
     return <Navigate to={`/${companyName}`} />;
-    // do further navigation in future
   }
 
-  return (
-    <form className='loginform' onSubmit={e => onSubmit(e)}>
-      <header className='loginform-header'>Login now</header>
-      <section className='loginform-content'>
+  const loginForm = (
+    <Fragment>
+      <header className='login-header'>Login now</header>
+      <form id='login-form' className='login-content' onSubmit={onSubmit}>
         <TextInput
           label={'username'}
           name={'username'}
@@ -71,28 +71,30 @@ const Login = ({ auth: { loading, errors, user }, login }) => {
           onChangeHandler={onChange}
           error={inputErrorMessages.password}
         />
-      </section>
-
-      <footer className='loginform-footer'>
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          submit={true}
-          blockBtnBottom={true}
-          text={'Login'}
-          icon={
-            loading ? (
-              <Spinner height='1rem' />
-            ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={loading}
-        />
-      </footer>
-    </form>
+      </form>
+      <Button
+        classes={'login-footer'}
+        fill={'contained'}
+        type={'primary'}
+        block={true}
+        blockBtnBottom={true}
+        submit={true}
+        form={'login-form'}
+        text={'Login'}
+        icon={
+          loading ? (
+            <Spinner height='1.5rem' />
+          ) : (
+            <ArrowIcon direction='right' />
+          )
+        }
+        disabled={loading}
+      />
+    </Fragment>
   );
+
+  // return <Container parentClass={'login'} parentContent={loginForm} />;
+  return loginForm;
 };
 
 Login.propTypes = {

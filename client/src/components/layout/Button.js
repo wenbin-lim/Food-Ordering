@@ -18,10 +18,10 @@ const Button = ({
   text,
   icon,
   leadingIcon = false,
-  additionalContentClasses,
+  additionalContentClassName,
   additionalContent,
   ripple = true,
-  classes,
+  className,
   style,
   onClick,
 }) => {
@@ -85,7 +85,7 @@ const Button = ({
           }
           ${disabled ? 'btn-disabled' : ''}
           ${icon && !text ? 'btn-icon' : ''}
-          ${classes ? classes : ''}
+          ${className ? className : ''}
           `
       )}
       disabled={disabled}
@@ -112,7 +112,7 @@ const Button = ({
         <div
           className={sanitizeWhiteSpace(
             `btn-additional-content 
-            ${additionalContentClasses ? additionalContentClasses : ''}
+            ${additionalContentClassName ? additionalContentClassName : ''}
             `
           )}
         >
@@ -146,9 +146,10 @@ Button.propTypes = {
   text: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   icon: PropTypes.element,
   leadingIcon: PropTypes.bool,
+  additionalContentClassName: PropTypes.string,
   additionalContent: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   ripple: PropTypes.bool,
-  classes: PropTypes.string,
+  className: PropTypes.string,
   style: PropTypes.object,
   onClick: PropTypes.func,
 };

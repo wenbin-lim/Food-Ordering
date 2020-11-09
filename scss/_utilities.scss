@@ -36,7 +36,7 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 }
 
 // inputs
-@mixin input-label($justifyContent: 'flex-start', $marginBottom: 0) {
+@mixin input-label($justifyContent: flex-start, $marginBottom: 0) {
   label {
     display: flex;
     justify-content: $justifyContent;
@@ -94,10 +94,6 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
   &::-webkit-scrollbar {
     width: var(--scrollbar-size);
     height: var(--scrollbar-size);
-
-    &-track {
-      background: none;
-    }
 
     &-thumb {
       background: var(--on-background);

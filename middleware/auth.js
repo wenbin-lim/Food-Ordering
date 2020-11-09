@@ -48,7 +48,6 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         req.user = userId;
       } else if (table) {
         if (customerAccess < minAccessLevel) {
-          console.log('here 2');
           return res.status(401).send('Unauthorized');
         }
 

@@ -42,7 +42,7 @@ const AlertDialog = ({ title, text, action, unmountAlertDialogHandler }) => {
       </section>
       <footer className='dialog-alert-btn-group'>
         <Button
-          classes={'dialog-alert-btn-confirm'}
+          className={'dialog-alert-btn-confirm'}
           fill={'contained'}
           type={type}
           text={name}
@@ -50,7 +50,7 @@ const AlertDialog = ({ title, text, action, unmountAlertDialogHandler }) => {
           onClick={() => closeAlertDialog(true)}
         />
         <Button
-          classes={'dialog-alert-btn-cancel'}
+          className={'dialog-alert-btn-cancel'}
           fill={'outline'}
           type={'background'}
           text={'Cancel'}

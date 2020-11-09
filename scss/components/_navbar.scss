@@ -85,7 +85,7 @@ $nav-item-gap: var(--padding);
 
     transition: border-color 0.5s;
 
-    &.navbar-link-active {
+    &.active {
       border-bottom: 4px solid var(--secondary);
     }
   }

@@ -29,8 +29,6 @@ export const loadToken = () => async dispatch => {
         payload: { user, table, bill },
       });
     } catch (err) {
-      console.error(err);
-
       dispatch({
         type: TOKEN_INVALID,
         payload: null,

@@ -1,82 +1,36 @@
-import React, { useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 // Components
 import Container from '../../../components/layout/Container';
-import ListPreloader from '../../../components/preloaders/ListPreloader';
-import Button from '../../../components/layout/Button';
+import List from '../../../components/layout/List';
 import CompanyItem from './CompanyItem';
-import SearchInput from '../../../components/layout/SearchInput';
 
-// Icons
-import PlusIcon from '../../../components/icons/PlusIcon';
+// Hooks
+import useGetAll from '../../../query/hooks/useGetAll';
+import useErrors from '../../../hooks/useErrors';
 
-const Companies = ({ companies: { companies, companiesLoading } }) => {
+const Companies = () => {
+  const { data: companies, isLoading, error } = useGetAll('companies');
+  useErrors(error);
   const navigate = useNavigate();
 
-  const [filteredResults, setFilteredResults] = useState([]);
-  const onSearch = filteredResult => setFilteredResults(filteredResult);
-
   return (
-    <Container
-      parentClass={'list-wrapper'}
-      parentContent={
-        <Fragment>
-          <Button
-            classes={'list-add-btn'}
-            fill={'contained'}
-            type={'primary'}
-            icon={<PlusIcon />}
-            onClick={() => navigate('add')}
-          />
+    <Container sidesheet={true}>
+      <Container.Parent className={'list-wrapper'}>
+        <List
+          loading={isLoading}
+          listArr={companies}
+          listItem={<CompanyItem />}
+          addBtnCallback={() => navigate('add')}
+        />
+      </Container.Parent>
 
-          <article className='list'>
-            {companiesLoading || !Array.isArray(companies) ? (
-              <ListPreloader />
-            ) : companies.length > 0 ? (
-              <Fragment>
-                <header className='list-header'>
-                  <div className='list-header-right-content'>
-                    <SearchInput
-                      name='search'
-                      queryFields={['name']}
-                      array={companies}
-                      onSearch={onSearch}
-                    />
-                  </div>
-                </header>
-                {filteredResults.map((company, index) => (
-                  <CompanyItem
-                    key={company._id}
-                    index={index + 1}
-                    company={company}
-                  />
-                ))}
-              </Fragment>
-            ) : (
-              <p className='caption text-center'>No companies found</p>
-            )}
-          </article>
-        </Fragment>
-      }
-      childClass={'sidesheet'}
-      childContent={<Outlet />}
-      parentSize={3}
-      childSize={2}
-    />
+      <Container.Child className={'sidesheet'}>
+        <Outlet />
+      </Container.Child>
+    </Container>
   );
 };
 
-Companies.propTypes = {
-  companies: PropTypes.object.isRequired,
-};
-
-const mapStateToProps = state => ({
-  companies: state.companies,
-});
-
-const mapDispatchToProps = {};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Companies);
+export default Companies;

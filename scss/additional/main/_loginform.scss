@@ -1,17 +1,19 @@
-.login {
-  max-width: 500px;
+.loginform {
+  @include media(landscape) {
+    max-width: 500px;
+  }
 
   display: flex;
   flex-direction: column;
 
-  .login-header {
+  .loginform-header {
     @include heading-1;
     text-align: center;
 
     margin-top: 32px;
   }
 
-  .login-content {
+  .loginform-content {
     padding-top: var(--padding);
     padding-bottom: var(--padding);
 
@@ -19,7 +21,7 @@
     row-gap: 8px;
   }
 
-  .login-footer {
+  .loginform-footer {
     border-bottom-left-radius: 48px !important;
     border-bottom-right-radius: 48px !important;
   }

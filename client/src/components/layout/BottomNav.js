@@ -1,12 +1,13 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useRef, Children } from 'react';
 import PropTypes from 'prop-types';
+import { NavLink } from 'react-router-dom';
 
 import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
-const BottomNav = ({ navItems, classes, style }) => {
+const BottomNav = ({ className, children, ...rest }) => {
   const bottomNavRef = useRef(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const bottomNav = bottomNavRef.current;
 
     if (bottomNav) {
@@ -19,21 +20,40 @@ const BottomNav = ({ navItems, classes, style }) => {
     return () => {
       document.documentElement.style.setProperty('--bottomnav-height', '0px');
     };
-  }, [navItems]);
+  }, [children]);
 
   return (
     <nav
-      className={sanitizeWhiteSpace(`bottom-nav ${classes ? classes : ''}`)}
-      style={style}
+      className={sanitizeWhiteSpace(`bottom-nav ${className ? className : ''}`)}
       ref={bottomNavRef}
+      {...rest}
     >
-      {navItems && <section className='bottom-nav-items'>{navItems}</section>}
+      <section className='bottom-nav-links'>
+        {Children.map(children, child =>
+          child?.type === BottomNavLink ? child : null
+        )}
+      </section>
     </nav>
   );
 };
 
 BottomNav.propTypes = {
-  navItems: PropTypes.element,
+  className: PropTypes.string,
+};
+
+export const BottomNavLink = ({ to, name, icon }) => {
+  return (
+    <NavLink to={to} className={'bottom-nav-link'} activeClassName='active'>
+      {icon && <div className='bottom-nav-link-icon'>{icon}</div>}
+      {name && <div className='bottom-nav-link-name'>{name}</div>}
+    </NavLink>
+  );
+};
+
+BottomNavLink.propTypes = {
+  to: PropTypes.string.isRequired,
+  name: PropTypes.string,
+  icon: PropTypes.element,
 };
 
 export default BottomNav;

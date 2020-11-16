@@ -45,6 +45,7 @@ const Company = () => {
               </div>
             </div>
           )}
+
           {logoSmall && (
             <div className='row'>
               <div className='col'>

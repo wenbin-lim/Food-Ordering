@@ -22,6 +22,7 @@ const List = ({
   title,
   loading,
   error,
+  listClassName,
   listArr,
   enableSearch = true,
   searchQueryFields = ['name'],
@@ -43,16 +44,20 @@ const List = ({
     <Fragment>
       {(title || enableSearch) && (
         <header className='list-header'>
-          {title && <h2 className='list-header-title'>{title}</h2>}
+          {title && <h3 className='list-header-title'>{title}</h3>}
           {enableSearch && (
-            <div className='list-header-search'>
+            <div className='list-header-right'>
               <SearchInput name='search' onSearch={onSearch} />
             </div>
           )}
         </header>
       )}
 
-      <article className='list'>
+      <article
+        className={sanitizeWhiteSpace(
+          `list ${listClassName ? listClassName : ''}`
+        )}
+      >
         {loading || error ? (
           <ListPreloader />
         ) : enableSearch ? (
@@ -80,13 +85,15 @@ const List = ({
         )}
       </article>
 
-      <Button
-        className={'list-add-btn'}
-        fill={'contained'}
-        type={'primary'}
-        icon={<PlusIcon />}
-        onClick={addBtnCallback}
-      />
+      {addBtnCallback && (
+        <Button
+          className={'list-add-btn'}
+          fill={'contained'}
+          type={'primary'}
+          icon={<PlusIcon />}
+          onClick={addBtnCallback}
+        />
+      )}
     </Fragment>
   );
 
@@ -109,6 +116,7 @@ List.propTypes = {
   title: PropTypes.string,
   loading: PropTypes.bool,
   error: PropTypes.object,
+  listClassName: PropTypes.string,
   listArr: PropTypes.array,
   enableSearch: PropTypes.bool,
   searchQueryFields: PropTypes.arrayOf(PropTypes.string),

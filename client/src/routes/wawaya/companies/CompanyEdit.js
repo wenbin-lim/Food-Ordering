@@ -19,13 +19,15 @@ const CompanyEdit = () => {
   let { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const { data: company, isLoading, error } = useGetOne('company', id);
   const [
     editCompany,
     { isLoading: requesting, error: editErrors },
   ] = useEditOne('companies');
   useErrors(error);
-  const inputErrors = useErrors(editErrors, [
+
+  const [inputErrors] = useErrors(editErrors, [
     'name',
     'logoLarge',
     'logoSmall',
@@ -46,20 +48,22 @@ const CompanyEdit = () => {
   const { name, logoLarge, logoSmall, facebook, twitter, instagram } = formData;
 
   useEffect(() => {
-    const {
-      displayedName,
-      logo: { small: logoSmall, large: logoLarge } = {},
-      socialMediaLinks: { facebook, twitter, instagram } = {},
-    } = { ...company };
+    if (company) {
+      const {
+        displayedName,
+        logo: { small: logoSmall, large: logoLarge } = {},
+        socialMediaLinks: { facebook, twitter, instagram } = {},
+      } = company;
 
-    setFormData({
-      name: displayedName ? displayedName : '',
-      logoLarge: logoLarge ? logoLarge : '',
-      logoSmall: logoSmall ? logoSmall : '',
-      facebook: facebook ? facebook : '',
-      twitter: twitter ? twitter : '',
-      instagram: instagram ? instagram : '',
-    });
+      setFormData({
+        name: displayedName ? displayedName : '',
+        logoLarge: logoLarge ? logoLarge : '',
+        logoSmall: logoSmall ? logoSmall : '',
+        facebook: facebook ? facebook : '',
+        twitter: twitter ? twitter : '',
+        instagram: instagram ? instagram : '',
+      });
+    }
   }, [isLoading, company]);
 
   const onChange = ({ name, value }) =>
@@ -140,7 +144,7 @@ const CompanyEdit = () => {
         />
       </SideSheet.Content>
       <SideSheet.FooterButton
-        text={'add'}
+        text={'edit'}
         requesting={requesting}
         form={'companyEditForm'}
       />

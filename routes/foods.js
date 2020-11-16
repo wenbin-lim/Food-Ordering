@@ -98,13 +98,6 @@ router.post(
       'allowAdditionalInstruction',
       'An unexpected error occured, please try again later!'
     ).isBoolean(),
-    body('menus').toArray(),
-    check(
-      'menus.*',
-      'An unexpected error occured when trying to add food to menu, please try again later!'
-    )
-      .optional({ checkFalsy: true })
-      .isMongoId(),
     body('customisations').toArray(),
     check(
       'customisations.*',
@@ -132,7 +125,6 @@ router.post(
       tags,
       image,
       allowAdditionalInstruction,
-      menus,
       customisations,
       company,
     } = req.body;
@@ -173,7 +165,6 @@ router.post(
       tags,
       allowAdditionalInstruction,
       image,
-      menus,
       customisations,
       company,
     });
@@ -194,19 +185,6 @@ router.post(
 
         food.image = imageResponse.secure_url;
       }
-
-      let bulkOps = [];
-
-      menus.forEach(menu => {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: menu },
-            update: { $addToSet: { foods: food._id } },
-          },
-        });
-      });
-
-      await Menu.bulkWrite(bulkOps);
 
       await food.save();
 
@@ -299,13 +277,6 @@ router.put(
       .withMessage('Portion Size can only accept up to 1 decimal place'),
     body('allergics').toArray(),
     body('tags').toArray(),
-    body('menus').toArray(),
-    check(
-      'menus.*',
-      'An unexpected error occured when trying to add food to menu, please try again later!'
-    )
-      .optional({ checkFalsy: true })
-      .isMongoId(),
     body('customisations').toArray(),
     check(
       'customisations.*',
@@ -329,7 +300,6 @@ router.put(
       tags,
       image,
       allowAdditionalInstruction,
-      menus: newMenus,
       customisations,
     } = req.body;
 
@@ -382,44 +352,6 @@ router.put(
         food.image = imageResponse.secure_url;
       }
 
-      let bulkOps = [];
-
-      const { menus: originalMenus } = food;
-      let menusThatWillRemoveFood = originalMenus;
-      let menusThatWillAddFood = newMenus;
-
-      newMenus.forEach(newMenu => {
-        menusThatWillRemoveFood = menusThatWillRemoveFood.filter(
-          originalMenu => originalMenu.toString() !== newMenu.toString()
-        );
-      });
-
-      originalMenus.forEach(originalMenu => {
-        menusThatWillAddFood = menusThatWillAddFood.filter(
-          newMenu => newMenu.toString() !== originalMenu.toString()
-        );
-      });
-
-      menusThatWillRemoveFood.forEach(menu => {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: menu },
-            update: { $pull: { foods: food._id } },
-          },
-        });
-      });
-
-      menusThatWillAddFood.forEach(menu => {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: menu },
-            update: { $addToSet: { foods: food._id } },
-          },
-        });
-      });
-
-      await Menu.bulkWrite(bulkOps);
-
       food.availability = availability;
       food.name = name;
       food.price = price;
@@ -432,7 +364,6 @@ router.put(
       food.allergics = allergics;
       food.tags = tags;
       food.allowAdditionalInstruction = allowAdditionalInstruction;
-      food.menus = newMenus;
       food.customisations = customisations;
 
       await food.save();
@@ -483,7 +414,7 @@ router.delete(
 
       res.json(deletedFood);
 
-      const { _id: foodId, name, company, image, menus } = deletedFood;
+      const { _id: foodId, name, company, image } = deletedFood;
 
       if (image) {
         await cloudinary.api.delete_resources_by_prefix(
@@ -491,18 +422,10 @@ router.delete(
         );
       }
 
-      let bulkOps = [];
-
-      menus.forEach(menu => {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: menu },
-            update: { $pull: { foods: foodId } },
-          },
-        });
-      });
-
-      await Menu.bulkWrite(bulkOps);
+      await Menu.updateMany(
+        { foods: req.params.id },
+        { $pull: { foods: req.params.id } }
+      );
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

@@ -1,45 +1,43 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
+// Actions
+import { setSnackbar } from '../../actions/app';
+
 // Components
-import ListItem from '../layout/ListItem';
+import ListItem, { Action } from '../layout/ListItem';
 import AlertDialog from '../layout/AlertDialog';
 
-// Actions
-import { deleteCustomisation } from '../../actions/customisations';
+// Custom Hooks
+import useErrors from '../../hooks/useErrors';
+import useDeleteOne from '../../query/hooks/useDeleteOne';
 
-const CustomisationItem = ({ index, customisation, deleteCustomisation }) => {
-  const { _id: customisationId, name, availability } = customisation;
+const CustomisationItem = ({ index, data }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
-  let actions = [
-    {
-      name: 'View',
-      path: `${customisationId}`,
-    },
-    {
-      name: 'Edit',
-      path: `${customisationId}/edit`,
-    },
-    {
-      name: 'Delete',
-      callback: () => setShowDeleteCustomisationAlert(true),
-    },
-  ];
+  const [deleteCustomisation, { error }] = useDeleteOne('customisations');
+  useErrors(error);
+
+  const { _id: customisationId, name, availability } = { ...data };
 
   const [
     showDeleteCustomisationAlert,
     setShowDeleteCustomisationAlert,
   ] = useState(false);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const onCustomisationDelete = async () => {
     const deleteCustomisationSuccess = await deleteCustomisation(
       customisationId
     );
+
+    deleteCustomisationSuccess &&
+      dispatch(
+        setSnackbar(`Deleted customisation of name '${name}'`, 'success')
+      );
 
     let match = matchPath(
       {
@@ -56,18 +54,29 @@ const CustomisationItem = ({ index, customisation, deleteCustomisation }) => {
 
   return (
     <Fragment>
-      <ListItem
-        beforeListContent={<h2 className='list-index'>{index}</h2>}
-        listContent={
-          <Fragment>
-            <p className='body-1'>{name ? name : 'No name defined'}</p>
-            {availability === false && (
-              <span className='badge badge-error'>Unavailable</span>
-            )}
-          </Fragment>
-        }
-        actions={actions}
-      />
+      <ListItem>
+        <ListItem.Before>
+          <h2 className='list-index'>{index}</h2>
+        </ListItem.Before>
+        <ListItem.Content>
+          <p className='body-1'>{name ? name : 'No name defined'}</p>
+          {availability === false && (
+            <span className='badge badge-small badge-error'>Unavailable</span>
+          )}
+        </ListItem.Content>
+        <ListItem.Actions>
+          <Action name='View' onClick={() => navigate(customisationId)} />
+          <Action
+            name='Edit'
+            onClick={() => navigate(`${customisationId}/edit`)}
+          />
+          <Action
+            name='Delete'
+            onClick={() => setShowDeleteCustomisationAlert(true)}
+          />
+        </ListItem.Actions>
+      </ListItem>
+
       {showDeleteCustomisationAlert && (
         <AlertDialog
           title={'Delete customisation?'}
@@ -77,9 +86,7 @@ const CustomisationItem = ({ index, customisation, deleteCustomisation }) => {
             type: 'error',
             callback: onCustomisationDelete,
           }}
-          unmountAlertDialogHandler={() =>
-            setShowDeleteCustomisationAlert(false)
-          }
+          onCloseAlertDialog={() => setShowDeleteCustomisationAlert(false)}
         />
       )}
     </Fragment>
@@ -88,14 +95,7 @@ const CustomisationItem = ({ index, customisation, deleteCustomisation }) => {
 
 CustomisationItem.propTypes = {
   index: PropTypes.number,
-  customisation: PropTypes.object.isRequired,
-  deleteCustomisation: PropTypes.func.isRequired,
+  data: PropTypes.object,
 };
 
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = {
-  deleteCustomisation,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CustomisationItem);
+export default CustomisationItem;

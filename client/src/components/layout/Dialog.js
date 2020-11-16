@@ -1,9 +1,10 @@
-import React, {
+import {
   useState,
   useEffect,
   useRef,
   forwardRef,
   useImperativeHandle,
+  createElement,
 } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
@@ -11,11 +12,19 @@ import PropTypes from 'prop-types';
 import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
 // Animations
-import { TimelineMax, Power4 } from 'gsap';
+import { TimelineMax } from 'gsap';
 
 const Dialog = forwardRef(
   (
-    { content, classes, style, fullscreen = false, unmountDialogHandler },
+    {
+      scrimElementType = 'div',
+      dialogElementType = 'article',
+      className,
+      fullscreen = false,
+      onCloseDialog,
+      children,
+      ...rest
+    },
     ref
   ) => {
     useImperativeHandle(ref, () => ({
@@ -23,11 +32,12 @@ const Dialog = forwardRef(
       closeDialog,
     }));
 
-    const scrimRef = useRef(null);
     const dialogRef = useRef(null);
     const animationTime = 0.3;
 
-    const dialogRootContainer = document.getElementById('dialog-root');
+    const [dialogScrim] = useState(document.createElement(scrimElementType));
+    dialogScrim.id = 'dialog-root';
+    dialogScrim.classList.add('dialog-scrim');
 
     var scrimBgColor = getComputedStyle(
       document.documentElement
@@ -37,27 +47,28 @@ const Dialog = forwardRef(
       new TimelineMax({
         paused: true,
         reversed: true,
-        onReverseComplete: unmountDialogHandler,
+        onReverseComplete: onCloseDialog,
       })
     );
 
     useEffect(() => {
       document.body.style.overflow = 'hidden';
+      document.body.appendChild(dialogScrim);
 
-      const scrim = scrimRef.current;
       const dialog = dialogRef.current;
 
-      if (scrim && dialog) {
+      if (dialogScrim && dialog) {
+        dialog.addEventListener('mousedown', e => e.stopPropagation());
+
         const dialogAnimation = fullscreen ? { x: 0 } : { scale: 1 };
 
         tlm
           .to(
-            scrim,
+            dialogScrim,
             animationTime,
             {
               backdropFilter: 'blur(5px)',
               backgroundColor: scrimBgColor,
-              ease: Power4.easeOut,
             },
             'dialogAnimation'
           )
@@ -66,7 +77,7 @@ const Dialog = forwardRef(
             animationTime,
             {
               ...dialogAnimation,
-              ease: Power4.easeOut,
+              opacity: 1,
             },
             'dialogAnimation'
           );
@@ -74,39 +85,59 @@ const Dialog = forwardRef(
 
       tlm.play();
 
-      return () => (document.body.style.overflow = 'auto');
+      return () => {
+        document.body.removeChild(dialogScrim);
+        document.body.style.overflow = 'auto';
+      };
+
       // eslint-disable-next-line
     }, []);
 
     const closeDialog = () => tlm.reverse();
 
+    // dialogScrim.onclick = closeDialog;
+    dialogScrim.addEventListener('mousedown', mouseDownEvt => {
+      const mouseDownElementId = mouseDownEvt.target.id;
+
+      dialogScrim.addEventListener(
+        'mouseup',
+        mouseUpEvt => {
+          const mouseUpElementId = mouseUpEvt.target.id;
+
+          if (mouseDownElementId === mouseUpElementId) {
+            closeDialog();
+          }
+        },
+        { once: true }
+      );
+    });
+
     return createPortal(
-      <div className='dialog-scrim' ref={scrimRef} onClick={closeDialog}>
-        <article
-          className={sanitizeWhiteSpace(
+      createElement(
+        dialogElementType,
+        {
+          className: sanitizeWhiteSpace(
             `dialog
-            ${fullscreen ? 'dialog-fullscreen' : ''}
-            ${classes ? classes : ''}
-            `
-          )}
-          ref={dialogRef}
-          style={style}
-          onClick={e => e.stopPropagation()}
-        >
-          {content}
-        </article>
-      </div>,
-      dialogRootContainer
+          ${fullscreen ? 'dialog-fullscreen' : ''} 
+          ${className ? className : ''}
+          `
+          ),
+          ref: dialogRef,
+          ...rest,
+        },
+        children
+      ),
+      dialogScrim
     );
   }
 );
 
 Dialog.propTypes = {
-  content: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  classes: PropTypes.string,
-  style: PropTypes.object,
+  scrimElementType: PropTypes.string,
+  dialogElementType: PropTypes.string,
+  className: PropTypes.string,
   fullscreen: PropTypes.bool,
-  unmountDialogHandler: PropTypes.func.isRequired,
+  onCloseDialog: PropTypes.func,
 };
 
 export default Dialog;

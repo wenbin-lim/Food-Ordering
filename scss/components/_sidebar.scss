@@ -4,6 +4,9 @@ $sidebar-width: 300px;
 $sidebar-padding: var(--padding);
 $sidebar-item-height: 48px;
 
+$sidebar-content-justify-types: 'start', 'end', 'center', 'space-between',
+  'space-around', 'space-evenly';
+
 .sidebar-scrim {
   position: fixed;
   top: 0;
@@ -40,21 +43,21 @@ $sidebar-item-height: 48px;
     .sidebar-logo {
       max-width: 100%;
       height: $sidebar-item-height;
+      margin: 0 auto;
 
       cursor: pointer;
-
-      @extend .invert-in-dark-mode;
     }
 
-    .sidebar-content-divider {
+    .sidebar-divider {
       margin-top: var(--padding);
       margin-bottom: var(--padding);
     }
 
-    .sidebar-link-group {
-      padding: 0 var(--padding);
+    .sidebar-link {
+      flex-shrink: 0;
       height: $sidebar-item-height;
       display: flex;
+      align-items: center;
       cursor: pointer;
 
       .sidebar-link-icon {
@@ -66,11 +69,17 @@ $sidebar-item-height: 48px;
         margin-right: $icon-size / 4;
       }
 
-      .sidebar-link {
+      .sidebar-link-name {
         flex: 1;
         @include button-text;
-        display: grid;
-        align-items: center;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.active {
+        color: var(--secondary);
       }
     }
 
@@ -83,10 +92,23 @@ $sidebar-item-height: 48px;
     .sidebar-content {
       display: flex;
       grid-area: sidebar-content;
-
       flex-direction: column;
+
       overflow: auto;
-      @include hide-scrollbar;
+      @include custom-scrollbar;
+      padding: 0 var(--scrollbar-size);
+
+      @each $i in $sidebar-content-justify-types {
+        &.sidebar-content-justify-#{$i} {
+          @if $i == 'start' {
+            justify-content: flex-start;
+          } @else if $i == 'end' {
+            justify-content: flex-end;
+          } @else {
+            justify-content: #{$i};
+          }
+        }
+      }
     }
 
     .sidebar-footer {

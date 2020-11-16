@@ -1,17 +1,13 @@
-import React, { useLayoutEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Children } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
-const Navbar = ({
-  classes = '',
-  leftContent,
-  centerContent,
-  rightContent,
-  style,
-}) => {
+const Navbar = ({ className, children, ...rest }) => {
   const navbarRef = useRef(null);
+  const [centerPresent, setCenterPresent] = useState(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const navbar = navbarRef.current;
 
     if (navbar) {
@@ -21,40 +17,121 @@ const Navbar = ({
       );
     }
 
+    let foundCenter = false;
+    Children.forEach(children, child => {
+      if (child?.type === Center) {
+        foundCenter = true;
+      }
+    });
+    setCenterPresent(foundCenter);
+
     return () => {
       document.documentElement.style.setProperty('--navbar-height', '0px');
     };
-  }, [leftContent, centerContent, rightContent]);
+  }, [children]);
 
   return (
-    <Fragment>
-      <nav
-        className={sanitizeWhiteSpace(
-          `navbar ${centerContent ? 'navbar-center-present' : ''} ${classes}`
-        )}
-        style={style}
-        ref={navbarRef}
-      >
-        {leftContent && (
-          <section className='navbar-left'>{leftContent}</section>
-        )}
-        {centerContent && (
-          <section className='navbar-center'>{centerContent}</section>
-        )}
-        {rightContent && (
-          <section className='navbar-right'>{rightContent}</section>
-        )}
-      </nav>
-    </Fragment>
+    <nav
+      className={sanitizeWhiteSpace(
+        `navbar ${centerPresent ? 'navbar-center-present' : ''} ${
+          className ? className : ''
+        }`
+      )}
+      ref={navbarRef}
+      {...rest}
+    >
+      {Children.map(
+        children,
+        child =>
+          (child?.type === Left ||
+            child?.type === Center ||
+            child?.type === Right) &&
+          child
+      )}
+    </nav>
   );
 };
 
 Navbar.propTypes = {
-  classes: PropTypes.string,
-  leftContent: PropTypes.element,
-  centerContent: PropTypes.element,
-  rightContent: PropTypes.element,
-  style: PropTypes.object,
+  className: PropTypes.string,
 };
+
+const Left = ({ className, children, ...rest }) => {
+  return (
+    <section
+      className={sanitizeWhiteSpace(
+        `navbar-left ${className ? className : ''}`
+      )}
+      {...rest}
+    >
+      {children}
+    </section>
+  );
+};
+
+Left.propTypes = {
+  className: PropTypes.string,
+};
+
+const Center = ({ className, children, ...rest }) => {
+  return (
+    <section
+      className={sanitizeWhiteSpace(
+        `navbar-center ${className ? className : ''}`
+      )}
+      {...rest}
+    >
+      {children}
+    </section>
+  );
+};
+
+Center.propTypes = {
+  className: PropTypes.string,
+};
+
+const Right = ({ className, children, ...rest }) => {
+  return (
+    <section
+      className={sanitizeWhiteSpace(
+        `navbar-right ${className ? className : ''}`
+      )}
+      {...rest}
+    >
+      {children}
+    </section>
+  );
+};
+
+Right.propTypes = {
+  className: PropTypes.string,
+};
+
+export const NavbarLogo = ({ logo, to, onClick, invertInDarkMode = true }) => {
+  const navigate = useNavigate();
+
+  const onClickLogo = () => {
+    if (typeof onClick === 'function') {
+      onClick();
+    } else if (typeof to === 'string') {
+      navigate(to);
+    }
+  };
+
+  return (
+    <img
+      className={sanitizeWhiteSpace(
+        `navbar-logo ${invertInDarkMode ? 'invert-in-dark-mode' : ''}`
+      )}
+      src={logo}
+      alt={'navbar-logo'}
+      onClick={onClickLogo}
+    />
+  );
+};
+
+Navbar.Left = Left;
+Navbar.Center = Center;
+Navbar.Right = Right;
 
 export default Navbar;

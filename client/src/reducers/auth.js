@@ -13,7 +13,7 @@ const initialState = {
   errors: null,
 };
 
-export default (state = initialState, action) => {
+const auth = (state = initialState, action) => {
   const { type, payload } = action;
 
   switch (type) {
@@ -21,7 +21,8 @@ export default (state = initialState, action) => {
       return {
         ...state,
         loading: false,
-        user: payload.user,
+        user: payload,
+        errors: null,
       };
     case LOGIN_SUCCESS:
       localStorage.setItem('token', payload.token);
@@ -29,6 +30,7 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         user: payload.user,
+        errors: null,
       };
     case NO_TOKEN:
     case TOKEN_INVALID:
@@ -45,3 +47,5 @@ export default (state = initialState, action) => {
       return state;
   }
 };
+
+export default auth;

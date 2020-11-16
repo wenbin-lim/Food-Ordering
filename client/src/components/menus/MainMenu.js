@@ -1,7 +1,6 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // Components
 import Container from '../layout/Container';
@@ -9,64 +8,54 @@ import MainMenuPreloader from '../preloaders/MainMenuPreloader';
 import FoodCard from '../foods/FoodCard';
 import Button from '../layout/Button';
 
-const MainMenu = ({ menus: { menusLoading, menus } }) => {
+// Hooks
+import useGetAll from '../../query/hooks/useGetAll';
+import useErrors from '../../hooks/useErrors';
+
+const MainMenu = ({ company }) => {
+  const { data: menus, isLoading, errors } = useGetAll('menus', { company });
+  useErrors(errors);
+
   const navigate = useNavigate();
 
-  const mainMenuContent =
-    menusLoading || !Array.isArray(menus) ? (
-      <MainMenuPreloader />
-    ) : (
-      <Fragment>
-        {menus
+  return (
+    <Container className='menu-wrapper'>
+      {isLoading ? (
+        <MainMenuPreloader />
+      ) : Array.isArray(menus) && menus.length > 0 ? (
+        menus
           .filter(menu => menu.availability)
-          .map(menu => (
-            <article key={menu._id} className='menu'>
+          .map(({ _id: menuId, name, foods }) => (
+            <article key={menuId} className='menu'>
               <header className='menu-header'>
-                <h1 className='menu-header-title'>{menu.name}</h1>
+                <h1 className='menu-header-title'>{name}</h1>
                 <Button
                   classes={'menu-header-btn'}
                   text={'see all'}
                   small={true}
-                  onClick={() => navigate(`${menu._id}`)}
+                  onClick={() => navigate(`${menuId}`)}
                 />
               </header>
               <article className='menu-content allow-horizontal-scroll'>
-                {Array.isArray(menu.foods) && menu.foods.length > 0 ? (
-                  <Fragment>
-                    {menu.foods
-                      .filter(food => food.availability)
-                      .map(food => (
-                        <FoodCard key={`${menu._id}-${food._id}`} food={food} />
-                      ))}
-                  </Fragment>
+                {Array.isArray(foods) && foods.length > 0 ? (
+                  foods
+                    .filter(food => food.availability)
+                    .map(food => <FoodCard key={food._id} food={food} />)
                 ) : (
                   <p className='caption'>No food found</p>
                 )}
               </article>
             </article>
-          ))}
-      </Fragment>
-    );
-
-  return (
-    <Container
-      parentClass={'menu-wrapper'}
-      parentContent={mainMenuContent}
-      parentSize={3}
-      childContent={<Outlet />}
-      childSize={2}
-    />
+          ))
+      ) : (
+        <h1 className='heading-1'>No menus found</h1>
+      )}
+    </Container>
   );
 };
 
 MainMenu.propTypes = {
-  menus: PropTypes.object.isRequired,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  menus: state.menus,
-});
-
-const mapDispatchToProps = {};
-
-export default connect(mapStateToProps, mapDispatchToProps)(MainMenu);
+export default MainMenu;

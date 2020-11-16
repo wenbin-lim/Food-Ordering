@@ -29,5 +29,8 @@
     "rejected": "rejected",
     "removed": "removed"
   },
-  "paymentMethods": "cash,visa,master"
+  "paymentMethods": "cash,visa,master",
+  "ordersEditTypes": {
+    "confirmingOrders": "confirmingOrders"
+  }
 }

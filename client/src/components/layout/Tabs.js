@@ -1,142 +1,134 @@
 import React, {
   useState,
-  useEffect,
-  useRef,
-  Fragment,
   forwardRef,
   useImperativeHandle,
+  Children,
+  createElement,
+  cloneElement,
 } from 'react';
 import PropTypes from 'prop-types';
 
 // Misc
 import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
+/* 
+  using tabs-header only
+  ----------------------
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
+
+  {activeTab === 0 && <div>Tab One</div>}
+  {activeTab === 1 && <div>Tab Two</div>}
+*/
 const Tabs = forwardRef(
   (
     {
-      wrapper = true,
-      classes,
-      showHeader = true,
-      headerClass,
-      tabs,
-      initialTabIndex = 0,
+      className,
+      initialActive = 0,
+      justifyTab = 'start',
+      onClickTab,
+      headerOnly = false,
+      children,
     },
     ref
   ) => {
     useImperativeHandle(ref, () => ({
-      changeTab,
+      setActiveTab,
     }));
 
-    const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
+    const [activeTab, setActiveTab] = useState(initialActive);
 
-    const tabActiveLineRef = useRef(null);
-
-    const changeTab = newIndex =>
-      newIndex >= 0 &&
-      newIndex <= tabs.length - 1 &&
-      setActiveTabIndex(newIndex);
-
-    const tabsRef = useRef(null);
-    const tabRef = useRef([]);
-
-    const tabsObserverRef = useRef(
-      new ResizeObserver(entries => {
-        const tab = tabRef.current[0];
-        const tabActiveLine = tabActiveLineRef.current;
-
-        if (tab && tabActiveLine) {
-          tabActiveLine.style.width = `${tab.offsetWidth - 1}px`;
-        }
-      })
-    );
-
-    useEffect(() => {
-      const tabs = tabsRef.current;
-      const tabsObserver = tabsObserverRef.current;
-
-      tabs && tabsObserver.observe(tabs);
-
-      return () => tabsObserver.unobserve(tabs);
-    }, [tabsRef, tabsObserverRef]);
-
-    const mainContent = Array.isArray(tabs) && tabs.length > 0 && (
-      <Fragment>
-        {showHeader && (
-          <header
-            className={`tabs ${headerClass ? headerClass : ''}`}
-            ref={tabsRef}
-          >
-            {tabs.map((tab, index) => (
-              <div
-                key={`tab-${tab.name}-${index}`}
-                className={sanitizeWhiteSpace(
-                  `tab ${activeTabIndex === index ? 'tab-active' : ''}`
-                )}
-                ref={el => (tabRef.current[index] = el)}
-                onClick={() => changeTab(index)}
-              >
-                {tab.icon && <div className='tab-icon'>{tab.icon}</div>}
-                {tab.name && <div className='tab-name'> {tab.name}</div>}
-              </div>
-            ))}
-            <div
-              className='tab-active-line'
-              style={{
-                transform: `translateX(${100 * activeTabIndex}%)`,
-              }}
-              ref={tabActiveLineRef}
-            />
-          </header>
+    return (
+      <section
+        className={sanitizeWhiteSpace(
+          `tabs 
+          ${headerOnly ? 'tabs-header-only' : ''}
+          ${className ? className : ''}
+          `
         )}
-        <div className='tab-contents-wrapper'>
-          <section
-            className='tab-contents'
-            style={{ transform: `translateX(${-100 * activeTabIndex}%)` }}
-          >
-            {tabs.map((tab, index) => (
-              <article
-                key={`tab-content-${tab.name}-${index}`}
-                className={sanitizeWhiteSpace(
-                  `tab-content ${tab.class ? tab.class : ''}`
-                )}
-                style={tab.style}
-              >
-                {tab.content}
-              </article>
-            ))}
-          </section>
-        </div>
-      </Fragment>
-    );
-
-    return wrapper ? (
-      <article
-        className={sanitizeWhiteSpace(`tabs-wrapper ${classes ? classes : ''}`)}
       >
-        {mainContent}
-      </article>
-    ) : (
-      mainContent
+        <header
+          className={sanitizeWhiteSpace(
+            `tabs-header ${`tabs-justify-${justifyTab}`}`
+          )}
+        >
+          {Children.map(
+            children,
+            (child, index) =>
+              child?.type === Tab &&
+              createElement(
+                'div',
+                {
+                  key: `tab-name-${index}`,
+                  className: sanitizeWhiteSpace(
+                    `tab-name ${activeTab === index ? 'active' : ''}`
+                  ),
+                  onClick: () => {
+                    setActiveTab(index);
+                    typeof onClickTab === 'function' && onClickTab(index);
+                  },
+                },
+                child.props?.name ? child.props.name : 'No name'
+              )
+          )}
+        </header>
+        {!headerOnly &&
+          Children.map(
+            children,
+            (child, index) =>
+              child?.type === Tab &&
+              cloneElement(child, {
+                key: `tab-content-${index}`,
+                className: sanitizeWhiteSpace(
+                  `${child?.props?.className ? child.props.className : ''} ${
+                    activeTab !== index ? 'hidden' : ''
+                  }`
+                ),
+              })
+          )}
+      </section>
     );
   }
 );
 
 Tabs.propTypes = {
-  wrapper: PropTypes.bool,
-  classes: PropTypes.string,
-  showHeader: PropTypes.bool,
-  headerClass: PropTypes.string,
-  tabs: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      icon: PropTypes.element,
-      content: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
-        .isRequired,
-      class: PropTypes.string,
-      style: PropTypes.object,
-    })
-  ).isRequired,
-  initialTabIndex: PropTypes.number,
+  className: PropTypes.string,
+  initialActive: PropTypes.number,
+  justifyTab: PropTypes.oneOf([
+    'start',
+    'end',
+    'center',
+    'space-between',
+    'space-around',
+    'space-evenly',
+  ]),
+  onClickTab: PropTypes.func,
+  headerOnly: PropTypes.bool,
+};
+
+export const Tab = ({
+  elementType = 'article',
+  name,
+  className,
+  children,
+  ...rest
+}) => {
+  return createElement(
+    elementType,
+    {
+      className: sanitizeWhiteSpace(
+        `tab-content ${className ? className : ''}`
+      ),
+      ...rest,
+    },
+    children
+  );
+};
+
+Tab.propTypes = {
+  elementType: PropTypes.string,
+  name: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
+  className: PropTypes.string,
 };
 
 export default Tabs;

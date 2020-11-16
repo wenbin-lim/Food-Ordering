@@ -1,204 +1,166 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { queryCache } from 'react-query';
 
 // Actions
-import { getFoods } from '../../actions/foods';
-import { addMenu } from '../../actions/menus';
 import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Tabs from '../layout/Tabs';
-import Spinner from '../layout/Spinner';
+import Tabs, { Tab } from '../layout/Tabs';
+import Dropdown from '../layout/Dropdown';
 import TextInput from '../layout/TextInput';
-import Button from '../layout/Button';
 import SwitchInput from '../layout/SwitchInput';
 import CheckboxInput from '../layout/CheckboxInput';
 import SearchInput from '../layout/SearchInput';
 
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
-
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useGetAll from '../../query/hooks/useGetAll';
+import useAddOne from '../../query/hooks/useAddOne';
+import useSearch from '../../hooks/useSearch';
 
-const MenuAdd = ({
-  userAccess,
-  userCompanyId,
-  companies: { company },
-  foods: { foods: availableFoods },
-  menus: { requesting, errors },
-  getFoods,
-  addMenu,
-  setSnackbar,
-}) => {
-  useEffect(() => {
-    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
+const MenuAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-    getFoods(companyId);
+  const companies = queryCache.getQueryData('companies');
 
-    // eslint-disable-next-line
-  }, [userCompanyId, company]);
-
-  const [inputErrorMessages] = useInputError({ name: '' }, errors);
+  const [addMenu, { isLoading: requesting, error }] = useAddOne('menus');
+  const [inputErrors] = useErrors(error, ['name']);
 
   const [formData, setFormData] = useState({
+    company: userCompanyId,
     name: '',
     availability: true,
     foods: [],
   });
 
-  const { name, availability, foods } = formData;
+  const { company, name, availability, foods } = formData;
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (userAccess === 99 && !company)
-      return setSnackbar('Select a company first!', 'error');
+    const addMenuSuccess = await addMenu(formData);
 
-    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
-
-    const addMenuSuccess = await addMenu(companyId, formData);
-
-    return addMenuSuccess && navigate('../', { replace: true });
+    return (
+      addMenuSuccess &&
+      dispatch(setSnackbar(`Added menu of name '${name}'`, 'success'))
+    );
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const tabPageOne = (
-    <Fragment>
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Availability'}
-            name={'availability'}
-            value={availability}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.availability}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-    </Fragment>
+  // Foods
+  const { data: availableFoods, error: foodsError, refetch } = useGetAll(
+    'foods',
+    {
+      company,
+    },
+    company
   );
+  useErrors(foodsError);
 
-  const [filteredFood, setFilteredFood] = useState([]);
-  const onSearch = filteredResult => setFilteredFood(filteredResult);
+  useEffect(() => {
+    company && refetch();
 
-  const tabPageTwo = (
-    <div className='row'>
-      <div className='col'>
-        <SearchInput
-          name='search'
-          queryFields={['name', 'tags', 'allergics']}
-          array={availableFoods}
-          onSearch={onSearch}
-        />
-        {Array.isArray(filteredFood) && filteredFood.length > 0 ? (
-          <CheckboxInput
-            name={'foods'}
-            inputs={filteredFood.map(food => ({
-              key: food.name,
-              value: food._id,
-            }))}
-            value={foods}
-            onChangeHandler={onChange}
-          />
-        ) : (
-          <p className='caption text-center mt-1'>No food found</p>
-        )}
-      </div>
-    </div>
-  );
+    // eslint-disable-next-line
+  }, [company]);
 
-  const sideSheetContent = (
-    <form
-      id='menuAddForm'
-      className='sidesheet-content tabs-wrapper p-0'
-      onSubmit={onSubmit}
-    >
-      <Tabs
-        wrapper={false}
-        headerClass={'mt-1 ml-1 mr-1 mb-0'}
-        tabs={[
-          { name: 'Main', content: tabPageOne, class: 'p-1' },
-          { name: 'Food', content: tabPageTwo, class: 'p-1' },
-        ]}
-      />
-    </form>
-  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredAvailableFoods = useSearch(availableFoods, searchQuery, [
+    'name',
+    'tags',
+    'allergics',
+  ]);
+  const onSearch = query => setSearchQuery(query);
 
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Add Menu'}
-      closeSideSheetHandler={closeSideSheet}
-      contentWrapper={false}
-      content={sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'add'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={'Add Menu'} closeHandler={() => navigate('../')}>
+        <Tabs onClickTab={onClickTab}>
+          <Tab name={'Main'} />
+          <Tab name={'Food'} />
+        </Tabs>
+      </SideSheet.Header>
+      <SideSheet.Content
+        elementType={'form'}
+        id={'menuAddForm'}
+        onSubmit={onSubmit}
+      >
+        {activeTab === 0 && (
+          <article>
+            {userAccess === 99 && Array.isArray(companies) && (
+              <Dropdown
+                required={true}
+                label={'Company'}
+                name={'company'}
+                options={companies.map(({ _id, displayedName }) => ({
+                  key: displayedName,
+                  value: _id,
+                }))}
+                value={company}
+                onChangeHandler={onChange}
+              />
+            )}
+
+            <SwitchInput
+              label={'Availability'}
+              name={'availability'}
+              value={availability}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={inputErrors.name}
+            />
+          </article>
+        )}
+
+        {activeTab === 1 && (
+          <article>
+            <SearchInput name='search' onSearch={onSearch} />
+            {Array.isArray(filteredAvailableFoods) &&
+            filteredAvailableFoods.length > 0 ? (
+              <CheckboxInput
+                name={'foods'}
+                inputs={filteredAvailableFoods.map(food => ({
+                  key: food.name,
+                  value: food._id,
+                }))}
+                value={foods}
+                onChangeHandler={onChange}
+                ordered={true}
+              />
             ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'menuAddForm'}
-        />
-      }
-    />
+              <p className='caption text-center mt-1'>No food found</p>
+            )}
+          </article>
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'add'}
+        requesting={requesting}
+        form={'menuAddForm'}
+      />
+    </SideSheet>
   );
 };
 
 MenuAdd.propTypes = {
-  userAccess: PropTypes.number.isRequired,
-  userCompanyId: PropTypes.string.isRequired,
-  companies: PropTypes.object,
-  foods: PropTypes.object.isRequired,
-  menus: PropTypes.object.isRequired,
-  getFoods: PropTypes.func.isRequired,
-  addMenu: PropTypes.func.isRequired,
-  setSnackbar: PropTypes.func.isRequired,
+  user: PropTypes.object,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  foods: state.foods,
-  menus: state.menus,
-  companies: state.companies,
-});
-
-const mapDispatchToProps = {
-  getFoods,
-  addMenu,
-  setSnackbar,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(MenuAdd);
+export default MenuAdd;

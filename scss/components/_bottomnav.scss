@@ -1,6 +1,8 @@
 /* Variables */
 $bottom-nav-padding: calc(var(--padding) / 2);
 
+$min-bottom-nav-link-height: 48px;
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -13,7 +15,7 @@ $bottom-nav-padding: calc(var(--padding) / 2);
   display: flex;
   justify-content: center;
 
-  .bottom-nav-items {
+  .bottom-nav-links {
     padding: $bottom-nav-padding;
     padding-bottom: calc(env(safe-area-inset-bottom) + #{$bottom-nav-padding});
 
@@ -22,5 +24,39 @@ $bottom-nav-padding: calc(var(--padding) / 2);
 
     display: flex;
     justify-content: space-around;
+
+    .bottom-nav-link {
+      min-height: $min-bottom-nav-link-height;
+      flex: 1 0;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      &.active {
+        color: var(--secondary);
+      }
+
+      .bottom-nav-link-icon {
+        color: inherit;
+      }
+
+      .bottom-nav-link-name {
+        color: inherit;
+        @include body-2;
+
+        @include media(portrait) {
+          max-width: 64px;
+        }
+
+        @include media(landscape) {
+          max-width: 120px;
+        }
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
   }
 }

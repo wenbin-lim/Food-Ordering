@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { cloneElement } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Route, Navigate, useParams } from 'react-router-dom';
@@ -6,71 +6,66 @@ import { Route, Navigate, useParams } from 'react-router-dom';
 // Components
 import Spinner from '../components/layout/Spinner';
 
+// Hooks
+import useGetAll from '../query/hooks/useGetAll';
+
 const CompanyRoute = ({
-  component: Component,
+  element,
   path,
-  minAccess = 2,
-  companiesLoading,
-  companies,
+  access = 2,
   auth,
   children,
   ...rest
 }) => {
   const { companyName } = useParams();
 
-  // companies is loaded with getCompaniesPublic in App.js
-  const foundCompany = companies.find(company => company.name === companyName);
-  const { _id: foundCompanyId } = { ...foundCompany };
-
-  const { loading: userLoading, user } = auth;
-  const {
-    _id: userId,
-    access: userAccess,
-    role: userRole,
-    company: userCompany,
-  } = { ...user };
-  const { _id: userCompanyId, name: userCompanyName } = { ...userCompany };
-
-  return companiesLoading || userLoading ? (
-    <Spinner fullscreen={true} />
-  ) : foundCompanyId === userCompanyId ? (
-    userAccess >= minAccess ? (
-      <Route
-        path={path}
-        element={
-          <Component
-            userId={userId}
-            userAccess={userAccess}
-            userRole={userRole}
-            userCompanyId={userCompanyId}
-            userCompanyName={userCompanyName}
-            userCompany={foundCompany}
-            {...rest}
-          />
-        }
-      >
-        {children}
-      </Route>
-    ) : (
-      <Navigate to={`/${userCompanyName}`} replace={true} />
-    )
-  ) : (
-    <Navigate to='/' replace={true} />
+  const { data: companies, isLoading: companiesLoading } = useGetAll(
+    'companies'
   );
+
+  const { loading: authLoading, user } = auth;
+  const { company } = { ...user };
+  const { _id: userCompanyId } = { ...company };
+
+  if (companiesLoading || authLoading) {
+    return <Spinner fullscreen={true} />;
+  } else {
+    const userCompany = companies.find(
+      company => company.name === companyName && company._id === userCompanyId
+    );
+
+    if (userCompany) {
+      if (user?.access >= access) {
+        return (
+          <Route
+            path={path}
+            element={cloneElement(element, {
+              user,
+              company: userCompanyId,
+              companyDetails: userCompany,
+              ...rest,
+            })}
+          >
+            {children}
+          </Route>
+        );
+      } else {
+        return <Navigate to={`/${companyName}`} replace={true} />;
+      }
+    } else {
+      return <Navigate to='/' replace={true} />;
+    }
+  }
 };
 
 CompanyRoute.propTypes = {
-  component: PropTypes.elementType.isRequired,
+  element: PropTypes.element.isRequired,
   path: PropTypes.string.isRequired,
-  minAccess: PropTypes.number,
-  companiesLoading: PropTypes.bool.isRequired,
-  companies: PropTypes.array.isRequired,
+  access: PropTypes.number,
   auth: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
-  companies: state.app.companies,
-  companiesLoading: state.app.companiesLoading,
   auth: state.auth,
 });
 

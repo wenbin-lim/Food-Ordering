@@ -1,4 +1,4 @@
-import React, { useRef, Fragment } from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Dialog from './Dialog';
 import Button from './Button';
 
-const AlertDialog = ({ title, text, action, unmountAlertDialogHandler }) => {
+const AlertDialog = ({ title, text, action, onCloseAlertDialog }) => {
   const navigate = useNavigate();
   const alertDialogRef = useRef(null);
 
@@ -20,7 +20,7 @@ const AlertDialog = ({ title, text, action, unmountAlertDialogHandler }) => {
 
       if (confirm) {
         alertDialogTlm.eventCallback('onReverseComplete', () => {
-          unmountAlertDialogHandler();
+          onCloseAlertDialog();
           if (typeof callback === 'function') {
             callback();
           } else if (typeof path === 'string') {
@@ -34,8 +34,12 @@ const AlertDialog = ({ title, text, action, unmountAlertDialogHandler }) => {
     }
   };
 
-  const alertContent = (
-    <Fragment>
+  return (
+    <Dialog
+      ref={alertDialogRef}
+      className={'dialog-alert'}
+      onCloseDialog={onCloseAlertDialog}
+    >
       <section className='dialog-alert-content'>
         {title && <h2 className='dialog-alert-content-title'>{title}</h2>}
         {text && <p className='dialog-alert-content-text'>{text}</p>}
@@ -58,16 +62,7 @@ const AlertDialog = ({ title, text, action, unmountAlertDialogHandler }) => {
           onClick={() => closeAlertDialog(false)}
         />
       </footer>
-    </Fragment>
-  );
-
-  return (
-    <Dialog
-      ref={alertDialogRef}
-      classes={'dialog-alert'}
-      content={alertContent}
-      unmountDialogHandler={unmountAlertDialogHandler}
-    />
+    </Dialog>
   );
 };
 
@@ -87,7 +82,7 @@ AlertDialog.propTypes = {
     callback: PropTypes.func,
     path: PropTypes.string,
   }).isRequired,
-  unmountAlertDialogHandler: PropTypes.func.isRequired,
+  onCloseAlertDialog: PropTypes.func.isRequired,
 };
 
 export default AlertDialog;

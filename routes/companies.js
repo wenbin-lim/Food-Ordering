@@ -6,7 +6,7 @@ const isBase64 = require('is-base64');
 
 // Variables
 const router = express.Router();
-const { wawaya: wawayaAccess } = config.get('accessLevel');
+const { wawaya: wawayaAccess, admin: adminAccess } = config.get('accessLevel');
 const { rootFolder: cloudinaryRootFolder } = config.get('cloudinary');
 
 // Models
@@ -22,7 +22,7 @@ const { cloudinary } = require('../config/cloudinary');
 // @route    GET api/companies
 // @desc     List all companies
 // @access   Private
-router.get('/', auth(false, wawayaAccess), async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     let selectQuery = 'displayedName name socialMediaLinks logo';
 
@@ -45,7 +45,7 @@ router.get('/', auth(false, wawayaAccess), async (req, res) => {
 router.post(
   '/',
   [
-    auth(true, wawayaAccess),
+    auth(true, adminAccess),
     check('name')
       .exists({ checkFalsy: true })
       .withMessage('Please enter a name')
@@ -151,7 +151,7 @@ router.post(
 router.get(
   '/:id',
   [
-    auth(true, wawayaAccess),
+    auth(true, adminAccess),
     check(
       'id',
       'An unexpected error occured, please try again later!'
@@ -186,7 +186,7 @@ router.get(
 router.put(
   '/:id',
   [
-    auth(true, wawayaAccess),
+    auth(true, adminAccess),
     check(
       'id',
       'An unexpected error occured, please try again later!'
@@ -313,7 +313,7 @@ router.put(
 router.delete(
   '/:id',
   [
-    auth(true, wawayaAccess),
+    auth(true, adminAccess),
     check(
       'id',
       'An unexpected error occured, please try again later!'

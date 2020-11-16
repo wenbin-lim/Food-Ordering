@@ -23,48 +23,61 @@ export default function useSearch(
 
     if (Array.isArray(array)) {
       let newFiltered = array.filter(item => {
-        let found = false;
-
         // check if item is object/array/string
         if (typeof item === 'object' && item !== null) {
-          queryFields.forEach(field => {
-            let itemOfField = item[field];
+          for (var i = 0; i < queryFields.length; i++) {
+            let itemOfField = item[queryFields[i]];
 
             if (typeof itemOfField === 'string') {
               let itemOfFieldStr = caseSensitive
                 ? itemOfField
                 : itemOfField.toLowerCase();
-              found = itemOfFieldStr.indexOf(queryStr) >= 0;
-            } else if (Array.isArray(itemOfField)) {
-              let itemOfFieldArr = itemOfField;
 
-              itemOfFieldArr.forEach(itemOfFieldEl => {
+              if (itemOfFieldStr.indexOf(queryStr) >= 0) {
+                return true;
+              }
+            } else if (Array.isArray(itemOfField)) {
+              for (var j = 0; j < itemOfField.length; j++) {
+                let itemOfFieldEl = itemOfField[j];
+
                 if (typeof itemOfFieldEl === 'string') {
                   let itemOfFieldElStr = caseSensitive
                     ? itemOfFieldEl
                     : itemOfFieldEl.toLowerCase();
-                  found = itemOfFieldElStr.indexOf(queryStr) >= 0;
+
+                  if (itemOfFieldElStr.indexOf(queryStr) >= 0) {
+                    return true;
+                  }
                 }
-              });
+              }
             }
-          });
+          }
         } else if (Array.isArray(item)) {
-          item.forEach(el => {
-            if (typeof el === 'string') {
-              let elStr = caseSensitive ? el : el.toLowerCase();
-              found = elStr.indexOf(queryStr) >= 0;
+          for (var k = 0; k < item.length; k++) {
+            let itemEl = item[k];
+
+            if (typeof itemEl === 'string') {
+              let itemElStr = caseSensitive ? itemEl : itemEl.toLowerCase();
+
+              if (itemElStr.indexOf(queryStr) >= 0) {
+                return true;
+              }
             }
-          });
+          }
         } else if (typeof item === 'string') {
           let itemStr = caseSensitive ? item : item.toLowerCase();
-          found = itemStr.indexOf(queryStr) >= 0;
-        }
 
-        return found;
+          if (itemStr.indexOf(queryStr) >= 0) {
+            return true;
+          }
+        }
+        return false;
       });
 
       setFiltered(newFiltered);
     }
+
+    // eslint-disable-next-line
   }, [query]);
 
   return filtered;

@@ -1,50 +1,35 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Actions
-import { getUser, editUser } from '../../actions/users';
+import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
 import RadioInput from '../layout/RadioInput';
 import CheckboxInput from '../layout/CheckboxInput';
-import Button from '../layout/Button';
 import AlertDialog from '../layout/AlertDialog';
 
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
-
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useGetOne from '../../query/hooks/useGetOne';
+import useEditOne from '../../query/hooks/useEditOne';
 
-const UserEdit = ({
-  userAccess,
-  users: { requesting, user, errors },
-  getUser,
-  editUser,
-}) => {
+const UserEdit = ({ user: { access: userAccess } }) => {
   let { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    getUser(id);
+  const { data: user, isLoading, error } = useGetOne('user', id);
+  useErrors(error);
 
-    // eslint-disable-next-line
-  }, [id]);
-
-  const [inputErrorMessages] = useInputError(
-    {
-      username: '',
-      password: '',
-      name: '',
-      access: '',
-      role: '',
-    },
-    errors
+  const [editUser, { isLoading: requesting, error: editErrors }] = useEditOne(
+    'users'
   );
+  const [inputErrors] = useErrors(editErrors, ['username', 'password', 'name']);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -57,9 +42,9 @@ const UserEdit = ({
   const { username, password, name, access, role } = formData;
 
   useEffect(() => {
-    const { _id: userId, name, username, access, role } = { ...user };
+    if (user) {
+      const { name, username, access, role } = user;
 
-    if (userId === id) {
       setFormData({
         username: username ? username : '',
         password: '',
@@ -68,204 +53,152 @@ const UserEdit = ({
         role: Array.isArray(role) ? role : [],
       });
     }
-  }, [user, id]);
+  }, [isLoading, user]);
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
   const [showChangePasswordAlert, setShowChangePasswordAlert] = useState(false);
 
-  const checkIfChangePassword = e => {
+  const checkIfChangePassword = async e => {
     e.preventDefault();
 
-    return formData.password ? setShowChangePasswordAlert(true) : onSubmit();
+    return password ? setShowChangePasswordAlert(true) : onSubmit();
   };
-
-  const navigate = useNavigate();
 
   const onSubmit = async () => {
     setShowChangePasswordAlert(false);
 
-    let newUser = formData;
+    let newAccess =
+      userAccess < 99 ? (role.indexOf('admin') >= 0 ? 3 : 2) : access;
 
-    if (userAccess < 99) {
-      newUser = {
+    const editUserSuccess = await editUser({
+      id,
+      newItem: {
         ...formData,
-        access: formData.role.indexOf('admin') >= 0 ? 3 : 2,
-      };
-    }
+        access: newAccess,
+      },
+    });
 
-    const editUserSuccess = await editUser(id, newUser);
-
-    return editUserSuccess && navigate('../');
+    return (
+      editUserSuccess &&
+      dispatch(setSnackbar(`Edited user of name '${name}'`, 'success'))
+    );
   };
 
   const closeSideSheet = () => navigate('../../');
 
-  const sideSheetContent = (
-    <form id='userEditForm' onSubmit={checkIfChangePassword}>
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'username'}
-            required={true}
-            name={'username'}
-            type={'text'}
-            value={username}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.username}
-          />
-        </div>
-      </div>
+  return (
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={'Edit User'} closeHandler={closeSideSheet} />
+      <SideSheet.Content
+        elementType={'form'}
+        id={'userEditForm'}
+        onSubmit={checkIfChangePassword}
+      >
+        <TextInput
+          label={'username'}
+          required={true}
+          name={'username'}
+          type={'text'}
+          value={username}
+          onChangeHandler={onChange}
+          error={inputErrors.username}
+        />
 
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'password'}
-            required={true}
-            name={'password'}
-            type={'password'}
-            value={password}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.password}
-          />
-        </div>
-      </div>
+        <TextInput
+          label={'password'}
+          required={true}
+          name={'password'}
+          type={'password'}
+          value={password}
+          onChangeHandler={onChange}
+          error={inputErrors.password}
+        />
 
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
+        <TextInput
+          label={'name'}
+          required={true}
+          name={'name'}
+          type={'text'}
+          value={name}
+          onChangeHandler={onChange}
+          error={inputErrors.name}
+        />
 
-      {userAccess === 99 && (
-        <div className='row'>
-          <div className='col'>
-            <RadioInput
-              label={'access'}
-              required={true}
-              inline={true}
-              name={'access'}
-              inputs={[
-                {
-                  key: 'Staff',
-                  value: '2',
-                },
-                {
-                  key: 'Admin',
-                  value: '3',
-                },
-                {
-                  key: 'Wawaya Master',
-                  value: '99',
-                },
-              ]}
-              value={access}
-              onChangeHandler={onChange}
-              error={inputErrorMessages.access}
-            />
-          </div>
-        </div>
-      )}
-
-      <div className='row'>
-        <div className='col'>
-          <CheckboxInput
-            label={'role'}
+        {userAccess === 99 && (
+          <RadioInput
+            label={'access'}
             required={true}
-            name={'role'}
-            inline={true}
+            name={'access'}
             inputs={[
               {
-                key: 'Waiter',
-                value: 'waiter',
-              },
-              {
-                key: 'Cashier',
-                value: 'cashier',
-              },
-              {
-                key: 'Kitchen',
-                value: 'kitchen',
+                key: 'Staff',
+                value: '2',
               },
               {
                 key: 'Admin',
-                value: 'admin',
+                value: '3',
+              },
+              {
+                key: 'Wawaya Master',
+                value: '99',
               },
             ]}
-            value={role}
+            value={access}
             onChangeHandler={onChange}
-            error={inputErrorMessages.role}
           />
-        </div>
-      </div>
-    </form>
-  );
+        )}
 
-  return (
-    <Fragment>
-      <SideSheet
-        wrapper={false}
-        headerTitle={'Edit User'}
-        closeSideSheetHandler={closeSideSheet}
-        content={user && user._id !== id ? <Spinner /> : sideSheetContent}
-        footerBtn={
-          <Button
-            fill={'contained'}
-            type={'primary'}
-            block={true}
-            blockBtnBottom={true}
-            text={'edit'}
-            icon={
-              requesting ? (
-                <Spinner height={'1.5rem'} />
-              ) : (
-                <ArrowIcon direction='right' />
-              )
-            }
-            disabled={requesting}
-            submit={true}
-            form={'userEditForm'}
-          />
-        }
-      />
-      {showChangePasswordAlert && (
-        <AlertDialog
-          title={'Change password?'}
-          action={{
-            name: 'Continue',
-            type: 'error',
-            callback: onSubmit,
-          }}
-          unmountAlertDialogHandler={() => setShowChangePasswordAlert(false)}
+        <CheckboxInput
+          label={'role'}
+          required={true}
+          name={'role'}
+          inputs={[
+            {
+              key: 'Waiter',
+              value: 'waiter',
+            },
+            {
+              key: 'Cashier',
+              value: 'cashier',
+            },
+            {
+              key: 'Kitchen',
+              value: 'kitchen',
+            },
+            {
+              key: 'Admin',
+              value: 'admin',
+            },
+          ]}
+          value={role}
+          onChangeHandler={onChange}
         />
-      )}
-    </Fragment>
+
+        {showChangePasswordAlert && (
+          <AlertDialog
+            title={'Change password?'}
+            action={{
+              name: 'Continue',
+              type: 'error',
+              callback: onSubmit,
+            }}
+            unmountAlertDialogHandler={() => setShowChangePasswordAlert(false)}
+          />
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'edit'}
+        requesting={requesting}
+        form={'userEditForm'}
+      />
+    </SideSheet>
   );
 };
 
 UserEdit.propTypes = {
-  userAccess: PropTypes.number.isRequired,
-  users: PropTypes.object.isRequired,
-  getUser: PropTypes.func.isRequired,
-  editUser: PropTypes.func.isRequired,
+  user: PropTypes.object,
 };
 
-const mapStateToProps = state => ({
-  users: state.users,
-});
-
-const mapDispatchToProps = {
-  getUser,
-  editUser,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(UserEdit);
+export default UserEdit;

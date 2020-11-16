@@ -1,40 +1,58 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, Navigate, useNavigate } from 'react-router-dom';
 
 // Components
 import Spinner from '../../components/layout/Spinner';
 
 // Actions
-import { customerLogin } from '../../actions/customer';
+import { customerLogin } from '../../actions/auth';
 
-const CustomerLogin = ({ customerLogin }) => {
+const CustomerLogin = ({ auth: { loading, errors, user }, customerLogin }) => {
   let [searchParams] = useSearchParams();
+  const companyId = searchParams.get('company');
+  const tableId = searchParams.get('table');
   const navigate = useNavigate();
 
-  const tryCustomerLogin = async (companyId, tableId) => {
-    const customerLoginSuccess = await customerLogin(companyId, tableId);
-
-    const companyName = customerLoginSuccess?.table?.company?.name;
-
-    return customerLoginSuccess
-      ? navigate(`/dinein/${companyName}`, { replace: true })
-      : navigate('/', { replace: true });
-  };
+  const isFirstRun = useRef(true);
 
   useEffect(() => {
-    const companyId = searchParams.get('company');
-    const tableId = searchParams.get('table');
-
-    if (companyId && tableId) {
-      tryCustomerLogin(companyId, tableId);
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
     } else {
-      return navigate('/', { replace: true });
+      // loading is true first
+      // wait for LOAD_TOKEN to finish and will turn loading to false
+      if (companyId && tableId) {
+        customerLogin(companyId, tableId);
+      } else {
+        return navigate('/', { replace: true });
+      }
     }
 
     // eslint-disable-next-line
-  }, []);
+  }, [loading]);
+
+  if (errors) {
+    const { status } = errors;
+
+    switch (status) {
+      case 400:
+      case 404:
+        return <Navigate to='/' replace={true} />;
+      default:
+        break;
+    }
+  }
+
+  if (user) {
+    // user may exist due to LOAD_TOKEN
+    // but the loaded user might not be from customerLogin
+    if (user._id === tableId && user.company?._id === companyId) {
+      return <Navigate to={`/dinein/${user?.company?.name}`} />;
+    }
+  }
 
   return <Spinner fullscreen={true} />;
 };
@@ -43,7 +61,9 @@ CustomerLogin.propTypes = {
   customerLogin: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = state => ({});
+const mapStateToProps = state => ({
+  auth: state.auth,
+});
 
 const mapDispatchToProps = {
   customerLogin,

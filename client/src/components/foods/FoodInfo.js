@@ -1,10 +1,5 @@
-import React, { useEffect, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
-// Actions
-import { getFood } from '../../actions/foods';
 
 // Components
 import SideSheet from '../layout/SideSheet';
@@ -13,18 +8,17 @@ import Spinner from '../layout/Spinner';
 // Misc
 import { v4 as uuid } from 'uuid';
 
-const FoodInfo = ({ foods: { requesting, food }, getFood }) => {
+// Hooks
+import useGetOne from '../../query/hooks/useGetOne';
+import useErrors from '../../hooks/useErrors';
+
+const FoodInfo = () => {
   let { id } = useParams();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    getFood(id);
-
-    // eslint-disable-next-line
-  }, [id]);
+  const { data: food, isLoading, error } = useGetOne('food', id);
+  useErrors(error);
 
   const {
-    _id: foodId,
     availability,
     name,
     price,
@@ -38,95 +32,88 @@ const FoodInfo = ({ foods: { requesting, food }, getFood }) => {
     tags,
     allowAdditionalInstruction,
     image,
-    // eslint-disable-next-line
-    menus,
-    // eslint-disable-next-line
     customisations,
   } = {
     ...food,
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const sideSheetContent =
-    requesting || foodId !== id ? (
-      <Spinner />
-    ) : (
-      <Fragment>
-        {image && (
-          <div className='row'>
-            <div className='col place-items-center'>
-              <img src={image} alt={`food-${name}`} />
+  return (
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={name} closeHandler={() => navigate('../')}>
+        {availability === false && (
+          <span className='badge badge-error'>Unavailable</span>
+        )}
+      </SideSheet.Header>
+      {isLoading || error ? (
+        <Spinner />
+      ) : (
+        <SideSheet.Content>
+          {(typeof price === 'number' ||
+            typeof promotionPrice === 'number') && (
+            <div className='row'>
+              {price && (
+                <div className='col'>
+                  <p className='caption'>price</p>
+                  <p className='body-1'>${price.toFixed(2)}</p>
+                </div>
+              )}
+              {promotionPrice && (
+                <div className='col'>
+                  <p className='caption'>Promotional Price</p>
+                  <p className='body-1'>${promotionPrice.toFixed(2)}</p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {(typeof price === 'number' || typeof promotionPrice === 'number') && (
-          <div className='row'>
-            {price && (
-              <div className='col'>
-                <p className='caption'>price</p>
-                <p className='body-1'>${price.toFixed(2)}</p>
-              </div>
-            )}
-            {promotionPrice && (
-              <div className='col'>
-                <p className='caption'>Promotional Price</p>
-                <p className='body-1'>${promotionPrice.toFixed(2)}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {(typeof minQty === 'number' || typeof maxQty === 'number') && (
-          <div className='row'>
-            {minQty && (
-              <div className='col'>
-                <p className='caption'>Min Quantity</p>
-                <p className='body-1'>{minQty}</p>
-              </div>
-            )}
-            {maxQty && (
-              <div className='col'>
-                <p className='caption'>Max Quantity</p>
-                <p className='body-1'>{maxQty}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {desc && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Description</p>
-              <p className='body-1'>{desc}</p>
+          {(typeof minQty === 'number' || typeof maxQty === 'number') && (
+            <div className='row'>
+              {minQty && (
+                <div className='col'>
+                  <p className='caption'>Min Quantity</p>
+                  <p className='body-1'>{minQty}</p>
+                </div>
+              )}
+              {maxQty && (
+                <div className='col'>
+                  <p className='caption'>Max Quantity</p>
+                  <p className='body-1'>{maxQty}</p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {typeof portionSize === 'number' && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Portion Size</p>
-              <p className='body-1'>{portionSize}</p>
+          {desc && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption'>Description</p>
+                <p className='body-2'>{desc}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {preparationTime && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Preparation Time</p>
-              <p className='body-1'>{preparationTime}</p>
+          {typeof portionSize === 'number' && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption'>Portion Size</p>
+                <p className='body-1'>{portionSize}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {Array.isArray(allergics) && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Allergics</p>
-              <p className='body-1'>
+          {preparationTime && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption'>Preparation Time</p>
+                <p className='body-1'>{preparationTime}</p>
+              </div>
+            </div>
+          )}
+
+          {Array.isArray(allergics) && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption mb-h'>Allergics</p>
                 {allergics.length > 0
                   ? allergics.map(allergy => (
                       <span key={uuid()} className='chip mr-h'>
@@ -134,16 +121,14 @@ const FoodInfo = ({ foods: { requesting, food }, getFood }) => {
                       </span>
                     ))
                   : 'No allergics defined'}
-              </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {Array.isArray(tags) && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>tags</p>
-              <p className='body-1'>
+          {Array.isArray(tags) && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption mb-h'>tags</p>
                 {tags.length > 0
                   ? tags.map(tag => (
                       <span key={uuid()} className='chip mr-h'>
@@ -151,52 +136,51 @@ const FoodInfo = ({ foods: { requesting, food }, getFood }) => {
                       </span>
                     ))
                   : 'No tags defined'}
-              </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {typeof allowAdditionalInstruction === 'boolean' && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Allow additional instructions ?</p>
-              <span
-                className={`badge badge-${
-                  allowAdditionalInstruction ? 'success' : 'error'
-                }`}
-              >
-                {allowAdditionalInstruction ? 'Yes' : 'No'}
-              </span>
+          {typeof allowAdditionalInstruction === 'boolean' && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption mb-h'>Allow additional instructions ?</p>
+                <span
+                  className={`badge badge-${
+                    allowAdditionalInstruction ? 'success' : 'error'
+                  }`}
+                >
+                  {allowAdditionalInstruction ? 'Yes' : 'No'}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </Fragment>
-    );
+          )}
 
-  return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={!requesting || foodId === id ? name : null}
-      headerContent={
-        (!requesting || foodId === id) && availability === false ? (
-          <span className='badge badge-error'>Unavailable</span>
-        ) : null
-      }
-      closeSideSheetHandler={closeSideSheet}
-      content={sideSheetContent}
-    />
+          {Array.isArray(customisations) && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption'>Customisations</p>
+                {customisations.length > 0 ? (
+                  customisations.map(({ name }) => (
+                    <p className='body-2'>{name}</p>
+                  ))
+                ) : (
+                  <p className='body-1'>No customisations defined yet</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {image && (
+            <div className='row'>
+              <div className='col place-items-center'>
+                <img src={image} alt={`food-${name}`} />
+              </div>
+            </div>
+          )}
+        </SideSheet.Content>
+      )}
+    </SideSheet>
   );
 };
 
-FoodInfo.propTypes = {
-  getFood: PropTypes.func.isRequired,
-  foods: PropTypes.object.isRequired,
-};
-
-const mapStateToProps = state => ({
-  foods: state.foods,
-});
-
-const mapDispatchToProps = { getFood };
-
-export default connect(mapStateToProps, mapDispatchToProps)(FoodInfo);
+export default FoodInfo;

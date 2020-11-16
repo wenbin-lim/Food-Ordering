@@ -13,14 +13,9 @@ import Container from '../../components/layout/Container';
 
 const WawayaDashboard = ({}) => {
   return (
-    <Container
-      parentContent={
-        <Fragment>
-          <h1 className='heading-1'>Wawaya Master</h1>
-          <p>lorem1000</p>
-        </Fragment>
-      }
-    />
+    <Container>
+      <h1 className='heading-1'>Wawaya Master</h1>
+    </Container>
   );
 };
 

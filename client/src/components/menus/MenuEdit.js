@@ -1,232 +1,172 @@
-import React, { useEffect, useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Actions
-import { getFoods } from '../../actions/foods';
-import { getMenu, editMenu } from '../../actions/menus';
+import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Tabs from '../layout/Tabs';
-import Spinner from '../layout/Spinner';
+import Tabs, { Tab } from '../layout/Tabs';
 import TextInput from '../layout/TextInput';
-import Button from '../layout/Button';
 import SwitchInput from '../layout/SwitchInput';
 import CheckboxInput from '../layout/CheckboxInput';
 import SearchInput from '../layout/SearchInput';
 
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
-
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useGetAll from '../../query/hooks/useGetAll';
+import useGetOne from '../../query/hooks/useGetOne';
+import useEditOne from '../../query/hooks/useEditOne';
+import useSearch from '../../hooks/useSearch';
 
-const MenuEdit = ({
-  menus: { requesting, menu, errors },
-  foods: { foods: availableFoods },
-  getMenu,
-  getFoods,
-  editMenu,
-}) => {
+const MenuEdit = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  useEffect(() => {
-    getMenu(id);
+  const { data: menu, isLoading, error } = useGetOne('menu', id);
+  useErrors(error);
 
-    // eslint-disable-next-line
-  }, [id]);
-
-  const [inputErrorMessages] = useInputError(
-    {
-      name: '',
-      index: '',
-    },
-    errors
+  const [editMenu, { isLoading: requesting, error: editErrors }] = useEditOne(
+    'menus'
   );
+  const [inputErrors] = useErrors(editErrors, ['name', 'index']);
 
   const [formData, setFormData] = useState({
+    company: '',
     name: '',
     availability: true,
     index: '',
     foods: [],
   });
 
-  const { name, availability, index, foods } = formData;
+  const { company, name, availability, index, foods } = formData;
 
   useEffect(() => {
-    let { _id: menuId, name, availability, index, foods, company } = {
-      ...menu,
-    };
-
-    if (menuId === id) {
-      getFoods(company);
+    if (menu) {
+      const { company, name, availability, index, foods } = menu;
 
       setFormData({
+        company: company ? company : '',
         name: name ? name : '',
         availability: typeof availability === 'boolean' ? availability : true,
-        index: typeof index === 'number' ? index.toString() : index,
+        index: typeof index === 'number' ? index.toString() : '',
         foods: Array.isArray(foods) ? foods.map(food => food._id) : [],
       });
     }
-
-    // eslint-disable-next-line
-  }, [menu, id]);
+  }, [isLoading, menu]);
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editMenuSuccess = await editMenu(id, formData);
+    const editMenuSuccess = await editMenu({
+      id,
+      newItem: formData,
+    });
 
-    return editMenuSuccess && navigate('../');
+    return (
+      editMenuSuccess &&
+      dispatch(setSnackbar(`Edited menu of name '${name}'`, 'success'))
+    );
   };
 
   const closeSideSheet = () => navigate('../../');
 
-  const tabPageOne = (
-    <Fragment>
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Availability'}
-            name={'availability'}
-            value={availability}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.availability}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Menu Position'}
-            required={true}
-            name={'index'}
-            type={'numeric'}
-            value={index}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.index}
-          />
-        </div>
-      </div>
-    </Fragment>
+  // Foods
+  const { data: availableFoods, error: foodsError } = useGetAll(
+    'foods',
+    { company },
+    company
   );
+  useErrors(foodsError);
 
-  const [filteredFood, setFilteredFood] = useState([]);
-  const onSearch = filteredResult => setFilteredFood(filteredResult);
-
-  const tabPageTwo = (
-    <div className='row'>
-      <div className='col'>
-        <SearchInput
-          name='search'
-          queryFields={['name', 'tags', 'allergics']}
-          array={availableFoods}
-          onSearch={onSearch}
-        />
-        {Array.isArray(filteredFood) && filteredFood.length > 0 ? (
-          <CheckboxInput
-            name={'foods'}
-            inputs={filteredFood.map(food => ({
-              key: food.name,
-              value: food._id,
-            }))}
-            value={foods}
-            onChangeHandler={onChange}
-            ordered={true}
-          />
-        ) : (
-          <p className='caption text-center mt-1'>No food found</p>
-        )}
-      </div>
-    </div>
-  );
-
-  const sideSheetContent = (
-    <form
-      id='menuEditForm'
-      className='sidesheet-content tabs-wrapper p-0'
-      onSubmit={onSubmit}
-    >
-      <Tabs
-        wrapper={false}
-        headerClass={'mt-1 ml-1 mr-1 mb-0'}
-        tabs={[
-          { name: 'Main', content: tabPageOne, class: 'p-1' },
-          { name: 'Food', content: tabPageTwo, class: 'p-1' },
-        ]}
-      />
-    </form>
-  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredAvailableFoods = useSearch(availableFoods, searchQuery, [
+    'name',
+    'tags',
+    'allergics',
+  ]);
+  const onSearch = query => setSearchQuery(query);
 
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Edit Menu'}
-      closeSideSheetHandler={closeSideSheet}
-      contentWrapper={false}
-      content={menu && menu._id !== id ? <Spinner /> : sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'edit'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={'Edit Menu'} closeHandler={closeSideSheet}>
+        <Tabs onClickTab={onClickTab}>
+          <Tab name={'Main'} />
+          <Tab name={'Food'} />
+        </Tabs>
+      </SideSheet.Header>
+      <SideSheet.Content
+        elementType={'form'}
+        id={'menuEditForm'}
+        onSubmit={onSubmit}
+      >
+        {activeTab === 0 && (
+          <article>
+            <SwitchInput
+              label={'Availability'}
+              name={'availability'}
+              value={availability}
+              onChangeHandler={onChange}
+              error={inputErrors.availability}
+            />
+
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={inputErrors.name}
+            />
+
+            <TextInput
+              label={'Menu Position'}
+              required={true}
+              name={'index'}
+              type={'numeric'}
+              value={index}
+              onChangeHandler={onChange}
+              error={inputErrors.index}
+            />
+          </article>
+        )}
+
+        {activeTab === 1 && (
+          <article>
+            <SearchInput name='search' onSearch={onSearch} />
+            {Array.isArray(filteredAvailableFoods) &&
+            filteredAvailableFoods.length > 0 ? (
+              <CheckboxInput
+                name={'foods'}
+                inputs={filteredAvailableFoods.map(food => ({
+                  key: food.name,
+                  value: food._id,
+                }))}
+                value={foods}
+                onChangeHandler={onChange}
+                ordered={true}
+              />
             ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'menuEditForm'}
-        />
-      }
-    />
+              <p className='caption text-center mt-1'>No food found</p>
+            )}
+          </article>
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'edit'}
+        requesting={requesting}
+        form={'menuEditForm'}
+      />
+    </SideSheet>
   );
 };
 
-MenuEdit.propTypes = {
-  menus: PropTypes.object.isRequired,
-  foods: PropTypes.object.isRequired,
-  getMenu: PropTypes.func.isRequired,
-  getFoods: PropTypes.func.isRequired,
-  editMenu: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = state => ({
-  foods: state.foods,
-  menus: state.menus,
-});
-
-const mapDispatchToProps = {
-  getMenu,
-  getFoods,
-  editMenu,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(MenuEdit);
+export default MenuEdit;

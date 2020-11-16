@@ -4,8 +4,8 @@
   margin: 0 auto;
   min-height: calc(var(--vh) * 100);
 
-  padding-left: Max(env(safe-area-inset-left, var(--padding)));
-  padding-right: Max(env(safe-area-inset-right, var(--padding)));
+  padding-left: calc(env(safe-area-inset-left) + var(--padding));
+  padding-right: calc(env(safe-area-inset-right) + var(--padding));
   padding-top: calc(var(--navbar-height) + var(--padding));
   padding-bottom: calc(
     var(--bottomnav-height) + env(safe-area-inset-bottom) + var(--padding)
@@ -30,6 +30,8 @@
     .container-parent {
       padding-left: var(--padding);
       padding-right: var(--padding);
+
+      height: 100%;
 
       @include media(landscape) {
         flex: 3;

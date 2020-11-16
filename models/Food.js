@@ -72,12 +72,6 @@ const FoodSchema = mongoose.Schema({
       set: tag => tag.replace(/\s+/g, ' '),
     },
   ],
-  menus: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Menu',
-    },
-  ],
   customisations: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -98,6 +92,14 @@ const FoodSchema = mongoose.Schema({
     required: true,
   },
 });
+
+const autoPopulateCustomisation = function (next) {
+  this.populate('customisations');
+  next();
+};
+
+FoodSchema.pre('findOne', autoPopulateCustomisation);
+FoodSchema.pre('find', autoPopulateCustomisation);
 
 // ====================================================================================================
 // Exports

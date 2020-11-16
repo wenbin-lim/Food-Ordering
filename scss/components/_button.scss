@@ -23,7 +23,12 @@ $btn-colors: 'primary', 'secondary', 'error', 'success', 'warning';
     @each $i in $btn-colors {
       &.btn-#{$i} {
         background-color: var(--#{$i});
-        color: var(--on-#{$i});
+
+        @if str-index($i, 'surface') {
+          color: var(--on-surface);
+        } @else {
+          color: var(--on-#{$i});
+        }
       }
     }
     &.btn-background {

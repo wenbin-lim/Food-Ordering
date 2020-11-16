@@ -2,10 +2,12 @@
 // Packages
 // ====================================================================================================
 const mongoose = require('mongoose');
+const config = require('config');
 
 // ====================================================================================================
 // Variables
 // ====================================================================================================
+const foodStatus = config.get('foodStatus');
 
 // ====================================================================================================
 // Define Schema
@@ -24,22 +26,46 @@ const mongoose = require('mongoose');
 // 2. default
 // 3. unique(Boolean)
 // ====================================================================================================
+const Option = require('./Option');
+const OptionSchema = mongoose.model('Option').schema;
+
 const OrderSchema = mongoose.Schema({
-  items: [
+  food: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Food',
+  },
+  quantity: {
+    type: Number,
+    min: 1,
+    default: 1,
+  },
+  customisationsUsed: [
     {
-      food: {
+      customisation: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Food',
+        ref: 'Customisation',
       },
-      status: {
-        type: String,
-        default: 'preparing',
-      },
+      optionsSelected: [OptionSchema],
     },
   ],
+  additionalInstruction: String,
+  price: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  status: {
+    type: String,
+    enum: Object.keys(foodStatus),
+    default: foodStatus.added,
+  },
   date: {
     type: Date,
     default: Date.now,
+  },
+  bill: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bill',
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
@@ -47,6 +73,21 @@ const OrderSchema = mongoose.Schema({
     required: true,
   },
 });
+
+const autoPopulate = function (next) {
+  this.populate('food');
+  this.populate({
+    path: 'customisationsUsed',
+    populate: {
+      path: 'customisation',
+      model: 'Customisation',
+    },
+  });
+  next();
+};
+
+OrderSchema.pre('findOne', autoPopulate);
+OrderSchema.pre('find', autoPopulate);
 
 // ====================================================================================================
 // Exports

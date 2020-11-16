@@ -19,7 +19,7 @@ const CompanyAdd = () => {
   const dispatch = useDispatch();
 
   const [addCompany, { isLoading: requesting, error }] = useAddOne('companies');
-  const inputErrors = useErrors(error, [
+  const [inputErrors] = useErrors(error, [
     'name',
     'logoLarge',
     'logoSmall',
@@ -53,11 +53,12 @@ const CompanyAdd = () => {
     );
   };
 
-  const closeSideSheet = () => navigate('../');
-
   return (
     <SideSheet wrapper={false}>
-      <SideSheet.Header title={'Add Company'} closeHandler={closeSideSheet} />
+      <SideSheet.Header
+        title={'Add Company'}
+        closeHandler={() => navigate('../')}
+      />
       <SideSheet.Content
         elementType={'form'}
         id={'companyAddForm'}

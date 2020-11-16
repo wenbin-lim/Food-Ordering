@@ -3,6 +3,9 @@ import React, {
   Fragment,
   forwardRef,
   useImperativeHandle,
+  Children,
+  createElement,
+  cloneElement,
 } from 'react';
 import PropTypes from 'prop-types';
 
@@ -10,70 +13,115 @@ import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
 const Flippable = forwardRef(
   (
-    {
-      wrapper = true,
-      classes,
-      frontClass,
-      frontContent,
-      backClass,
-      backContent,
-    },
+    { wrapper = true, elementType = 'article', className, children, ...rest },
     ref
   ) => {
+    const flippableChildren = Children.toArray(children);
     // true is front
     // false is back
-    const [current, setCurrent] = useState(true);
+    const [currentFace, setCurrentFace] = useState(true);
 
     useImperativeHandle(ref, () => ({
       flip,
     }));
 
-    const flip = () => setCurrent(!current);
+    const flip = () => setCurrentFace(!currentFace);
 
-    const content = (
-      <Fragment>
-        <article
-          className={sanitizeWhiteSpace(
-            `flippable-front-face ${current ? 'shown' : 'hidden'} ${
-              frontClass ? frontClass : ''
-            }`
-          )}
-        >
-          {frontContent}
-        </article>
-        <article
-          className={sanitizeWhiteSpace(
-            `flippable-back-face ${current ? 'hidden' : 'shown'} ${
-              backClass ? backClass : ''
-            }`
-          )}
-        >
-          {backContent}
-        </article>
-      </Fragment>
-    );
+    const front = flippableChildren.find(({ type }) => type === Front);
+    const back = flippableChildren.find(({ type }) => type === Back);
 
     return wrapper ? (
       <article
-        className={sanitizeWhiteSpace(
-          `flippable-wrapper ${classes ? classes : ''}`
-        )}
+        className={`flippable-wrapper ${className ? className : ''}`}
+        {...rest}
       >
-        {content}
+        {front &&
+          cloneElement(front, {
+            shown: currentFace,
+          })}
+        {back &&
+          cloneElement(back, {
+            shown: !currentFace,
+          })}
       </article>
     ) : (
-      content
+      <Fragment>
+        {front &&
+          cloneElement(front, {
+            shown: currentFace,
+          })}
+        {back &&
+          cloneElement(back, {
+            shown: !currentFace,
+          })}
+      </Fragment>
     );
   }
 );
 
 Flippable.propTypes = {
   wrapper: PropTypes.bool,
-  classes: PropTypes.string,
-  frontClass: PropTypes.string,
-  frontContent: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  backClass: PropTypes.string,
-  backContent: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+  elementType: PropTypes.string,
+  className: PropTypes.string,
 };
+
+const Front = ({
+  elementType = 'article',
+  className,
+  shown,
+  children,
+  ...rest
+}) => {
+  return createElement(
+    elementType,
+    {
+      className: sanitizeWhiteSpace(
+        `flippable-front-face 
+      ${className ? className : ''}
+      ${shown ? 'shown' : 'hidden'}
+      `
+      ),
+      ...rest,
+    },
+    children
+  );
+};
+
+Front.propTypes = {
+  elementType: PropTypes.string,
+  className: PropTypes.string,
+  shown: PropTypes.bool,
+};
+
+const Back = ({
+  elementType = 'article',
+  className,
+  shown,
+  children,
+  ...rest
+}) => {
+  return createElement(
+    elementType,
+    {
+      className: sanitizeWhiteSpace(
+        `flippable-back-face 
+      ${className ? className : ''}
+      ${shown ? 'shown' : 'hidden'}
+      `
+      ),
+      ...rest,
+    },
+    children
+  );
+};
+
+Back.propTypes = {
+  elementType: PropTypes.string,
+  className: PropTypes.string,
+  shown: PropTypes.bool,
+};
+
+Flippable.Front = Front;
+Flippable.Back = Back;
 
 export default Flippable;

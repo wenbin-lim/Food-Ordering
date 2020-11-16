@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 
 // Components
-import Navbar from '../../components/layout/Navbar';
+import Navbar, { NavbarLogo } from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 
 // Assets
@@ -17,36 +17,6 @@ const MainAppWrapper = ({ screenOrientation }) => {
 
   const links = ['about', 'contact'];
 
-  const navbarLeftContent = (
-    <Fragment>
-      <img
-        className='navbar-logo'
-        src={WawayaLogoSmall}
-        alt='navbar-logo'
-        onClick={() =>
-          !screenOrientation ? navigate('/') : setShowSidebar(true)
-        }
-      />
-      {!screenOrientation &&
-        links.map((link, index) => (
-          <NavLink
-            key={`navlink-${link}-${index}`}
-            to={`/${link}`}
-            className='navbar-link'
-            activeClassName='active'
-          >
-            {link}
-          </NavLink>
-        ))}
-    </Fragment>
-  );
-
-  const navbarRightContent = (
-    <NavLink to='/login' className='navbar-link' activeClassName='active'>
-      LOGIN
-    </NavLink>
-  );
-
   const sidebarHeader = (
     <img
       className='sidebar-logo'
@@ -58,10 +28,33 @@ const MainAppWrapper = ({ screenOrientation }) => {
 
   return (
     <Fragment>
-      <Navbar
-        leftContent={navbarLeftContent}
-        rightContent={navbarRightContent}
-      />
+      <Navbar>
+        <Navbar.Left>
+          <NavbarLogo
+            logo={WawayaLogoSmall}
+            invertInDarkMode={true}
+            onClick={() =>
+              !screenOrientation ? navigate('/') : setShowSidebar(true)
+            }
+          />
+          {!screenOrientation &&
+            links.map((link, index) => (
+              <NavLink
+                key={`navlink-${link}-${index}`}
+                to={`/${link}`}
+                className='navbar-link'
+                activeClassName='active'
+              >
+                {link}
+              </NavLink>
+            ))}
+        </Navbar.Left>
+        <Navbar.Right>
+          <NavLink to='/login' className='navbar-link' activeClassName='active'>
+            LOGIN
+          </NavLink>
+        </Navbar.Right>
+      </Navbar>
       {screenOrientation && showSidebar && (
         <Sidebar
           headerContent={sidebarHeader}

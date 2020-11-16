@@ -19,6 +19,7 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
     if (!token) {
       if (privateOnly) {
         // user is public trying to access private route
+        console.error('Public trying to access private route');
         return res.status(401).send('Unauthorized');
       } else {
         // user is public trying to access public and private route
@@ -40,6 +41,9 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         } = user;
 
         if (access < minAccessLevel) {
+          console.error(
+            'Authorised user trying to access a higher access level route'
+          );
           return res.status(401).send('Unauthorized');
         }
 
@@ -48,6 +52,9 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         req.user = userId;
       } else if (table) {
         if (customerAccess < minAccessLevel) {
+          console.error(
+            'Authorised customer trying to access a higher access level route'
+          );
           return res.status(401).send('Unauthorized');
         }
 

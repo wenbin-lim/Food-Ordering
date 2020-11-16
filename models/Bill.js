@@ -7,7 +7,6 @@ const config = require('config');
 // ====================================================================================================
 // Variables
 // ====================================================================================================
-const foodStatus = config.get('foodStatus');
 const paymentMethods = config.get('paymentMethods');
 
 // ====================================================================================================
@@ -63,43 +62,6 @@ const BillSchema = mongoose.Schema({
     ref: 'Company',
     required: true,
   },
-  orders: [
-    {
-      food: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Food',
-      },
-      quantity: {
-        type: Number,
-        min: 1,
-        default: 1,
-      },
-      price: {
-        type: Number,
-        min: 0,
-        default: 0,
-      },
-      customisations: [
-        {
-          customisation: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Customisation',
-          },
-          optionsChosen: [],
-        },
-      ],
-      additionalInstruction: String,
-      status: {
-        type: String,
-        enum: Object.keys(foodStatus),
-        default: foodStatus.added,
-      },
-      date: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

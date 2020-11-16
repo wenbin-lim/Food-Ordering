@@ -1,93 +1,69 @@
-import React, { useEffect, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
-// Actions
-import { getMenu } from '../../actions/menus';
 
 // Components
 import SideSheet from '../layout/SideSheet';
 import Spinner from '../layout/Spinner';
 import FoodItem from '../foods/FoodItem';
 
-const MenuInfo = ({ menus: { requesting, menu }, getMenu }) => {
+// Hooks
+import useGetOne from '../../query/hooks/useGetOne';
+import useErrors from '../../hooks/useErrors';
+
+const MenuInfo = () => {
   let { id } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    getMenu(id);
+  const { data: menu, isLoading, error } = useGetOne('menu', id);
+  useErrors(error);
 
-    // eslint-disable-next-line
-  }, [id]);
-
-  const { _id: menuId, name, availability, index, foods } = {
+  const { name, availability, index, foods } = {
     ...menu,
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const sideSheetContent =
-    requesting || menuId !== id ? (
-      <Spinner />
-    ) : (
-      <Fragment>
-        {typeof index === 'number' && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption'>Menu Index</p>
-              <p className='body-1'>{index}</p>
-            </div>
-          </div>
-        )}
-
-        {Array.isArray(foods) && (
-          <div className='row'>
-            <div className='col'>
-              <p className='caption mb-h'>Foods under this menu</p>
-              {foods.length > 0 ? (
-                foods.map(food => (
-                  <FoodItem
-                    classes={'mb-h'}
-                    color={'surface2'}
-                    key={food._id}
-                    editable={false}
-                    food={food}
-                  />
-                ))
-              ) : (
-                <p className='body-1'>No food found</p>
-              )}
-            </div>
-          </div>
-        )}
-      </Fragment>
-    );
-
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={!requesting || menuId === id ? name : null}
-      headerContent={
-        (!requesting || menuId === id) && availability === false ? (
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={name} closeHandler={() => navigate('../')}>
+        {availability === false && (
           <span className='badge badge-error'>Unavailable</span>
-        ) : null
-      }
-      closeSideSheetHandler={closeSideSheet}
-      content={sideSheetContent}
-    />
+        )}
+      </SideSheet.Header>
+      {isLoading || error ? (
+        <Spinner />
+      ) : (
+        <SideSheet.Content>
+          {typeof index === 'number' && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption'>Menu Index</p>
+                <p className='body-1'>{index}</p>
+              </div>
+            </div>
+          )}
+
+          {Array.isArray(foods) && (
+            <div className='row'>
+              <div className='col'>
+                <p className='caption mb-h'>Food under this menu</p>
+                {foods.length > 0 ? (
+                  foods.map(food => (
+                    <FoodItem
+                      className={'mb-h'}
+                      key={food._id}
+                      data={food}
+                      editable={false}
+                    />
+                  ))
+                ) : (
+                  <p className='body-1'>No food found</p>
+                )}
+              </div>
+            </div>
+          )}
+        </SideSheet.Content>
+      )}
+    </SideSheet>
   );
 };
 
-MenuInfo.propTypes = {
-  getMenu: PropTypes.func.isRequired,
-  menus: PropTypes.object.isRequired,
-};
-
-const mapStateToProps = state => ({
-  menus: state.menus,
-});
-
-const mapDispatchToProps = { getMenu };
-
-export default connect(mapStateToProps, mapDispatchToProps)(MenuInfo);
+export default MenuInfo;

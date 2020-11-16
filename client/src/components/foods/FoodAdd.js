@@ -1,65 +1,48 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { queryCache } from 'react-query';
 
 // Actions
-import { getMenus } from '../../actions/menus';
-import { getCustomisations } from '../../actions/customisations';
-import { addFood } from '../../actions/foods';
 import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Tabs from '../layout/Tabs';
-import Spinner from '../layout/Spinner';
+import Tabs, { Tab } from '../layout/Tabs';
+import Dropdown from '../layout/Dropdown';
 import TextInput from '../layout/TextInput';
 import ImageInput from '../layout/ImageInput';
 import CheckboxInput from '../layout/CheckboxInput';
 import SwitchInput from '../layout/SwitchInput';
-import Button from '../layout/Button';
-
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
+import SearchInput from '../layout/SearchInput';
 
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useGetAll from '../../query/hooks/useGetAll';
+import useAddOne from '../../query/hooks/useAddOne';
+import useSearch from '../../hooks/useSearch';
 
-const FoodAdd = ({
-  userAccess,
-  userCompanyId,
-  companies: { company },
-  menus: { menus: availableMenus },
-  customisations: { customisations: availableCustomisations },
-  foods: { requesting, errors },
-  getMenus,
-  getCustomisations,
-  addFood,
-  setSnackbar,
-}) => {
-  useEffect(() => {
-    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
+const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-    getMenus(companyId);
-    getCustomisations(companyId);
+  const companies = queryCache.getQueryData('companies');
 
-    // eslint-disable-next-line
-  }, [userCompanyId, company]);
-
-  const [inputErrorMessages] = useInputError(
-    {
-      name: '',
-      price: '',
-      promotionPrice: '',
-      minQty: '',
-      maxQty: '',
-      portionSize: '',
-      image: '',
-    },
-    errors
-  );
+  const [addFood, { isLoading: requesting, error }] = useAddOne('foods');
+  const [inputErrors] = useErrors(error, [
+    'name',
+    'price',
+    'promotionPrice',
+    'minQty',
+    'maxQty',
+    'portionSize',
+  ]);
 
   const [formData, setFormData] = useState({
+    company: userCompanyId,
     availability: true,
     name: '',
     price: '',
@@ -73,11 +56,11 @@ const FoodAdd = ({
     tags: '',
     allowAdditionalInstruction: false,
     image: '',
-    menus: [],
     customisations: [],
   });
 
   const {
+    company,
     availability,
     name,
     price,
@@ -91,316 +74,244 @@ const FoodAdd = ({
     tags,
     allowAdditionalInstruction,
     image,
-    menus,
     customisations,
   } = formData;
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (userAccess === 99 && !company)
-      return setSnackbar('Select a company first!', 'error');
-
-    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
-
-    const addFoodSuccess = await addFood(companyId, {
+    const addFoodSuccess = await addFood({
       ...formData,
-      allergics: allergics ? allergics.split(',').filter(el => el !== '') : [],
-      tags: tags ? tags.split(',').filter(el => el !== '') : [],
+      allergics: allergics
+        ? allergics.split(',').filter(allergy => allergy !== '')
+        : [],
+      tags: tags ? tags.split(',').filter(tag => tag !== '') : [],
     });
 
-    return addFoodSuccess && closeSideSheet();
+    return (
+      addFoodSuccess &&
+      dispatch(setSnackbar(`Added food of name '${name}'`, 'success'))
+    );
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const tabPageOne = (
-    <Fragment>
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Availability'}
-            name={'availability'}
-            type={'text'}
-            value={availability}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'price'}
-            required={true}
-            name={'price'}
-            type={'number'}
-            value={price}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.price}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Promotional Price (if any)'}
-            name={'promotionPrice'}
-            type={'number'}
-            value={promotionPrice}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.promotionPrice}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col pr-h'>
-          <TextInput
-            label={'Min Quantity'}
-            required={true}
-            name={'minQty'}
-            type={'numeric'}
-            value={minQty}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.minQty}
-          />
-        </div>
-        <div className='col pl-h'>
-          <TextInput
-            label={'Max Quantity'}
-            required={true}
-            name={'maxQty'}
-            type={'numeric'}
-            value={maxQty}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.maxQty}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Food Description'}
-            name={'desc'}
-            type={'text'}
-            value={desc}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col-4 pr-h'>
-          <TextInput
-            label={'Portion Size'}
-            name={'portionSize'}
-            type={'number'}
-            value={portionSize}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.portionSize}
-          />
-        </div>
-
-        <div className='col pl-h'>
-          <TextInput
-            label={'Food Preparation Time'}
-            name={'preparationTime'}
-            type={'text'}
-            value={preparationTime}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Allergics'}
-            name={'allergics'}
-            type={'text'}
-            value={allergics}
-            onChangeHandler={onChange}
-            informationText={'Please separate with commas'}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Tags'}
-            name={'tags'}
-            type={'text'}
-            value={tags}
-            onChangeHandler={onChange}
-            informationText={'Please separate with commas'}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Allow Additional Instructions'}
-            name={'allowAdditionalInstruction'}
-            type={'allowAdditionalInstruction'}
-            value={allowAdditionalInstruction}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <ImageInput
-            label={'Food Image'}
-            name={'image'}
-            value={image}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.image}
-          />
-        </div>
-      </div>
-    </Fragment>
+  // Customisations
+  const {
+    data: availableCustomisations,
+    error: customisationsError,
+    refetch,
+  } = useGetAll(
+    'customisations',
+    {
+      company,
+    },
+    company
   );
+  useErrors(customisationsError);
 
-  const tabPageTwo = (
-    <div className='row'>
-      <div className='col'>
-        {Array.isArray(availableCustomisations) &&
-        availableCustomisations.length > 0 ? (
-          <CheckboxInput
-            name={'customisations'}
-            inputs={availableCustomisations.map(customisation => ({
-              key: customisation.name,
-              value: customisation._id,
-            }))}
-            value={customisations}
-            onChangeHandler={onChange}
-            ordered={true}
-          />
-        ) : (
-          <p className='caption'>No customisations found</p>
-        )}
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    company && refetch();
 
-  const tabPageThree = (
-    <div className='row'>
-      <div className='col'>
-        {Array.isArray(availableMenus) && availableMenus.length > 0 ? (
-          <CheckboxInput
-            name={'menus'}
-            inputs={availableMenus.map(menu => ({
-              key: menu.name,
-              value: menu._id,
-            }))}
-            value={menus}
-            onChangeHandler={onChange}
-          />
-        ) : (
-          <p className='caption'>No menus found</p>
-        )}
-      </div>
-    </div>
-  );
+    // eslint-disable-next-line
+  }, [company]);
 
-  const sideSheetContent = (
-    <form
-      id='foodAddForm'
-      className='sidesheet-content tabs-wrapper p-0'
-      onSubmit={onSubmit}
-    >
-      <Tabs
-        wrapper={false}
-        headerClass={'mt-1 ml-1 mr-1 mb-0'}
-        tabs={[
-          { name: 'Main', content: tabPageOne, class: 'p-1' },
-          { name: 'Customisations', content: tabPageTwo, class: 'p-1' },
-          { name: 'Menus', content: tabPageThree, class: 'p-1' },
-        ]}
-      />
-    </form>
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredAvailableCustomisations = useSearch(
+    availableCustomisations,
+    searchQuery,
+    ['name']
   );
+  const onSearch = query => setSearchQuery(query);
 
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Add Food'}
-      closeSideSheetHandler={closeSideSheet}
-      contentWrapper={false}
-      content={sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'add'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={'Add Food'} closeHandler={() => navigate('../')}>
+        <Tabs onClickTab={onClickTab}>
+          <Tab name={'Main'} />
+          <Tab name={'Customisations'} />
+        </Tabs>
+      </SideSheet.Header>
+      <SideSheet.Content
+        elementType={'form'}
+        id={'foodAddForm'}
+        onSubmit={onSubmit}
+      >
+        {activeTab === 0 && (
+          <article>
+            {userAccess === 99 && Array.isArray(companies) && (
+              <Dropdown
+                required={true}
+                label={'Company'}
+                name={'company'}
+                options={companies.map(({ _id, displayedName }) => ({
+                  key: displayedName,
+                  value: _id,
+                }))}
+                value={company}
+                onChangeHandler={onChange}
+              />
+            )}
+
+            <SwitchInput
+              label={'Availability'}
+              name={'availability'}
+              type={'text'}
+              value={availability}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={inputErrors.name}
+            />
+
+            <TextInput
+              label={'price'}
+              required={true}
+              name={'price'}
+              type={'number'}
+              value={price}
+              onChangeHandler={onChange}
+              error={inputErrors.price}
+            />
+
+            <TextInput
+              label={'Promotional Price (if any)'}
+              name={'promotionPrice'}
+              type={'number'}
+              value={promotionPrice}
+              onChangeHandler={onChange}
+              error={inputErrors.promotionPrice}
+            />
+
+            <div className='row'>
+              <div className='col pr-h'>
+                <TextInput
+                  label={'Min Quantity'}
+                  required={true}
+                  name={'minQty'}
+                  type={'numeric'}
+                  value={minQty}
+                  onChangeHandler={onChange}
+                  error={inputErrors.minQty}
+                />
+              </div>
+              <div className='col pl-h'>
+                <TextInput
+                  label={'Max Quantity'}
+                  required={true}
+                  name={'maxQty'}
+                  type={'numeric'}
+                  value={maxQty}
+                  onChangeHandler={onChange}
+                  error={inputErrors.maxQty}
+                />
+              </div>
+            </div>
+
+            <TextInput
+              label={'Food Description'}
+              name={'desc'}
+              type={'text'}
+              value={desc}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'Portion Size'}
+              name={'portionSize'}
+              type={'number'}
+              value={portionSize}
+              onChangeHandler={onChange}
+              error={inputErrors.portionSize}
+            />
+
+            <TextInput
+              label={'Food Preparation Time'}
+              name={'preparationTime'}
+              type={'text'}
+              value={preparationTime}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'Allergics'}
+              name={'allergics'}
+              type={'text'}
+              value={allergics}
+              onChangeHandler={onChange}
+              informationText={'Please separate with commas'}
+            />
+
+            <TextInput
+              label={'Tags'}
+              name={'tags'}
+              type={'text'}
+              value={tags}
+              onChangeHandler={onChange}
+              informationText={'Please separate with commas'}
+            />
+
+            <SwitchInput
+              label={'Allow Additional Instructions'}
+              name={'allowAdditionalInstruction'}
+              type={'allowAdditionalInstruction'}
+              value={allowAdditionalInstruction}
+              onChangeHandler={onChange}
+            />
+
+            <ImageInput
+              label={'Food Image'}
+              name={'image'}
+              value={image}
+              onChangeHandler={onChange}
+              error={inputErrors.image}
+            />
+          </article>
+        )}
+
+        {activeTab === 1 && (
+          <article>
+            <SearchInput name='search' onSearch={onSearch} />
+            {Array.isArray(filteredAvailableCustomisations) &&
+            filteredAvailableCustomisations.length > 0 ? (
+              <CheckboxInput
+                name={'customisations'}
+                inputs={filteredAvailableCustomisations.map(customisation => ({
+                  key: customisation.name,
+                  value: customisation._id,
+                }))}
+                value={customisations}
+                onChangeHandler={onChange}
+                ordered={true}
+              />
             ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'foodAddForm'}
-        />
-      }
-    />
+              <p className='caption text-center mt-1'>
+                No customisations found
+              </p>
+            )}
+          </article>
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'add'}
+        requesting={requesting}
+        form={'foodAddForm'}
+      />
+    </SideSheet>
   );
 };
 
 FoodAdd.propTypes = {
-  userAccess: PropTypes.number.isRequired,
-  userCompanyId: PropTypes.string.isRequired,
-  companies: PropTypes.object.isRequired,
-  menus: PropTypes.object.isRequired,
-  customisations: PropTypes.object.isRequired,
-  foods: PropTypes.object.isRequired,
-  getMenus: PropTypes.func.isRequired,
-  getCustomisations: PropTypes.func.isRequired,
-  addFood: PropTypes.func.isRequired,
-  setSnackbar: PropTypes.func.isRequired,
+  user: PropTypes.object,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  foods: state.foods,
-  companies: state.companies,
-  menus: state.menus,
-  customisations: state.customisations,
-});
-
-const mapDispatchToProps = {
-  getMenus,
-  getCustomisations,
-  addFood,
-  setSnackbar,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(FoodAdd);
+export default FoodAdd;

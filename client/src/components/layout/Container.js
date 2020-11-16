@@ -7,9 +7,9 @@ import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 const Container = ({
   elementType = 'section',
   className,
-  style,
   sidesheet,
   children,
+  ...rest
 }) => {
   return createElement(
     elementType,
@@ -19,9 +19,7 @@ const Container = ({
           className ? className : ''
         }`
       ),
-      style: {
-        ...style,
-      },
+      ...rest,
     },
     children
   );
@@ -30,7 +28,7 @@ const Container = ({
 Container.propTypes = {
   elementType: PropTypes.string,
   className: PropTypes.string,
-  gridLayout: PropTypes.arrayOf(PropTypes.number),
+  sidesheet: PropTypes.bool,
 };
 
 // default size from defined class is flex-grow = 1
@@ -40,6 +38,7 @@ const Parent = ({
   style,
   size,
   children,
+  ...rest
 }) => {
   return createElement(
     elementType,
@@ -51,6 +50,7 @@ const Parent = ({
         ...style,
         flex: typeof size === 'number' && size > 0 ? size : null,
       },
+      ...rest,
     },
     children
   );
@@ -59,6 +59,8 @@ const Parent = ({
 Parent.propTypes = {
   elementType: PropTypes.string,
   className: PropTypes.string,
+  style: PropTypes.object,
+  size: PropTypes.number,
 };
 
 // default size from defined class is flex-grow = 1
@@ -68,13 +70,18 @@ const Child = ({
   style,
   size,
   children,
+  ...rest
 }) => {
   const screenOrientation = useSelector(state => state.app.screenOrientation);
 
   useEffect(() => {
     document.body.style.overflow =
       screenOrientation && children ? 'hidden' : 'auto';
-  }, [children]);
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [screenOrientation, children]);
 
   return createElement(
     elementType,
@@ -86,6 +93,7 @@ const Child = ({
         ...style,
         flex: typeof size === 'number' && size > 0 ? size : null,
       },
+      ...rest,
     },
     children
   );
@@ -94,6 +102,8 @@ const Child = ({
 Child.propTypes = {
   elementType: PropTypes.string,
   className: PropTypes.string,
+  style: PropTypes.object,
+  size: PropTypes.number,
 };
 
 Container.Parent = Parent;

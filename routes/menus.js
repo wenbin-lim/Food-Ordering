@@ -46,16 +46,8 @@ router.get('/', auth(true, accessLevel.customer), async (req, res) => {
   try {
     const { company } = req.query;
 
-    let menus = await Menu.find({
-      company,
-    })
-      .sort({ index: 1 })
-      .populate({
-        path: 'foods',
-        populate: {
-          path: 'customisations',
-        },
-      });
+    // foods is populated by pre find hook
+    let menus = await Menu.find({ company }).sort({ index: 1 });
 
     res.json(menus);
   } catch (err) {
@@ -147,7 +139,8 @@ router.get(
           ? { _id: req.params.id, company }
           : { _id: req.params.id };
 
-      let menu = await Menu.findOne(query).populate('foods');
+      // foods is populated by pre find hook
+      let menu = await Menu.findOne(query);
 
       if (!menu) {
         return res.status(404).send('Menu not found');
@@ -190,7 +183,7 @@ router.put(
       .isMongoId(),
   ],
   async (req, res) => {
-    let { name, availability, index: newIndex, foods: newFoods } = req.body;
+    let { name, availability, index: newIndex, foods } = req.body;
 
     let errors = validationResult(req).array();
 
@@ -208,12 +201,7 @@ router.put(
         return res.status(404).send('Menu not found');
       }
 
-      const {
-        _id: menuId,
-        index: originalIndex,
-        company,
-        foods: originalFoods,
-      } = menu;
+      const { _id: menuId, index: originalIndex, company } = menu;
       newIndex = parseInt(newIndex);
 
       let menus = await Menu.find({ company }).sort({ index: 1 });
@@ -259,53 +247,14 @@ router.put(
         await Menu.bulkWrite(bulkOps);
       }
 
-      let bulkOps = [];
-      let removedFoods = originalFoods;
-      let addedFoods = newFoods;
-
-      newFoods.forEach(newFood => {
-        removedFoods = removedFoods.filter(
-          originalFood => originalFood.toString() !== newFood.toString()
-        );
-      });
-
-      originalFoods.forEach(originalFood => {
-        addedFoods = addedFoods.filter(
-          newFood => newFood.toString() !== originalFood.toString()
-        );
-      });
-
-      removedFoods.forEach(food => {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: food },
-            update: { $pull: { menus: menuId } },
-          },
-        });
-      });
-
-      addedFoods.forEach(food => {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: food },
-            update: { $addToSet: { menus: menuId } },
-          },
-        });
-      });
-
-      await Food.bulkWrite(bulkOps);
-
       menu.name = name;
       menu.index = newIndex;
       menu.availability = availability;
-      menu.foods = newFoods;
+      menu.foods = foods;
 
       await menu.save();
 
-      let newMenus = await Menu.find({ company }).sort({ index: 1 });
-
-      // return entire menus since the sorting will be changed
-      res.json(newMenus);
+      res.json(menu);
     } catch (err) {
       console.error(err);
       res.status(500).send('Server Error');
@@ -346,7 +295,7 @@ router.delete(
         return res.status(404).send('Menu not found');
       }
 
-      const { index, name: deletedMenuName, company } = deletedMenu;
+      const { index, company } = deletedMenu;
 
       let menus = await Menu.find({
         company,
@@ -366,19 +315,7 @@ router.delete(
 
       await Menu.bulkWrite(bulkOps);
 
-      menus = await Menu.find({ company }).sort({ index: 1 });
-
-      res.json({
-        menus,
-        deletedMenuName,
-      });
-
-      await Food.updateMany(
-        { menus: req.params.id },
-        {
-          $pull: { menus: req.params.id },
-        }
-      );
+      res.json(deletedMenu);
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

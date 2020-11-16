@@ -52,6 +52,13 @@ const MenuSchema = mongoose.Schema({
   },
 });
 
+const autoPopulateFood = function (next) {
+  this.populate('foods');
+  next();
+};
+
+MenuSchema.pre('findOne', autoPopulateFood);
+MenuSchema.pre('find', autoPopulateFood);
 // ====================================================================================================
 // Exports
 // ====================================================================================================

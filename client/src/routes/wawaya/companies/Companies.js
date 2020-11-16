@@ -13,6 +13,7 @@ import useErrors from '../../../hooks/useErrors';
 const Companies = () => {
   const { data: companies, isLoading, error } = useGetAll('companies');
   useErrors(error);
+
   const navigate = useNavigate();
 
   return (

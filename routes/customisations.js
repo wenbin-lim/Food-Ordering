@@ -28,14 +28,13 @@ const accessLevel = config.get('accessLevel');
 // Models
 // ====================================================================================================
 const Customisation = require('../models/Customisation');
+const Option = require('../models/Option');
 const Food = require('../models/Food');
 
 // ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
 // ====================================================================================================
 const auth = require('../middleware/auth');
-const { isValidObjectId } = require('mongoose');
-const ObjectId = require('mongoose').Types.ObjectId;
 
 // ====================================================================================================
 // Routes
@@ -141,14 +140,15 @@ router.post(
     }
 
     try {
-      // sanitize options by replacing the given uuid into mongoid
       if (options) {
-        options = options.map(option => {
-          if (!isValidObjectId(option._id)) {
-            option._id = new ObjectId();
-          }
-          return option;
-        });
+        options = options.map(
+          ({ name, price, availability }) =>
+            new Option({
+              name,
+              price,
+              availability,
+            })
+        );
       }
 
       let customisation = new Customisation({
@@ -302,12 +302,14 @@ router.put(
 
       // sanitize options
       if (options) {
-        options = options.map(option => {
-          if (!isValidObjectId(option._id)) {
-            option._id = new ObjectId();
-          }
-          return option;
-        });
+        options = options.map(
+          ({ name, price, availability }) =>
+            new Option({
+              name,
+              price,
+              availability,
+            })
+        );
       }
 
       customisation.name = name;
@@ -366,9 +368,7 @@ router.delete(
 
       await Food.updateMany(
         { customisations: req.params.id },
-        {
-          $pull: { customisations: req.params.id },
-        }
+        { $pull: { customisations: req.params.id } }
       );
     } catch (err) {
       console.error(err.message);

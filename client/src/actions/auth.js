@@ -22,17 +22,17 @@ export const loadToken = () => async dispatch => {
       // decode token in server and return payload
       const res = await axios.get('/api/auth');
 
-      const { user, table, bill } = res.data;
-
       dispatch({
         type: TOKEN_LOADED,
-        payload: { user, table, bill },
+        payload: res.data,
       });
     } catch (err) {
       dispatch({
         type: TOKEN_INVALID,
         payload: null,
       });
+
+      console.error(err?.response?.data);
     }
   } else {
     // no token in localstorage
@@ -62,14 +62,45 @@ export const login = (username, password) => async dispatch => {
       type: LOGIN_SUCCESS,
       payload: res.data,
     });
+
+    return res.data;
   } catch (err) {
     dispatch({
       type: LOGIN_FAIL,
-      payload: {
-        status: err.response.status,
-        data: err.response.data,
-      },
+      payload: err,
     });
+
+    return false;
+  }
+};
+
+export const customerLogin = (companyId, tableId) => async dispatch => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+
+  const body = JSON.stringify({ companyId, tableId });
+
+  try {
+    const res = await axios.post('/api/auth/customer', body, config);
+
+    setAuthToken(res.data.token);
+
+    dispatch({
+      type: LOGIN_SUCCESS,
+      payload: res.data,
+    });
+
+    return res.data;
+  } catch (err) {
+    dispatch({
+      type: LOGIN_FAIL,
+      payload: err,
+    });
+
+    return false;
   }
 };
 

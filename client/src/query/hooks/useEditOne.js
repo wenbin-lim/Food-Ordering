@@ -15,7 +15,7 @@ export default function useEditOne(key) {
 
       const body = JSON.stringify(newItem);
 
-      const res = await axios.put(`${apiUrl}${id}`, body, config);
+      const res = await axios.put(`${apiUrl}/${id}`, body, config);
       return res.data;
     },
     {

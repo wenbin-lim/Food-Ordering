@@ -1,12 +1,8 @@
 $orderitem-status-colors: 'error', 'success', 'warning';
 
 .orderitem {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
-
   display: grid;
   grid-template-rows: auto auto;
-  row-gap: 8px;
 
   @include media(portrait) {
     grid-template-columns: 5fr 2fr 3fr;
@@ -26,8 +22,9 @@ $orderitem-status-colors: 'error', 'success', 'warning';
     grid-area: orderitem-statusbar;
 
     display: flex;
-    justify-content: space-between;
     align-items: center;
+
+    margin-bottom: 8px;
 
     @each $i in $orderitem-status-colors {
       .orderitem-status-#{$i} {
@@ -42,16 +39,19 @@ $orderitem-status-colors: 'error', 'success', 'warning';
 
     .orderitem-date {
       @include body-2;
-      font-size: 0.5em;
       opacity: 0.3;
+      margin-left: 8px;
     }
   }
 
   .orderitem-info {
     grid-area: orderitem-info;
+
     .orderitem-info-name {
       @include body-1;
       line-height: 100%;
+
+      margin-bottom: 6px;
     }
 
     .orderitem-info-customisation {
@@ -62,7 +62,7 @@ $orderitem-status-colors: 'error', 'success', 'warning';
     .orderitem-info-additionalinstruction {
       @extend .badge;
       @extend .badge-small;
-      background-color: var(--surface1);
+      background-color: var(--surface3);
       color: var(--on-surface);
     }
   }
@@ -70,6 +70,7 @@ $orderitem-status-colors: 'error', 'success', 'warning';
   .orderitem-qty,
   .orderitem-price {
     @include caption;
+    font-size: 0.9rem;
     text-transform: none;
     text-align: right;
   }

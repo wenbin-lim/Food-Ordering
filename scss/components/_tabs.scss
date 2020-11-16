@@ -1,87 +1,84 @@
 /* Variables */
-$tab-height: 48px;
-$tab-y-padding: 8px;
+$tab-spacing: 8px;
+$tabs-justify-types: 'start', 'end', 'center', 'space-between', 'space-around',
+  'space-evenly';
 
-$tabs-border-height: 3px;
-
-$tab-min-width: 100px;
-
-.tabs-wrapper {
+.tabs {
   height: 100%;
-
   display: flex;
   flex-direction: column;
 
-  .tabs {
+  &.tabs-header-only {
+    height: auto;
+  }
+
+  .tabs-header {
     flex-shrink: 0;
+    grid-area: tabs-header;
     display: flex;
+    align-items: center;
+
     overflow-x: auto;
-    position: relative;
-
-    padding-bottom: var(--scrollbar-size);
-    margin-bottom: 8px;
     @include custom-scrollbar;
+    padding-bottom: var(--padding);
 
-    .tab {
-      flex: 1 0 $tab-min-width;
+    @each $i in $tabs-justify-types {
+      &.tabs-justify-#{$i} {
+        @if $i == 'start' {
+          .tab-name:not(:first-child) {
+            margin-left: $tab-spacing;
+          }
+        } @else if $i == 'end' {
+          flex-direction: row-reverse;
 
-      min-height: $tab-height;
-      padding: $tab-y-padding 0;
+          .tab-name:not(:first-child) {
+            margin-right: $tab-spacing;
+          }
+        } @else if $i == 'center' {
+          justify-content: center;
+
+          .tab-name {
+            margin-left: $tab-spacing / 2;
+            margin-right: $tab-spacing / 2;
+          }
+        } @else {
+          justify-content: #{$i};
+        }
+      }
+    }
+
+    .tab-name {
+      @include caption;
+      color: inherit;
 
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+
+      padding: 8px 16px;
+      border-radius: 16px;
 
       cursor: pointer;
-      user-select: none;
 
-      border-bottom: $tabs-border-height solid var(--surface3);
+      opacity: 0.4;
+      transition: opacity 0.3s, background-color 0.3s, color 0.3s;
 
-      .tab-name {
-        width: 80%;
-        text-align: center;
-
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      &.active {
+        opacity: 1;
+        background-color: var(--primary);
+        color: var(--on-primary);
       }
-    }
-
-    .tab-active {
-      color: var(--secondary);
-    }
-
-    .tab-active-line {
-      position: absolute;
-      bottom: var(--scrollbar-size);
-      left: 0;
-      width: 0;
-      height: $tabs-border-height;
-      background-color: var(--secondary);
-
-      transition: transform 0.3s ease-in-out;
     }
   }
 
-  .tab-contents-wrapper {
+  .tab-content {
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
+    @include custom-scrollbar;
 
-    .tab-contents {
-      height: 100%;
-      display: flex;
-
-      transition: transform 0.3s ease-in-out;
-
-      .tab-content {
-        height: 100%;
-        width: 100%;
-        flex-shrink: 0;
-
-        overflow: auto;
-        @include custom_scrollbar;
-      }
+    &.hidden {
+      display: none;
     }
   }
 }

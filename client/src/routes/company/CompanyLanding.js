@@ -8,7 +8,9 @@ import Container from '../../components/layout/Container';
 
 const CompanyLanding = () => {
   return (
-    <Container parentContent={<h1 className='heading-1'>Company Landing</h1>} />
+    <Container>
+      <h1 className='heading-1'>Company Landing</h1>
+    </Container>
   );
 };
 

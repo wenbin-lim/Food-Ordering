@@ -1,29 +1,33 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 // Components
-import ListItem from '../../layout/ListItem';
+import ListItem, { Action } from '../../layout/ListItem';
 
-const OptionItem = ({ actions, color = 'surface2', option }) => {
+const OptionItem = ({ actions, option }) => {
   const { name, price, availability } = { ...option };
 
-  const priceStr = `${price < 0 ? '-' : '+'} ${Math.abs(price).toFixed(2)}`;
-
   return (
-    <ListItem
-      classes={'mb-h'}
-      color={color}
-      listContent={
-        <Fragment>
-          <p className='body-1'>{name}</p>
-          {availability === false && (
-            <span className='badge badge-error'>Unavailable</span>
-          )}
-        </Fragment>
-      }
-      afterListContent={<p className='body-2 pl-h pr-h'>{priceStr}</p>}
-      actions={actions}
-    />
+    <ListItem>
+      <ListItem.Content>
+        <p className='body-1'>{name ? name : 'No name defined'}</p>
+        {availability === false && (
+          <span className='badge badge-small badge-error'>Unavailable</span>
+        )}
+      </ListItem.Content>
+      <ListItem.After>
+        <p className='body-2 pl-h pr-h'>{`${price < 0 ? '-' : '+'} ${Math.abs(
+          price
+        ).toFixed(2)}`}</p>
+      </ListItem.After>
+      {Array.isArray(actions) && actions.length > 0 && (
+        <ListItem.Actions>
+          {actions.map(({ name, callback }) => (
+            <Action name={name} onClick={callback} />
+          ))}
+        </ListItem.Actions>
+      )}
+    </ListItem>
   );
 };
 
@@ -31,21 +35,9 @@ OptionItem.propTypes = {
   actions: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
-      path: PropTypes.string,
       callback: PropTypes.func,
     }).isRequired
   ),
-  color: PropTypes.oneOf([
-    'surface1',
-    'surface2',
-    'surface3',
-    'primary',
-    'secondary',
-    'error',
-    'success',
-    'warning',
-    'background',
-  ]),
   option: PropTypes.object.isRequired,
 };
 

@@ -1,124 +1,98 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { queryCache } from 'react-query';
 
 // Actions
-import { addTable } from '../../actions/tables';
 import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Spinner from '../layout/Spinner';
 import TextInput from '../layout/TextInput';
-import Button from '../layout/Button';
-
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
+import Dropdown from '../layout/Dropdown';
 
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useAddOne from '../../query/hooks/useAddOne';
 
-const TableAdd = ({
-  userAccess,
-  userCompanyId,
-  companies: { company },
-  tables: { requesting, errors },
-  addTable,
-  setSnackbar,
-}) => {
-  const [inputErrorMessages] = useInputError({ name: '' }, errors);
+const TableAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const companies = queryCache.getQueryData('companies');
+
+  const [addTable, { isLoading: requesting, error }] = useAddOne('tables');
+  const [inputErrors] = useErrors(error, ['name']);
 
   const [formData, setFormData] = useState({
+    company: userCompanyId,
     name: '',
   });
 
-  const { name } = formData;
+  const { company, name } = formData;
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (userAccess === 99 && !company)
-      return setSnackbar('Select a company first!', 'error');
+    const addTableSuccess = await addTable(formData);
 
-    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
-
-    const addTableSuccess = await addTable(companyId, formData);
-
-    return addTableSuccess && closeSideSheet();
+    return (
+      addTableSuccess &&
+      dispatch(setSnackbar(`Added table of name '${name}'`, 'success'))
+    );
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const sideSheetContent = (
-    <form id='tableAddForm' onSubmit={onSubmit}>
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-    </form>
-  );
-
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Add Table'}
-      closeSideSheetHandler={closeSideSheet}
-      content={sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'add'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
-            ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'tableAddForm'}
+    <SideSheet wrapper={false}>
+      <SideSheet.Header
+        title={'Add Table'}
+        closeHandler={() => navigate('../')}
+      />
+      <SideSheet.Content
+        elementType={'form'}
+        id={'tableAddForm'}
+        onSubmit={onSubmit}
+      >
+        {userAccess === 99 && Array.isArray(companies) && (
+          <Dropdown
+            required={true}
+            label={'Company'}
+            name={'company'}
+            options={companies.map(({ _id, displayedName }) => ({
+              key: displayedName,
+              value: _id,
+            }))}
+            value={company}
+            onChangeHandler={onChange}
+          />
+        )}
+
+        <TextInput
+          label={'name'}
+          required={true}
+          name={'name'}
+          type={'text'}
+          value={name}
+          onChangeHandler={onChange}
+          error={inputErrors.name}
         />
-      }
-    />
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'add'}
+        requesting={requesting}
+        form={'tableAddForm'}
+      />
+    </SideSheet>
   );
 };
 
 TableAdd.propTypes = {
-  userAccess: PropTypes.number.isRequired,
-  userCompanyId: PropTypes.string.isRequired,
-  companies: PropTypes.object.isRequired,
-  tables: PropTypes.object.isRequired,
-  addTable: PropTypes.func.isRequired,
-  setSnackbar: PropTypes.func.isRequired,
+  user: PropTypes.object,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  tables: state.tables,
-  companies: state.companies,
-});
-
-const mapDispatchToProps = {
-  addTable,
-  setSnackbar,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(TableAdd);
+export default TableAdd;

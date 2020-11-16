@@ -1,60 +1,51 @@
-import React, { useEffect, useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Actions
-import { getMenus } from '../../actions/menus';
-import { getCustomisations } from '../../actions/customisations';
-import { getFood, editFood } from '../../actions/foods';
+import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Tabs from '../layout/Tabs';
-import Spinner from '../layout/Spinner';
+import Tabs, { Tab } from '../layout/Tabs';
 import TextInput from '../layout/TextInput';
 import ImageInput from '../layout/ImageInput';
 import CheckboxInput from '../layout/CheckboxInput';
 import SwitchInput from '../layout/SwitchInput';
-import Button from '../layout/Button';
-
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
+import SearchInput from '../layout/SearchInput';
 
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useGetAll from '../../query/hooks/useGetAll';
+import useGetOne from '../../query/hooks/useGetOne';
+import useEditOne from '../../query/hooks/useEditOne';
+import useSearch from '../../hooks/useSearch';
 
-const FoodEdit = ({
-  menus: { menus: availableMenus },
-  customisations: { customisations: availableCustomisations },
-  foods: { requesting, food, errors },
-  getFood,
-  getMenus,
-  getCustomisations,
-  editFood,
-}) => {
+const FoodEdit = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  useEffect(() => {
-    getFood(id);
+  const { data: food, isLoading, error } = useGetOne('food', id);
+  useErrors(error);
 
-    // eslint-disable-next-line
-  }, [id]);
-
-  const [inputErrorMessages] = useInputError(
-    {
-      name: '',
-      price: '',
-      promotionPrice: '',
-      minQty: '',
-      maxQty: '',
-      portionSize: '',
-      image: '',
-    },
-    errors
+  const [editFood, { isLoading: requesting, error: editErrors }] = useEditOne(
+    'foods'
   );
+  const [inputErrors] = useErrors(editErrors, [
+    'name',
+    'price',
+    'promotionPrice',
+    'minQty',
+    'maxQty',
+    'portionSize',
+    'image',
+  ]);
 
   const [formData, setFormData] = useState({
+    company: '',
     availability: true,
     name: '',
     price: '',
@@ -68,11 +59,11 @@ const FoodEdit = ({
     tags: '',
     image: '',
     allowAdditionalInstruction: false,
-    menus: [],
     customisations: [],
   });
 
   const {
+    company,
     availability,
     name,
     price,
@@ -86,36 +77,31 @@ const FoodEdit = ({
     tags,
     image,
     allowAdditionalInstruction,
-    menus,
     customisations,
   } = formData;
 
   useEffect(() => {
-    const {
-      _id: foodId,
-      availability,
-      name,
-      price,
-      promotionPrice,
-      minQty,
-      maxQty,
-      desc,
-      portionSize,
-      preparationTime,
-      allergics,
-      tags,
-      allowAdditionalInstruction,
-      image,
-      menus,
-      customisations,
-      company,
-    } = { ...food };
-
-    if (foodId === id) {
-      getMenus(company);
-      getCustomisations(company);
+    if (food) {
+      const {
+        company,
+        availability,
+        name,
+        price,
+        promotionPrice,
+        minQty,
+        maxQty,
+        desc,
+        portionSize,
+        preparationTime,
+        allergics,
+        tags,
+        allowAdditionalInstruction,
+        image,
+        customisations,
+      } = food;
 
       setFormData({
+        company: company ? company : '',
         availability: typeof availability === 'boolean' ? availability : true,
         name: name ? name : '',
         price: typeof price === 'number' ? price.toString() : '',
@@ -134,313 +120,221 @@ const FoodEdit = ({
             ? allowAdditionalInstruction
             : true,
         image: image ? image : '',
-        menus: Array.isArray(menus) ? menus : [],
-        customisations: Array.isArray(customisations) ? customisations : [],
+        customisations: Array.isArray(customisations)
+          ? customisations.map(customisation => customisation._id)
+          : [],
       });
     }
-
-    // eslint-disable-next-line
-  }, [food, id]);
+  }, [isLoading, food]);
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editFoodSuccess = await editFood(id, {
-      ...formData,
-      allergics: allergics ? allergics.split(',').filter(el => el !== '') : [],
-      tags: tags ? tags.split(',').filter(el => el !== '') : [],
+    const editFoodSuccess = await editFood({
+      id,
+      newItem: {
+        ...formData,
+        allergics: allergics
+          ? allergics.split(',').filter(allergy => allergy !== '')
+          : [],
+        tags: tags ? tags.split(',').filter(tag => tag !== '') : [],
+      },
     });
 
-    return editFoodSuccess && navigate('../');
+    return (
+      editFoodSuccess &&
+      dispatch(setSnackbar(`Edited food of name '${name}'`, 'success'))
+    );
   };
 
   const closeSideSheet = () => navigate('../../');
 
-  const tabPageOne = (
-    <Fragment>
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Availability'}
-            name={'availability'}
-            type={'text'}
-            value={availability}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
+  // Customisations
+  const {
+    data: availableCustomisations,
+    error: customisationsError,
+  } = useGetAll('customisations', { company }, company);
+  useErrors(customisationsError);
 
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'price'}
-            required={true}
-            name={'price'}
-            type={'number'}
-            value={price}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.price}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Promotional Price (if any)'}
-            name={'promotionPrice'}
-            type={'number'}
-            value={promotionPrice}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.promotionPrice}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col pr-h'>
-          <TextInput
-            label={'Min Quantity'}
-            required={true}
-            name={'minQty'}
-            type={'numeric'}
-            value={minQty}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.minQty}
-          />
-        </div>
-        <div className='col pl-h'>
-          <TextInput
-            label={'Max Quantity'}
-            required={true}
-            name={'maxQty'}
-            type={'numeric'}
-            value={maxQty}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.maxQty}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Food Description'}
-            name={'desc'}
-            type={'text'}
-            value={desc}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col-4 pr-h'>
-          <TextInput
-            label={'Portion Size'}
-            name={'portionSize'}
-            type={'number'}
-            value={portionSize}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.portionSize}
-          />
-        </div>
-
-        <div className='col pl-h'>
-          <TextInput
-            label={'Food Preparation Time'}
-            name={'preparationTime'}
-            type={'text'}
-            value={preparationTime}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Allergics'}
-            name={'allergics'}
-            type={'text'}
-            value={allergics}
-            onChangeHandler={onChange}
-            informationText={'Please separate with commas'}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'Tags'}
-            name={'tags'}
-            type={'text'}
-            value={tags}
-            onChangeHandler={onChange}
-            informationText={'Please separate with commas'}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'Allow Additional Instructions'}
-            name={'allowAdditionalInstruction'}
-            type={'allowAdditionalInstruction'}
-            value={allowAdditionalInstruction}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <ImageInput
-            label={'Food Image'}
-            name={'image'}
-            value={image}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.image}
-          />
-        </div>
-      </div>
-    </Fragment>
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredAvailableCustomisations = useSearch(
+    availableCustomisations,
+    searchQuery,
+    ['name']
   );
-
-  const tabPageTwo = (
-    <div className='row'>
-      <div className='col'>
-        <h3 className='heading-3'>Customisations</h3>
-        {Array.isArray(availableCustomisations) &&
-        availableCustomisations.length > 0 ? (
-          <CheckboxInput
-            name={'customisations'}
-            inputs={availableCustomisations.map(customisation => ({
-              key: customisation.name,
-              value: customisation._id,
-            }))}
-            value={customisations}
-            onChangeHandler={onChange}
-            ordered={true}
-          />
-        ) : (
-          <p className='caption'>No customisations found</p>
-        )}
-      </div>
-    </div>
-  );
-
-  const tabPageThree = (
-    <div className='row'>
-      <div className='col'>
-        <h3 className='heading-3'>Group food under</h3>
-        {Array.isArray(availableMenus) && availableMenus.length > 0 ? (
-          <CheckboxInput
-            name={'menus'}
-            inputs={availableMenus.map(menu => ({
-              key: menu.name,
-              value: menu._id,
-            }))}
-            value={menus}
-            onChangeHandler={onChange}
-          />
-        ) : (
-          <p className='caption'>No menus found</p>
-        )}
-      </div>
-    </div>
-  );
-
-  const sideSheetContent = (
-    <form
-      id='foodEditForm'
-      className='sidesheet-content tabs-wrapper p-0'
-      onSubmit={onSubmit}
-    >
-      <Tabs
-        wrapper={false}
-        headerClass={'mt-1 ml-1 mr-1 mb-0'}
-        tabs={[
-          { name: 'Main', content: tabPageOne, class: 'p-1' },
-          { name: 'Customisations', content: tabPageTwo, class: 'p-1' },
-          { name: 'Menus', content: tabPageThree, class: 'p-1' },
-        ]}
-      />
-    </form>
-  );
+  const onSearch = query => setSearchQuery(query);
 
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Edit Food'}
-      closeSideSheetHandler={closeSideSheet}
-      contentWrapper={false}
-      content={food && food._id !== id ? <Spinner /> : sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'edit'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
+    <SideSheet wrapper={false}>
+      <SideSheet.Header title={'Edit Food'} closeHandler={closeSideSheet}>
+        <Tabs onClickTab={onClickTab}>
+          <Tab name={'Main'} />
+          <Tab name={'Customisations'} />
+        </Tabs>
+      </SideSheet.Header>
+      <SideSheet.Content
+        elementType={'form'}
+        id={'foodEditForm'}
+        onSubmit={onSubmit}
+      >
+        {activeTab === 0 && (
+          <article>
+            <SwitchInput
+              label={'Availability'}
+              name={'availability'}
+              type={'text'}
+              value={availability}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={inputErrors.name}
+            />
+
+            <TextInput
+              label={'price'}
+              required={true}
+              name={'price'}
+              type={'number'}
+              value={price}
+              onChangeHandler={onChange}
+              error={inputErrors.price}
+            />
+
+            <TextInput
+              label={'Promotional Price (if any)'}
+              name={'promotionPrice'}
+              type={'number'}
+              value={promotionPrice}
+              onChangeHandler={onChange}
+              error={inputErrors.promotionPrice}
+            />
+
+            <div className='row'>
+              <div className='col pr-h'>
+                <TextInput
+                  label={'Min Quantity'}
+                  required={true}
+                  name={'minQty'}
+                  type={'numeric'}
+                  value={minQty}
+                  onChangeHandler={onChange}
+                  error={inputErrors.minQty}
+                />
+              </div>
+              <div className='col pl-h'>
+                <TextInput
+                  label={'Max Quantity'}
+                  required={true}
+                  name={'maxQty'}
+                  type={'numeric'}
+                  value={maxQty}
+                  onChangeHandler={onChange}
+                  error={inputErrors.maxQty}
+                />
+              </div>
+            </div>
+
+            <TextInput
+              label={'Food Description'}
+              name={'desc'}
+              type={'text'}
+              value={desc}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'Portion Size'}
+              name={'portionSize'}
+              type={'number'}
+              value={portionSize}
+              onChangeHandler={onChange}
+              error={inputErrors.portionSize}
+            />
+
+            <TextInput
+              label={'Food Preparation Time'}
+              name={'preparationTime'}
+              type={'text'}
+              value={preparationTime}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'Allergics'}
+              name={'allergics'}
+              type={'text'}
+              value={allergics}
+              onChangeHandler={onChange}
+              informationText={'Please separate with commas'}
+            />
+
+            <TextInput
+              label={'Tags'}
+              name={'tags'}
+              type={'text'}
+              value={tags}
+              onChangeHandler={onChange}
+              informationText={'Please separate with commas'}
+            />
+
+            <SwitchInput
+              label={'Allow Additional Instructions'}
+              name={'allowAdditionalInstruction'}
+              type={'allowAdditionalInstruction'}
+              value={allowAdditionalInstruction}
+              onChangeHandler={onChange}
+            />
+
+            <ImageInput
+              label={'Food Image'}
+              name={'image'}
+              value={image}
+              onChangeHandler={onChange}
+              error={inputErrors.image}
+            />
+          </article>
+        )}
+
+        {activeTab === 1 && (
+          <article>
+            <SearchInput name='search' onSearch={onSearch} />
+            {Array.isArray(filteredAvailableCustomisations) &&
+            filteredAvailableCustomisations.length > 0 ? (
+              <CheckboxInput
+                name={'customisations'}
+                inputs={filteredAvailableCustomisations.map(customisation => ({
+                  key: customisation.name,
+                  value: customisation._id,
+                }))}
+                value={customisations}
+                onChangeHandler={onChange}
+                ordered={true}
+              />
             ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'foodEditForm'}
-        />
-      }
-    />
+              <p className='caption text-center mt-1'>
+                No customisations found
+              </p>
+            )}
+          </article>
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'edit'}
+        requesting={requesting}
+        form={'foodEditForm'}
+      />
+    </SideSheet>
   );
 };
 
-FoodEdit.propTypes = {
-  foods: PropTypes.object.isRequired,
-  menus: PropTypes.object.isRequired,
-  customisations: PropTypes.object.isRequired,
-  getFood: PropTypes.func.isRequired,
-  getMenus: PropTypes.func.isRequired,
-  getCustomisations: PropTypes.func.isRequired,
-  editFood: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = state => ({
-  foods: state.foods,
-  menus: state.menus,
-  customisations: state.customisations,
-});
-
-const mapDispatchToProps = {
-  getFood,
-  getMenus,
-  getCustomisations,
-  editFood,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(FoodEdit);
+export default FoodEdit;

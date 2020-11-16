@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { cloneElement } from 'react';
 import { Route, Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -6,31 +6,21 @@ import { connect } from 'react-redux';
 // Components
 import Spinner from '../components/layout/Spinner';
 
-const WawayaRoute = ({
-  component: Component,
-  path,
-  auth,
-  children,
-  ...rest
-}) => {
+const WawayaRoute = ({ element, path, auth, children, ...rest }) => {
   const { loading, user } = auth;
-  const { _id: userId, access: userAccess, company: userCompany } = { ...user };
-  const { _id: userCompanyId, name: userCompanyName } = { ...userCompany };
+  const { company } = { ...user };
+  const { _id: companyId, name: companyName } = { ...company };
 
   return loading ? (
     <Spinner fullscreen={true} />
-  ) : userAccess === 99 && userCompanyName === 'wawaya' ? (
+  ) : user?.access === 99 && companyName === 'wawaya' ? (
     <Route
       path={path}
-      element={
-        <Component
-          userId={userId}
-          userAccess={userAccess}
-          userCompanyId={userCompanyId}
-          userCompanyName={userCompanyName}
-          {...rest}
-        />
-      }
+      element={cloneElement(element, {
+        user,
+        company: companyId,
+        ...rest,
+      })}
     >
       {children}
     </Route>
@@ -40,7 +30,7 @@ const WawayaRoute = ({
 };
 
 WawayaRoute.propTypes = {
-  component: PropTypes.elementType.isRequired,
+  element: PropTypes.element.isRequired,
   path: PropTypes.string.isRequired,
   auth: PropTypes.object.isRequired,
 };

@@ -1,11 +1,11 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Outlet, NavLink } from 'react-router-dom';
 
 // Components
 import Navbar from '../../components/layout/Navbar';
-import Sidebar from '../../components/layout/Sidebar';
+import Sidebar, { SidebarLink } from '../../components/layout/Sidebar';
 import Button from '../../components/layout/Button';
 
 // Icons
@@ -14,17 +14,9 @@ import LogoutIcon from '../../components/icons/LogoutIcon';
 
 // Actions
 import { logout } from '../../actions/auth';
-import { getCompanies } from '../../actions/companies';
 
-const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
+const WawayaAppWrapper = ({ screenOrientation, logout }) => {
   const [showSidebar, setShowSidebar] = useState(false);
-
-  useEffect(() => {
-    // redux companies state is required in most routes
-    // hence getCompanies here to start off
-    // getCompanies();
-    // eslint-disable-next-line
-  }, []);
 
   const navLinks = [
     'companies',
@@ -35,44 +27,40 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
     'customisations',
   ];
 
-  const navbarLeftContent = (
-    <Fragment>
-      <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
-      {!screenOrientation &&
-        navLinks.map((link, index) => (
-          <NavLink
-            key={`navlink-${link}-${index}`}
-            to={link}
-            className='navbar-link'
-            activeClassName='active'
-          >
-            {link}
-          </NavLink>
-        ))}
-    </Fragment>
-  );
-
   return (
     <Fragment>
-      <Navbar
-        leftContent={navbarLeftContent}
-        rightContent={<Button icon={<LogoutIcon />} onClick={() => logout()} />}
-      />
+      <Navbar>
+        <Navbar.Left>
+          <Button icon={<MenuIcon />} onClick={() => setShowSidebar(true)} />
+          {!screenOrientation &&
+            navLinks.map((link, index) => (
+              <NavLink
+                key={`navlink-${link}-${index}`}
+                to={link}
+                className='navbar-link'
+                activeClassName='active'
+              >
+                {link}
+              </NavLink>
+            ))}
+        </Navbar.Left>
+        <Navbar.Right>
+          <Button icon={<LogoutIcon />} onClick={() => logout()} />
+        </Navbar.Right>
+      </Navbar>
+
       {showSidebar && (
-        <Sidebar
-          sidebarLinks={[
-            {
-              name: 'Dashboard',
-              path: '',
-            },
-            ...navLinks.map(link => ({
-              name: link,
-              path: link,
-            })),
-          ]}
-          unmountSidebarHandler={() => setShowSidebar(false)}
-        />
+        <Sidebar onCloseSidebar={() => setShowSidebar(false)}>
+          <Sidebar.Content justifyContent='center'>
+            <SidebarLink to={''} name={'Dashboard'} />
+            {navLinks.map((link, index) => (
+              <SidebarLink key={`${link}-${index}`} to={link} name={link} />
+            ))}
+          </Sidebar.Content>
+          <Sidebar.Footer />
+        </Sidebar>
       )}
+
       <Outlet />
     </Fragment>
   );
@@ -81,7 +69,6 @@ const WawayaAppWrapper = ({ screenOrientation, logout, getCompanies }) => {
 WawayaAppWrapper.propTypes = {
   screenOrientation: PropTypes.bool.isRequired,
   logout: PropTypes.func.isRequired,
-  getCompanies: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
@@ -90,7 +77,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   logout,
-  getCompanies,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(WawayaAppWrapper);

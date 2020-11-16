@@ -24,6 +24,9 @@ const mongoose = require('mongoose');
 // 2. default
 // 3. unique(Boolean)
 // ====================================================================================================
+const Option = require('./Option');
+const OptionSchema = mongoose.model('Option').schema;
+
 const CustomisationSchema = mongoose.Schema({
   name: {
     type: String,
@@ -46,25 +49,7 @@ const CustomisationSchema = mongoose.Schema({
     type: Boolean,
     required: true,
   },
-  options: [
-    {
-      price: {
-        type: Number,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-        trim: true,
-        set: name => name.replace(/\s+/g, ' '),
-      },
-      availability: {
-        type: Boolean,
-        default: true,
-        required: true,
-      },
-    },
-  ],
+  options: [OptionSchema],
   min: {
     type: Number,
     required: true,

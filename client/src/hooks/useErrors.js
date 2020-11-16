@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setSnackbar } from '../actions/app';
 
-export default function useErrors(err, inputs = ['name', 'test']) {
+export default function useErrors(
+  err,
+  inputs = ['name', 'test'],
+  invalidFieldsSnackbar = false
+) {
   const dispatch = useDispatch();
 
   let initialInputsErrors = inputs.reduce((result, inputName) => {
@@ -20,24 +24,27 @@ export default function useErrors(err, inputs = ['name', 'test']) {
 
       switch (status) {
         case 400:
-          let invalidFields = false;
+          let invalidFields = [];
           data.forEach(({ param, msg }) => {
             if (typeof newInputErrors[param] === 'undefined') {
               dispatch(setSnackbar(msg, 'error'));
               console.error(`Input field [${param}] is invalid`);
             } else {
               newInputErrors[param] = msg;
-              invalidFields = true;
+              invalidFields.push(param.toUpperCase());
             }
           });
-          invalidFields &&
+          invalidFieldsSnackbar &&
+            invalidFields.length > 0 &&
             dispatch(
               setSnackbar(
-                'Some invalid fields exists. Please try again!',
+                `Invalid values found for ${invalidFields.join(', ')}`,
                 'error'
               )
             );
           break;
+        case 401:
+        case 403:
         case 404:
           dispatch(setSnackbar(data, 'error'));
           break;
@@ -54,7 +61,9 @@ export default function useErrors(err, inputs = ['name', 'test']) {
       }
     }
     setInputsErrors(newInputErrors);
+
+    // eslint-disable-next-line
   }, [err]);
 
-  return inputsErrors;
+  return [inputsErrors];
 }

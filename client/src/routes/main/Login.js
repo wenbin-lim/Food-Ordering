@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -16,16 +16,10 @@ import ArrowIcon from '../../components/icons/ArrowIcon';
 import { login } from '../../actions/auth';
 
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
 
 const Login = ({ auth: { loading, errors, user }, login }) => {
-  const [inputErrorMessages] = useInputError(
-    {
-      username: '',
-      password: '',
-    },
-    errors
-  );
+  const [inputErrors] = useErrors(errors, ['username', 'password']);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -42,25 +36,26 @@ const Login = ({ auth: { loading, errors, user }, login }) => {
     login(username, password);
   };
 
-  if (user) {
-    const {
-      company: { name: companyName },
-    } = user;
-
-    return <Navigate to={`/${companyName}`} />;
+  if (user && user.access >= 2) {
+    return <Navigate to={`/${user?.company?.name}`} />;
   }
 
-  const loginForm = (
-    <Fragment>
-      <header className='login-header'>Login now</header>
-      <form id='login-form' className='login-content' onSubmit={onSubmit}>
+  return (
+    <Container
+      elementType='form'
+      id='loginForm'
+      className='loginform'
+      onSubmit={onSubmit}
+    >
+      <header className='loginform-header'>Login now</header>
+      <section className='loginform-content'>
         <TextInput
           label={'username'}
           name={'username'}
           type={'text'}
           value={username}
           onChangeHandler={onChange}
-          error={inputErrorMessages.username}
+          error={inputErrors.username}
         />
 
         <TextInput
@@ -69,17 +64,17 @@ const Login = ({ auth: { loading, errors, user }, login }) => {
           type={'password'}
           value={password}
           onChangeHandler={onChange}
-          error={inputErrorMessages.password}
+          error={inputErrors.password}
         />
-      </form>
+      </section>
       <Button
-        classes={'login-footer'}
+        className={'loginform-footer'}
         fill={'contained'}
         type={'primary'}
         block={true}
         blockBtnBottom={true}
         submit={true}
-        form={'login-form'}
+        form={'loginForm'}
         text={'Login'}
         icon={
           loading ? (
@@ -90,11 +85,8 @@ const Login = ({ auth: { loading, errors, user }, login }) => {
         }
         disabled={loading}
       />
-    </Fragment>
+    </Container>
   );
-
-  // return <Container parentClass={'login'} parentContent={loginForm} />;
-  return loginForm;
 };
 
 Login.propTypes = {

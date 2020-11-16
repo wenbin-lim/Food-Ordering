@@ -9,7 +9,7 @@ import Moment from 'react-moment';
 import { setSnackbar } from '../../../actions/app';
 
 // Components
-import ListItem from '../../../components/layout/ListItem';
+import ListItem, { Action } from '../../../components/layout/ListItem';
 import AlertDialog from '../../../components/layout/AlertDialog';
 
 // Custom Hooks
@@ -25,23 +25,6 @@ const CompanyItem = ({ index, data, onClick }) => {
   useErrors(error);
 
   const { _id: companyId, name, displayedName, creationDate } = { ...data };
-
-  let actions = [
-    {
-      name: 'View',
-      path: `${companyId}`,
-    },
-    {
-      name: 'Edit',
-      path: `${companyId}/edit`,
-    },
-  ];
-
-  name !== 'wawaya' &&
-    actions.push({
-      name: 'Delete',
-      callback: () => setShowDeleteCompanyAlert(true),
-    });
 
   const [showDeleteCompanyAlert, setShowDeleteCompanyAlert] = useState(false);
 
@@ -66,26 +49,36 @@ const CompanyItem = ({ index, data, onClick }) => {
 
   return (
     <Fragment>
-      <ListItem
-        beforeListContent={<h2 className='list-index'>{index}</h2>}
-        listContent={
-          <Fragment>
-            <p className='body-1'>
-              <b>{displayedName ? displayedName : 'No name defined'}</b>
+      <ListItem>
+        <ListItem.Before>
+          <h2 className='list-index'>{index}</h2>
+        </ListItem.Before>
+        <ListItem.Content onClick={() => onClick(companyId)}>
+          <p className='body-1'>
+            <b>{displayedName ? displayedName : 'No name defined'}</b>
+          </p>
+          {creationDate && (
+            <p className='body-2'>
+              Created at{' '}
+              <Moment local format='DD/MM/YY'>
+                {creationDate}
+              </Moment>
             </p>
-            {creationDate && (
-              <p className='body-2'>
-                Created at{' '}
-                <Moment local format='DD/MM/YY'>
-                  {creationDate}
-                </Moment>
-              </p>
+          )}
+        </ListItem.Content>
+        {!onClick && (
+          <ListItem.Actions>
+            <Action name='View' onClick={() => navigate(companyId)} />
+            <Action name='Edit' onClick={() => navigate(`${companyId}/edit`)} />
+            {name !== 'wawaya' && (
+              <Action
+                name='Delete'
+                onClick={() => setShowDeleteCompanyAlert(true)}
+              />
             )}
-          </Fragment>
-        }
-        actions={!onClick ? actions : null}
-        onClick={onClick}
-      />
+          </ListItem.Actions>
+        )}
+      </ListItem>
       {showDeleteCompanyAlert && (
         <AlertDialog
           title={'Delete Company?'}
@@ -95,7 +88,7 @@ const CompanyItem = ({ index, data, onClick }) => {
             type: 'error',
             callback: onCompanyDelete,
           }}
-          unmountAlertDialogHandler={() => setShowDeleteCompanyAlert(false)}
+          onCloseAlertDialog={() => setShowDeleteCompanyAlert(false)}
         />
       )}
     </Fragment>

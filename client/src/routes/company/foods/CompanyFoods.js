@@ -1,94 +1,43 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+
 import { Outlet, useNavigate } from 'react-router-dom';
 
 // Components
 import Container from '../../../components/layout/Container';
-import ListPreloader from '../../../components/preloaders/ListPreloader';
-import Button from '../../../components/layout/Button';
+import List from '../../../components/layout/List';
 import FoodItem from '../../../components/foods/FoodItem';
-import SearchInput from '../../../components/layout/SearchInput';
 
-// Icons
-import PlusIcon from '../../../components/icons/PlusIcon';
+// Hooks
+import useGetAll from '../../../query/hooks/useGetAll';
+import useErrors from '../../../hooks/useErrors';
 
-// Actions
-import { getFoods } from '../../../actions/foods';
-
-const CompanyFoods = ({
-  userCompanyId,
-  foods: { foods, foodsLoading },
-  getFoods,
-}) => {
-  useEffect(() => {
-    getFoods(userCompanyId);
-
-    // eslint-disable-next-line
-  }, []);
+const CompanyFoods = ({ company }) => {
+  const { data: foods, isLoading, error } = useGetAll('foods', { company });
+  useErrors(error);
 
   const navigate = useNavigate();
 
-  const [filteredResults, setFilteredResults] = useState([]);
-  const onSearch = filteredResult => setFilteredResults(filteredResult);
-
   return (
-    <Container
-      parentClass={'list-wrapper'}
-      parentContent={
-        <Fragment>
-          <Button
-            classes={'list-add-btn'}
-            fill={'contained'}
-            type={'primary'}
-            icon={<PlusIcon />}
-            onClick={() => navigate('add')}
-          />
+    <Container sidesheet={true}>
+      <Container.Parent className={'list-wrapper'}>
+        <List
+          loading={isLoading}
+          listArr={foods}
+          listItem={<FoodItem />}
+          addBtnCallback={() => navigate('add')}
+        />
+      </Container.Parent>
 
-          <article className='list'>
-            {foodsLoading || !Array.isArray(foods) ? (
-              <ListPreloader />
-            ) : foods.length > 0 ? (
-              <Fragment>
-                <header className='list-header'>
-                  <div className='list-header-right-content'>
-                    <SearchInput
-                      name='search'
-                      queryFields={['name']}
-                      array={foods}
-                      onSearch={onSearch}
-                    />
-                  </div>
-                </header>
-                {filteredResults.map(food => (
-                  <FoodItem key={food._id} food={food} />
-                ))}
-              </Fragment>
-            ) : (
-              <p className='caption text-center'>No foods found</p>
-            )}
-          </article>
-        </Fragment>
-      }
-      childClass={'sidesheet'}
-      childContent={<Outlet />}
-      parentSize={3}
-      childSize={2}
-    />
+      <Container.Child className={'sidesheet'}>
+        <Outlet />
+      </Container.Child>
+    </Container>
   );
 };
 
 CompanyFoods.propTypes = {
-  userCompanyId: PropTypes.string.isRequired,
-  foods: PropTypes.object.isRequired,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  foods: state.foods,
-});
-
-const mapDispatchToProps = {
-  getFoods,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CompanyFoods);
+export default CompanyFoods;

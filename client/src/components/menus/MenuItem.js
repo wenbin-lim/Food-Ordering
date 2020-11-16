@@ -1,40 +1,36 @@
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
+// Actions
+import { setSnackbar } from '../../actions/app';
+
 // Components
-import ListItem from '../layout/ListItem';
+import ListItem, { Action } from '../layout/ListItem';
 import AlertDialog from '../layout/AlertDialog';
 
-// Actions
-import { deleteMenu } from '../../actions/menus';
+// Custom Hooks
+import useErrors from '../../hooks/useErrors';
+import useDeleteOne from '../../query/hooks/useDeleteOne';
 
-const MenuItem = ({ menu, deleteMenu }) => {
-  const { _id: menuId, name, index, availability } = menu;
+const MenuItem = ({ data }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
-  let actions = [
-    {
-      name: 'View',
-      path: `${menuId}`,
-    },
-    {
-      name: 'Edit',
-      path: `${menuId}/edit`,
-    },
-    {
-      name: 'Delete',
-      callback: () => setShowDeleteMenuAlert(true),
-    },
-  ];
+  const [deleteMenu, { error }] = useDeleteOne('menus');
+  useErrors(error);
+
+  const { _id: menuId, name, index, availability } = { ...data };
 
   const [showDeleteMenuAlert, setShowDeleteMenuAlert] = useState(false);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const onMenuDelete = async () => {
     const deleteMenuSuccess = await deleteMenu(menuId);
+
+    deleteMenuSuccess &&
+      dispatch(setSnackbar(`Deleted menu of name '${name}'`, 'success'));
 
     let match = matchPath(
       {
@@ -49,18 +45,23 @@ const MenuItem = ({ menu, deleteMenu }) => {
 
   return (
     <Fragment>
-      <ListItem
-        beforeListContent={<h2 className='list-index'>{index}</h2>}
-        listContent={
-          <Fragment>
-            <p className='body-1'>{name ? name : 'No name defined'}</p>
-            {availability === false && (
-              <span className='badge badge-error'>Unavailable</span>
-            )}
-          </Fragment>
-        }
-        actions={actions}
-      />
+      <ListItem>
+        <ListItem.Before>
+          <h2 className='list-index'>{index}</h2>
+        </ListItem.Before>
+        <ListItem.Content>
+          <p className='body-1'>{name ? name : 'No name defined'}</p>
+          {availability === false && (
+            <span className='badge badge-small badge-error'>Unavailable</span>
+          )}
+        </ListItem.Content>
+        <ListItem.Actions>
+          <Action name='View' onClick={() => navigate(menuId)} />
+          <Action name='Edit' onClick={() => navigate(`${menuId}/edit`)} />
+          <Action name='Delete' onClick={() => setShowDeleteMenuAlert(true)} />
+        </ListItem.Actions>
+      </ListItem>
+
       {showDeleteMenuAlert && (
         <AlertDialog
           title={'Delete menu?'}
@@ -70,7 +71,7 @@ const MenuItem = ({ menu, deleteMenu }) => {
             type: 'error',
             callback: onMenuDelete,
           }}
-          unmountAlertDialogHandler={() => setShowDeleteMenuAlert(false)}
+          onCloseAlertDialog={() => setShowDeleteMenuAlert(false)}
         />
       )}
     </Fragment>
@@ -78,14 +79,7 @@ const MenuItem = ({ menu, deleteMenu }) => {
 };
 
 MenuItem.propTypes = {
-  menu: PropTypes.object.isRequired,
-  deleteMenu: PropTypes.func.isRequired,
+  data: PropTypes.object,
 };
 
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = {
-  deleteMenu,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(MenuItem);
+export default MenuItem;

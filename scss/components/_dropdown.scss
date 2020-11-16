@@ -1,32 +1,14 @@
-/* Dropdown Group Variables */
-$dropdown-group-margin: 1rem 0;
-
 /* Dropdown Variables */
 $dropdown-height: $icon-size;
-$dropdown-x-padding: 1rem;
-$dropdown-border-radius: 1rem;
+$dropdown-padding: 16px;
+$dropdown-border-radius: 16px;
 $dropdown-border-size: 2px;
 
 .dropdown-group {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-gap: 4px;
 
-  margin: $dropdown-group-margin;
-
-  user-select: none;
-
-  label {
-    @include caption();
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .required-input {
-      color: var(--error);
-      text-transform: none;
-    }
-  }
+  @include input-label;
 
   .dropdown-wrapper {
     position: relative;
@@ -53,7 +35,7 @@ $dropdown-border-size: 2px;
       .dropdown-selected-option {
         flex: 1;
         height: 100%;
-        padding: 0 $dropdown-x-padding;
+        padding: 0 $dropdown-padding;
 
         display: flex;
         flex-direction: column;
@@ -61,6 +43,7 @@ $dropdown-border-size: 2px;
         overflow: hidden;
 
         span {
+          @include body-1;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -71,11 +54,6 @@ $dropdown-border-size: 2px;
         height: $dropdown-height;
         width: $dropdown-height;
 
-        background-color: var(--surface3);
-
-        border-radius: $dropdown-border-radius;
-        overflow: hidden;
-
         .dropdown-arrow {
           width: 100%;
           height: 100%;
@@ -84,6 +62,10 @@ $dropdown-border-size: 2px;
           display: flex;
           justify-content: center;
           align-items: center;
+
+          &.options-shown {
+            transform: rotate(180deg);
+          }
         }
       }
     }
@@ -92,15 +74,20 @@ $dropdown-border-size: 2px;
       position: absolute;
       z-index: 1;
       width: 100%;
+      overflow-y: auto;
+      @include custom-scrollbar;
 
-      transform: translateY(0.3rem);
-
-      background-color: var(--surface1);
+      background-color: var(--surface2);
       color: var(--on-surface);
 
-      padding: 0 $dropdown-x-padding;
+      @include box-shadow(2);
 
-      border-radius: $dropdown-border-radius;
+      padding-left: $dropdown-padding;
+      padding-right: $dropdown-padding;
+      padding-top: $dropdown-padding / 3;
+      padding-bottom: $dropdown-padding / 3;
+
+      border-radius: $dropdown-border-radius / 2;
 
       cursor: pointer;
 
@@ -111,23 +98,16 @@ $dropdown-border-size: 2px;
         overflow: hidden;
 
         span {
+          @include body-1;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
         &:not(:last-child) {
-          border-bottom: 1px solid var(--surface2);
+          border-bottom: 1px solid var(--surface3);
         }
       }
-    }
-  }
-
-  .dropdown-message {
-    @include body-2;
-
-    &.error-message {
-      color: var(--error);
     }
   }
 }

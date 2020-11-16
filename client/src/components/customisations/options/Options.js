@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment } from 'react';
+import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 // Components
@@ -58,6 +58,12 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
     if (validate) {
       const dialog = dialogRef.current;
 
+      let sanitizedPrice = parseFloat(price).toFixed(2).toString();
+      let newFormData = {
+        ...formData,
+        price: sanitizedPrice,
+      };
+
       if (dialog) {
         const dialogTlm = dialog.tlm;
 
@@ -68,76 +74,23 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
             onChangeHandler({
               name: formName,
               value: options.map(option =>
-                option._id === formData._id ? formData : option
+                option._id === formData._id ? newFormData : option
               ),
             });
           } else {
-            onChangeHandler({ name: formName, value: [...options, formData] });
+            onChangeHandler({
+              name: formName,
+              value: [...options, newFormData],
+            });
           }
         });
+        setErrors(initialErrors);
         dialogTlm.reverse();
       }
     } else {
-      setErrors({ ...newErrors });
+      setErrors(newErrors);
     }
   };
-
-  const form = (
-    <Fragment>
-      <form id='optionForm' className='optionform-content'>
-        <div className='row'>
-          <div className='col'>
-            <TextInput
-              label={'name'}
-              required={true}
-              name={'name'}
-              type={'text'}
-              value={name}
-              onChangeHandler={onChange}
-              error={errors.name}
-            />
-          </div>
-        </div>
-
-        <div className='row'>
-          <div className='col'>
-            <TextInput
-              label={'price'}
-              required={true}
-              name={'price'}
-              type={'number'}
-              value={price}
-              onChangeHandler={onChange}
-              error={errors.price}
-            />
-          </div>
-        </div>
-
-        <div className='row'>
-          <div className='col'>
-            <SwitchInput
-              label={'availability'}
-              name={'availability'}
-              value={availability}
-              onChangeHandler={onChange}
-            />
-          </div>
-        </div>
-      </form>
-
-      <Button
-        fill={'contained'}
-        type={'primary'}
-        block={true}
-        blockBtnBottom={true}
-        icon={<ArrowIcon direction={'right'} />}
-        text={'Submit'}
-        submit={true}
-        form={'optionForm'}
-        onClick={onSubmit}
-      />
-    </Fragment>
-  );
 
   const showOptionForm = (option = initialFormData) => {
     const { price } = option;
@@ -159,7 +112,7 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
       <header className='list-header'>
         {editable ? (
           <Button
-            classes={'list-header-right-content'}
+            className={'list-header-right ml-auto'}
             fill={'contained'}
             type={'secondary'}
             icon={<PlusIcon />}
@@ -169,10 +122,11 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
             onClick={() => showOptionForm()}
           />
         ) : (
-          <h3 className='list-header-left-content heading-3'>Options</h3>
+          <h3 className='list-header-title'>Options</h3>
         )}
       </header>
-      <article className='list p-h'>
+
+      <article className='list'>
         {options.length > 0 ? (
           options.map(option => (
             <OptionItem
@@ -198,20 +152,63 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
           <p className='caption text-center'>No options</p>
         )}
       </article>
+
       {editable && showDialog && (
         <Dialog
           ref={dialogRef}
-          classes={'optionform'}
-          content={form}
-          unmountDialogHandler={() => setShowDialog(false)}
-        />
+          id={'optionForm'}
+          dialogElementType={'form'}
+          className={'optionform'}
+          onCloseDialog={() => setShowDialog(false)}
+        >
+          <section className='optionform-content'>
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={errors.name}
+            />
+
+            <TextInput
+              label={'price'}
+              required={true}
+              name={'price'}
+              type={'number'}
+              value={price}
+              onChangeHandler={onChange}
+              error={errors.price}
+            />
+
+            <SwitchInput
+              label={'availability'}
+              name={'availability'}
+              value={availability}
+              onChangeHandler={onChange}
+            />
+          </section>
+
+          <Button
+            fill={'contained'}
+            type={'primary'}
+            block={true}
+            blockBtnBottom={true}
+            icon={<ArrowIcon direction={'right'} />}
+            text={'Submit'}
+            submit={true}
+            form={'optionForm'}
+            onClick={onSubmit}
+          />
+        </Dialog>
       )}
     </article>
   );
 };
 
 Options.propTypes = {
-  options: PropTypes.array.isRequired,
+  options: PropTypes.array,
   editable: PropTypes.bool,
   formName: PropTypes.string,
   onChangeHandler: PropTypes.func,

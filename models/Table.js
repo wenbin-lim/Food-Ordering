@@ -46,6 +46,13 @@ const TableSchema = mongoose.Schema({
   },
 });
 
+const autoPopulateBill = function (next) {
+  this.populate('bill');
+  next();
+};
+
+TableSchema.pre('findOne', autoPopulateBill);
+TableSchema.pre('find', autoPopulateBill);
 // ====================================================================================================
 // Exports
 // ====================================================================================================

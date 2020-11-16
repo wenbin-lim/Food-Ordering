@@ -7,7 +7,7 @@ export default function useDeleteOne(key) {
 
   return useMutation(
     async id => {
-      const res = await axios.delete(`${apiUrl}${id}`);
+      const res = await axios.delete(`${apiUrl}/${id}`);
       return res.data;
     },
     {

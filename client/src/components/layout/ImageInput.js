@@ -51,9 +51,9 @@ const ImageInput = ({
       </div>
 
       {(informationText || error) && (
-        <p className={`input-${error ? 'error-' : ''}message`}>
+        <span className={`input-${error ? 'error-' : ''}message`}>
           {error ? error : informationText}
-        </p>
+        </span>
       )}
 
       {value && (

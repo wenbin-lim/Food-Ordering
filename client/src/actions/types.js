@@ -1,5 +1,3 @@
-// export const ACTION = 'ACTION';
-
 // auth
 export const NO_TOKEN = 'NO_TOKEN';
 export const TOKEN_LOADED = 'TOKEN_LOADED';
@@ -8,97 +6,12 @@ export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAIL = 'LOGIN_FAIL';
 export const LOGOUT = 'LOGOUT';
 
-// Companies
-export const GETTING_COMPANIES = 'GETTING_COMPANIES';
-export const GET_COMPANIES = 'GET_COMPANIES';
-export const GETTING_COMPANY = 'GETTING_COMPANY';
-export const GET_COMPANY = 'GET_COMPANY';
-export const ADDING_COMPANY = 'ADDING_COMPANY';
-export const ADD_COMPANY = 'ADD_COMPANY';
-export const EDITING_COMPANY = 'EDITING_COMPANY';
-export const EDIT_COMPANY = 'EDIT_COMPANY';
-export const DELETING_COMPANY = 'DELETING_COMPANY';
-export const DELETE_COMPANY = 'DELETE_COMPANY';
-export const COMPANY_ERROR = 'COMPANY_ERROR';
-
-// Users
-export const GETTING_USERS = 'GETTING_USERS';
-export const GET_USERS = 'GET_USERS';
-export const GETTING_USER = 'GETTING_USER';
-export const GET_USER = 'GET_USER';
-export const ADDING_USER = 'ADDING_USER';
-export const ADD_USER = 'ADD_USER';
-export const EDITING_USER = 'EDITING_USER';
-export const EDIT_USER = 'EDIT_USER';
-export const DELETING_USER = 'DELETING_USER';
-export const DELETE_USER = 'DELETE_USER';
-export const USER_ERROR = 'USER_ERROR';
-
-// Tables
-export const GETTING_TABLES = 'GETTING_TABLES';
-export const GET_TABLES = 'GET_TABLES';
-export const GETTING_TABLE = 'GETTING_TABLE';
-export const GET_TABLE = 'GET_TABLE';
-export const ADDING_TABLE = 'ADDING_TABLE';
-export const ADD_TABLE = 'ADD_TABLE';
-export const EDITING_TABLE = 'EDITING_TABLE';
-export const EDIT_TABLE = 'EDIT_TABLE';
-export const DELETING_TABLE = 'DELETING_TABLE';
-export const DELETE_TABLE = 'DELETE_TABLE';
-export const TABLE_ERROR = 'TABLE_ERROR';
-
-// Menus
-export const GETTING_MENUS = 'GETTING_MENUS';
-export const GET_MENUS = 'GET_MENUS';
-export const GETTING_MENU = 'GETTING_MENU';
-export const GET_MENU = 'GET_MENU';
-export const ADDING_MENU = 'ADDING_MENU';
-export const ADD_MENU = 'ADD_MENU';
-export const EDITING_MENU = 'EDITING_MENU';
-export const EDIT_MENU = 'EDIT_MENU';
-export const DELETING_MENU = 'DELETING_MENU';
-export const DELETE_MENU = 'DELETE_MENU';
-export const MENU_ERROR = 'MENU_ERROR';
-
-// Customisations
-export const GETTING_CUSTOMISATIONS = 'GETTING_CUSTOMISATIONS';
-export const GET_CUSTOMISATIONS = 'GET_CUSTOMISATIONS';
-export const GETTING_CUSTOMISATION = 'GETTING_CUSTOMISATION';
-export const GET_CUSTOMISATION = 'GET_CUSTOMISATION';
-export const ADDING_CUSTOMISATION = 'ADDING_CUSTOMISATION';
-export const ADD_CUSTOMISATION = 'ADD_CUSTOMISATION';
-export const EDITING_CUSTOMISATION = 'EDITING_CUSTOMISATION';
-export const EDIT_CUSTOMISATION = 'EDIT_CUSTOMISATION';
-export const DELETING_CUSTOMISATION = 'DELETING_CUSTOMISATION';
-export const DELETE_CUSTOMISATION = 'DELETE_CUSTOMISATION';
-export const CUSTOMISATION_ERROR = 'CUSTOMISATION_ERROR';
-
-// Foods
-export const GETTING_FOODS = 'GETTING_FOODS';
-export const GET_FOODS = 'GET_FOODS';
-export const GETTING_FOOD = 'GETTING_FOOD';
-export const GET_FOOD = 'GET_FOOD';
-export const ADDING_FOOD = 'ADDING_FOOD';
-export const ADD_FOOD = 'ADD_FOOD';
-export const EDITING_FOOD = 'EDITING_FOOD';
-export const EDIT_FOOD = 'EDIT_FOOD';
-export const DELETING_FOOD = 'DELETING_FOOD';
-export const DELETE_FOOD = 'DELETE_FOOD';
-export const FOOD_ERROR = 'FOOD_ERROR';
-
 // customer
 export const CUSTOMER_LOGIN_SUCCESS = 'CUSTOMER_LOGIN_SUCCESS';
 export const CUSTOMER_LOGIN_FAIL = 'CUSTOMER_LOGIN_FAIL';
 export const CUSTOMER_LOGOUT = 'CUSTOMER_LOGOUT';
-export const ADDING_ORDER_TO_BILL = 'ADDING_ORDER_TO_BILL';
-export const ADD_ORDER_TO_BILL_SUCCESS = 'ADD_ORDER_TO_BILL_SUCCESS';
-export const ADD_ORDER_TO_BILL_FAIL = 'ADD_ORDER_TO_BILL_FAIL';
-export const CONFIRMING_ORDERS = 'CONFIRMING_ORDERS';
-export const CONFRIM_ORDER_SUCCESS = 'CONFRIM_ORDER_SUCCESS';
-export const CONFRIM_ORDER_FAIL = 'CONFRIM_ORDER_FAIL';
 
 // App
-export const GET_COMPANIES_PUBLIC = 'GET_COMPANIES_PUBLIC';
 export const UPDATE_SCREEN_ORIENTATION = 'UPDATE_SCREEN_ORIENTATION';
 export const SET_SNACKBAR = 'SET_SNACKBAR';
 export const REMOVE_SNACKBAR = 'REMOVE_SNACKBAR';

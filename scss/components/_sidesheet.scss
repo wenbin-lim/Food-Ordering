@@ -55,6 +55,10 @@
     .sidesheet-header-content {
       grid-area: sidesheet-header-content;
       margin-top: 8px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
     }
   }
 
@@ -68,6 +72,9 @@
 
     .input-group:not(:first-child),
     .image-input-group:not(:first-child),
+    .radio-group:not(:first-child),
+    .checkbox-group:not(:first-child),
+    .switch-group:not(:first-child),
     .row:not(:first-child) {
       margin-top: 1rem;
     }

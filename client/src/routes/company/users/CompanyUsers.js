@@ -1,94 +1,43 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+
 import { Outlet, useNavigate } from 'react-router-dom';
 
 // Components
 import Container from '../../../components/layout/Container';
-import ListPreloader from '../../../components/preloaders/ListPreloader';
-import Button from '../../../components/layout/Button';
+import List from '../../../components/layout/List';
 import UserItem from '../../../components/users/UserItem';
-import SearchInput from '../../../components/layout/SearchInput';
 
-// Icons
-import PlusIcon from '../../../components/icons/PlusIcon';
+// Hooks
+import useGetAll from '../../../query/hooks/useGetAll';
+import useErrors from '../../../hooks/useErrors';
 
-// Actions
-import { getUsers } from '../../../actions/users';
-
-const CompanyUsers = ({
-  userCompanyId,
-  users: { users, usersLoading },
-  getUsers,
-}) => {
-  useEffect(() => {
-    getUsers(userCompanyId);
-
-    // eslint-disable-next-line
-  }, []);
+const CompanyUsers = ({ company }) => {
+  const { data: users, isLoading, error } = useGetAll('users', { company });
+  useErrors(error);
 
   const navigate = useNavigate();
 
-  const [filteredResults, setFilteredResults] = useState([]);
-  const onSearch = filteredResult => setFilteredResults(filteredResult);
-
   return (
-    <Container
-      parentClass={'list-wrapper'}
-      parentContent={
-        <Fragment>
-          <Button
-            classes={'list-add-btn'}
-            fill={'contained'}
-            type={'primary'}
-            icon={<PlusIcon />}
-            onClick={() => navigate('add')}
-          />
+    <Container sidesheet={true}>
+      <Container.Parent className={'list-wrapper'}>
+        <List
+          loading={isLoading}
+          listArr={users}
+          listItem={<UserItem />}
+          addBtnCallback={() => navigate('add')}
+        />
+      </Container.Parent>
 
-          <article className='list'>
-            {usersLoading || !Array.isArray(users) ? (
-              <ListPreloader />
-            ) : users.length > 0 ? (
-              <Fragment>
-                <header className='list-header'>
-                  <div className='list-header-right-content'>
-                    <SearchInput
-                      name='search'
-                      queryFields={['name']}
-                      array={users}
-                      onSearch={onSearch}
-                    />
-                  </div>
-                </header>
-                {filteredResults.map(user => (
-                  <UserItem key={user._id} user={user} />
-                ))}
-              </Fragment>
-            ) : (
-              <p className='caption text-center'>No users found</p>
-            )}
-          </article>
-        </Fragment>
-      }
-      childClass={'sidesheet'}
-      childContent={<Outlet />}
-      parentSize={3}
-      childSize={2}
-    />
+      <Container.Child className={'sidesheet'}>
+        <Outlet />
+      </Container.Child>
+    </Container>
   );
 };
 
 CompanyUsers.propTypes = {
-  userCompanyId: PropTypes.string.isRequired,
-  users: PropTypes.object.isRequired,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  users: state.users,
-});
-
-const mapDispatchToProps = {
-  getUsers,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CompanyUsers);
+export default CompanyUsers;

@@ -21,16 +21,12 @@ $main-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 
 @each $i in $main-colors {
   .#{$i} {
-    @if str-index($i, 'background') {
-      background-color: var(--on-#{$i}) !important;
-      color: var(--#{$i}) !important;
+    background-color: var(--#{$i}) !important;
+
+    @if str-index($i, 'surface') {
+      color: var(--on-surface) !important;
     } @else {
-      background-color: var(--#{$i}) !important;
-      @if str-index($i, 'surface') {
-        color: var(--on-surface) !important;
-      } @else {
-        color: var(--on-#{$i}) !important;
-      }
+      color: var(--on-#{$i}) !important;
     }
   }
 }

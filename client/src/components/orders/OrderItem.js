@@ -1,54 +1,39 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
 import Moment from 'react-moment';
 
-// Components
-import ListItem from '../layout/ListItem';
+// Actions
+import { setSnackbar } from '../../actions/app';
 
-const OrderItem = ({ order, showStatus = false, actions }) => {
+// Components
+import ListItem, { Action } from '../layout/ListItem';
+import OrderDialog from './OrderDialog';
+
+// Custom Hooks
+import useErrors from '../../hooks/useErrors';
+import useDeleteOne from '../../query/hooks/useDeleteOne';
+
+const OrderItem = ({ data, showStatus = false, editable }) => {
+  const dispatch = useDispatch();
+
+  const [deleteOrder, { error }] = useDeleteOne('orders');
+  useErrors(error);
+
   const {
+    _id: orderId,
     food,
     quantity,
     price,
-    customisations,
+    customisationsUsed,
     additionalInstruction,
     status,
     date,
-  } = order;
+  } = data;
   const { name: foodName } = { ...food };
 
-  const [chosenOptions, setChosenOptions] = useState([]);
-
-  useEffect(() => {
-    let newChosenOptions = [];
-
-    if (Array.isArray(customisations) && customisations.length > 0) {
-      customisations.forEach(selectedCustomisation => {
-        const { customisation, optionsChosen } = selectedCustomisation;
-        const { options: availableOptions } = customisation;
-
-        if (Array.isArray(optionsChosen) && optionsChosen.length > 0) {
-          optionsChosen.forEach(chosenOptionId => {
-            if (
-              Array.isArray(availableOptions) &&
-              availableOptions.length > 0
-            ) {
-              const chosenOption = availableOptions.find(
-                option => option._id.toString() === chosenOptionId
-              );
-
-              if (chosenOption && chosenOption.name) {
-                newChosenOptions.push(chosenOption.name);
-              }
-            }
-          });
-        }
-      });
-    }
-
-    setChosenOptions(newChosenOptions);
-  }, [customisations]);
+  const [showOrderDialog, setshowOrderDialog] = useState(false);
 
   const statusColor = status => {
     switch (status) {
@@ -68,16 +53,23 @@ const OrderItem = ({ order, showStatus = false, actions }) => {
     }
   };
 
+  const onOrderDelete = async () => {
+    const deleteOrderSuccess = await deleteOrder(orderId);
+
+    return (
+      deleteOrderSuccess && dispatch(setSnackbar('Order deleted!', 'success'))
+    );
+  };
+
   return (
-    <ListItem
-      color={'surface2'}
-      listContentClass={'orderitem'}
-      listContent={
-        <Fragment>
+    <Fragment>
+      <ListItem>
+        <ListItem.Content className='orderitem'>
           {showStatus && (
             <div className='orderitem-statusbar'>
               <div className={`orderitem-status-${statusColor(status)}`}></div>
               <span className='orderitem-date'>
+                ordered at{' '}
                 <Moment local format='hh:mmA'>
                   {date}
                 </Moment>
@@ -86,14 +78,13 @@ const OrderItem = ({ order, showStatus = false, actions }) => {
           )}
           <div className='orderitem-info'>
             <p className='orderitem-info-name'>{foodName}</p>
-            {chosenOptions.map((option, index) => (
-              <p
-                key={`option-${option}-${index}`}
-                className='orderitem-info-customisation'
-              >
-                {option}
-              </p>
-            ))}
+            {customisationsUsed.map(({ optionsSelected }) =>
+              optionsSelected.map(({ _id: optionId, name }) => (
+                <p key={optionId} className='orderitem-info-customisation'>
+                  {name}
+                </p>
+              ))
+            )}
             {additionalInstruction && (
               <span className='orderitem-info-additionalinstruction'>
                 {additionalInstruction}
@@ -102,15 +93,29 @@ const OrderItem = ({ order, showStatus = false, actions }) => {
           </div>
           <div className='orderitem-qty'>x{quantity}</div>
           <div className='orderitem-price'>${price.toFixed(2)}</div>
-        </Fragment>
-      }
-      actions={actions}
-    />
+        </ListItem.Content>
+        {editable && (
+          <ListItem.Actions>
+            <Action name='Edit' onClick={() => setshowOrderDialog(true)} />
+            <Action name='Delete' onClick={onOrderDelete} />
+          </ListItem.Actions>
+        )}
+      </ListItem>
+      {showOrderDialog && (
+        <OrderDialog
+          foodDetails={food}
+          order={data}
+          onCloseOrderDialog={() => setshowOrderDialog(false)}
+        />
+      )}
+    </Fragment>
   );
 };
 
 OrderItem.propTypes = {
-  order: PropTypes.object.isRequired,
+  data: PropTypes.object,
+  showStatus: PropTypes.bool,
+  editable: PropTypes.bool,
 };
 
 export default OrderItem;

@@ -1,51 +1,40 @@
-import React, { useEffect, useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Actions
-import {
-  getCustomisation,
-  editCustomisation,
-} from '../../actions/customisations';
+import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Tabs from '../layout/Tabs';
-import Spinner from '../layout/Spinner';
+import Tabs, { Tab } from '../layout/Tabs';
 import TextInput from '../layout/TextInput';
-import Button from '../layout/Button';
 import SwitchInput from '../layout/SwitchInput';
 import Options from './options/Options';
 
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
-
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useGetOne from '../../query/hooks/useGetOne';
+import useEditOne from '../../query/hooks/useEditOne';
 
-const CustomisationEdit = ({
-  customisations: { requesting, customisation, errors },
-  getCustomisation,
-  editCustomisation,
-}) => {
+const CustomisationEdit = () => {
   let { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  useEffect(() => {
-    getCustomisation(id);
-
-    // eslint-disable-next-line
-  }, [id]);
-
-  const [inputErrorMessages] = useInputError(
-    {
-      name: '',
-      title: '',
-      min: '',
-      max: '',
-    },
-    errors
+  const { data: customisation, isLoading, error } = useGetOne(
+    'customisation',
+    id
   );
+  useErrors(error);
+
+  const [
+    editCustomisation,
+    { isLoading: requesting, error: editErrors },
+  ] = useEditOne('customisations');
+  const [inputErrors] = useErrors(editErrors, ['name', 'title', 'min', 'max']);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -57,197 +46,145 @@ const CustomisationEdit = ({
     options: [],
   });
 
-  let { name, title, availability, optional, min, max, options } = formData;
+  const { name, title, availability, optional, min, max, options } = formData;
 
   useEffect(() => {
-    const {
-      _id: customisationId,
-      name,
-      title,
-      availability,
-      optional,
-      min,
-      max,
-      options,
-    } = { ...customisation };
+    if (customisation) {
+      const {
+        name,
+        title,
+        availability,
+        optional,
+        min,
+        max,
+        options,
+      } = customisation;
 
-    if (customisationId === id) {
       setFormData({
         name: name ? name : '',
         title: title ? title : '',
         availability: typeof availability === 'boolean' ? availability : true,
         optional: typeof optional === 'boolean' ? optional : true,
-        min: typeof min === 'number' ? min.toString() : '0',
-        max: typeof max === 'number' ? max.toString() : '0',
+        min: typeof min === 'number' ? min.toString() : '1',
+        max: typeof max === 'number' ? max.toString() : '1',
         options: Array.isArray(options) ? options : [],
       });
     }
-  }, [customisation, id]);
+  }, [isLoading, customisation]);
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editCustomisationSuccess = await editCustomisation(id, formData);
+    const editCustomisationSuccess = await editCustomisation({
+      id,
+      newItem: formData,
+    });
 
-    return editCustomisationSuccess && navigate('../');
+    return (
+      editCustomisationSuccess &&
+      dispatch(setSnackbar(`Edited customisation of name '${name}'`, 'success'))
+    );
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const tabPageOne = (
-    <Fragment>
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'availability'}
-            name={'availability'}
-            value={availability}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'title'}
-            required={true}
-            name={'title'}
-            type={'text'}
-            value={title}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.title}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'optional'}
-            name={'optional'}
-            value={optional}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        {typeof optional === 'boolean' && !optional && (
-          <div className='col pr-h'>
-            <TextInput
-              label={'min selection'}
-              required={true}
-              name={'min'}
-              type={'numeric'}
-              value={min}
-              onChangeHandler={onChange}
-              error={inputErrorMessages.min}
-            />
-          </div>
-        )}
-        <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
-          <TextInput
-            label={'max selection'}
-            required={true}
-            name={'max'}
-            type={'numeric'}
-            value={max}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.max}
-          />
-        </div>
-      </div>
-    </Fragment>
-  );
-
-  const tabPageTwo = (
-    <Options
-      options={options}
-      formName={'options'}
-      onChangeHandler={onChange}
-    />
-  );
-
-  const sideSheetContent = (
-    <form
-      id='customisationEditForm'
-      className='sidesheet-content tabs-wrapper p-0'
-      onSubmit={onSubmit}
-    >
-      <Tabs
-        wrapper={false}
-        headerClass={'mt-1 ml-1 mr-1 mb-0'}
-        tabs={[
-          { name: 'Main', content: tabPageOne, class: 'p-1' },
-          { name: 'Options', content: tabPageTwo, class: 'p-1' },
-        ]}
-      />
-    </form>
-  );
-
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Edit Customisation'}
-      closeSideSheetHandler={closeSideSheet}
-      contentWrapper={false}
-      content={sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'edit'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
-            ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'customisationEditForm'}
-        />
-      }
-    />
+    <SideSheet wrapper={false}>
+      <SideSheet.Header
+        title={'Edit Customisation'}
+        closeHandler={() => navigate('../')}
+      >
+        <Tabs onClickTab={onClickTab}>
+          <Tab name={'Main'} />
+          <Tab name={'Options'} />
+        </Tabs>
+      </SideSheet.Header>
+      <SideSheet.Content
+        elementType={'form'}
+        id={'customisationEditForm'}
+        onSubmit={onSubmit}
+      >
+        {activeTab === 0 && (
+          <article>
+            <SwitchInput
+              label={'Availability'}
+              name={'availability'}
+              value={availability}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={inputErrors.name}
+            />
+
+            <TextInput
+              label={'title'}
+              required={true}
+              name={'title'}
+              type={'text'}
+              value={title}
+              onChangeHandler={onChange}
+              error={inputErrors.title}
+            />
+
+            <SwitchInput
+              label={'optional'}
+              name={'optional'}
+              value={optional}
+              onChangeHandler={onChange}
+            />
+
+            <div className='row'>
+              {typeof optional === 'boolean' && !optional && (
+                <div className='col pr-h'>
+                  <TextInput
+                    label={'min selection'}
+                    required={true}
+                    name={'min'}
+                    type={'numeric'}
+                    value={min}
+                    onChangeHandler={onChange}
+                    error={inputErrors.min}
+                  />
+                </div>
+              )}
+              <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
+                <TextInput
+                  label={'max selection'}
+                  required={true}
+                  name={'max'}
+                  type={'numeric'}
+                  value={max}
+                  onChangeHandler={onChange}
+                  error={inputErrors.max}
+                />
+              </div>
+            </div>
+          </article>
+        )}
+
+        {activeTab === 1 && (
+          <Options
+            options={options}
+            formName={'options'}
+            onChangeHandler={onChange}
+          />
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'edit'}
+        requesting={requesting}
+        form={'customisationEditForm'}
+      />
+    </SideSheet>
   );
 };
 
-CustomisationEdit.propTypes = {
-  customisations: PropTypes.object.isRequired,
-  getCustomisation: PropTypes.func.isRequired,
-  editCustomisation: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = state => ({
-  customisations: state.customisations,
-});
-
-const mapDispatchToProps = {
-  getCustomisation,
-  editCustomisation,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CustomisationEdit);
+export default CustomisationEdit;

@@ -1,0 +1,200 @@
+$fooddialog-border-radius: 24px;
+
+.fooddialog {
+  .fooddialog-front,
+  .fooddialog-back {
+    background-color: var(--background);
+    color: var(--on-background);
+
+    @include media(landscape) {
+      border-radius: $fooddialog-border-radius;
+    }
+
+    .fooddialog-totalprice {
+      font-size: 1.75rem;
+      font-weight: normal;
+    }
+
+    .food-quantity-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .food-quantity {
+        font-size: 3rem;
+        margin: 0 36px;
+      }
+
+      .food-quantity-btn {
+        height: 36px;
+        width: 36px;
+        border-radius: 8px;
+
+        svg {
+          height: 18px;
+          width: 18px;
+        }
+      }
+    }
+  }
+
+  .food-back-option {
+    width: 100%;
+  }
+  .customisation-group-option-key {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 8px;
+    align-items: center;
+
+    .customisation-group-option-price {
+      @include body-2;
+      opacity: 0.5;
+    }
+  }
+
+  .fooddialog-front {
+    display: grid;
+
+    @include media(portrait) {
+      grid-template-rows: 4fr 2fr auto;
+    }
+
+    @include media(landscape) {
+      overflow: hidden;
+
+      grid-template-columns: 3fr 2fr;
+      grid-template-rows: 1fr auto;
+      grid-template-areas:
+        'image content'
+        'image footer';
+
+      .fooddialog-front-image {
+        grid-area: image;
+      }
+
+      .fooddialog-front-content {
+        grid-area: content;
+      }
+
+      .fooddialog-front-footer {
+        grid-area: footer;
+      }
+    }
+
+    position: relative;
+
+    .fooddialog-front-image {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      img {
+        // set position static for image if not safari's overflow hidden wont work
+        position: static;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .fooddialog-close-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+
+      backdrop-filter: blur(10px) contrast(80%);
+    }
+
+    .fooddialog-front-content {
+      padding: var(--padding);
+
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto 1fr auto auto auto;
+      grid-template-areas:
+        'name portionsize'
+        'desc desc'
+        'preparationtime preparationtime'
+        'allergics allergics'
+        'tags tags';
+
+      overflow: auto;
+      @include custom-scrollbar;
+
+      .fooddialog-front-name {
+        grid-area: name;
+
+        @include heading-1;
+        font-size: 2rem;
+        letter-spacing: 0px;
+        margin-bottom: 8px;
+
+        @include media(landscape) {
+          font-size: 2.5rem;
+        }
+      }
+
+      .fooddialog-front-portionsize {
+        grid-area: portionsize;
+
+        align-self: center;
+        @include body-2;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .fooddialog-front-desc {
+        grid-area: desc;
+
+        @include body-1;
+        margin-bottom: 12px;
+      }
+
+      .fooddialog-front-preparationtime {
+        grid-area: preparationtime;
+
+        @include body-2;
+        opacity: 0.4;
+        margin-bottom: 4px;
+      }
+
+      .fooddialog-front-allergics {
+        grid-area: allergics;
+
+        display: flex;
+        flex-wrap: wrap;
+
+        .chip {
+          margin-bottom: 4px;
+          margin-right: 8px;
+        }
+      }
+
+      .fooddialog-front-tags {
+        grid-area: tags;
+
+        display: flex;
+        flex-direction: row-reverse;
+        flex-wrap: wrap;
+
+        .fooddialog-front-tag {
+          margin-bottom: 4px;
+          margin-right: 4px;
+
+          @include body-2;
+          opacity: 0.7;
+          font-style: italic;
+        }
+      }
+    }
+  }
+
+  .fooddialog-back {
+    @include media(landscape) {
+      overflow: hidden;
+    }
+  }
+}

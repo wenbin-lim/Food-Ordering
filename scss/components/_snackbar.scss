@@ -43,7 +43,7 @@ $snackbar-colors: 'primary', 'secondary', 'error', 'success', 'warning';
 
     border-radius: $snackbar-border-radius;
 
-    @include box-shadow(2);
+    @include box-shadow(1);
 
     opacity: 1;
     animation: snackbarAnimationIn 0.5s ease-in-out;

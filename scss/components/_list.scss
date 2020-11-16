@@ -16,32 +16,33 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 
   .list-header {
     // stay consisten with .list
-    padding-left: var(--scrollbar-size);
-    padding-right: var(--scrollbar-size);
+    // padding-left: var(--scrollbar-size);
+    // padding-right: var(--scrollbar-size);
     margin-bottom: 1rem;
-
-    @include media(landscape) {
-      display: grid;
-      grid-template-areas: 'list-header-title list-header-search';
-      grid-template-columns: 1fr auto;
-      justify-content: space-between;
-      align-items: center;
-
-      .list-header-title {
-        grid-area: list-header-title;
-      }
-
-      .list-header-search {
-        grid-area: list-header-search;
-        max-width: 250px;
-      }
-    }
 
     .list-header-title {
       @include heading-2;
 
       @include media(portrait) {
         margin-bottom: 0.3rem;
+      }
+    }
+
+    @include media(landscape) {
+      display: grid;
+      grid-template-areas: 'list-header-title list-header-right';
+      grid-template-columns: 1fr auto;
+      justify-content: space-between;
+      align-items: center;
+
+      .list-header-title {
+        @include heading-3;
+        grid-area: list-header-title;
+      }
+
+      .list-header-right {
+        grid-area: list-header-right;
+        max-width: 250px;
       }
     }
   }
@@ -62,8 +63,8 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
     @include custom_scrollbar;
 
     // dont know why the scrollbar in ios keep appearing below the list
-    padding-left: var(--scrollbar-size);
-    padding-right: var(--scrollbar-size);
+    // padding-left: var(--scrollbar-size);
+    // padding-right: var(--scrollbar-size);
 
     .list-item-wrapper {
       margin-bottom: $list-item-gap;
@@ -74,77 +75,34 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 .list-item-wrapper {
   position: relative;
 
-  .list-item-actions .list-item-action,
-  .list-item {
-    @each $i in $list-item-colors {
-      &.list-item-#{$i} {
-        @if str-index($i, 'background') {
-          background-color: var(--on-#{$i});
-          color: var(--#{$i});
-        } @else {
-          background-color: var(--#{$i});
-          @if str-index($i, 'surface') {
-            color: var(--on-surface);
-          } @else {
-            color: var(--on-#{$i});
-          }
-        }
-      }
-    }
-  }
-
-  .list-item-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    width: 80%;
-    max-width: 400px;
-
-    opacity: 0;
-    pointer-events: none;
-
-    border-radius: $list-item-border-radius;
-    overflow: hidden;
-
-    display: flex;
-
-    .list-item-action {
-      flex: 1;
-
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      cursor: pointer;
-
-      &:not(:last-child) {
-        margin-right: 2px;
-      }
-
-      .list-item-action-name {
-        padding: 0 16px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-    }
-  }
-
   .list-item {
     padding-top: $list-item-y-padding;
     padding-bottom: $list-item-y-padding;
     padding-left: $list-item-x-padding;
     padding-right: $list-item-x-padding;
 
+    @each $i in $list-item-colors {
+      &.list-item-#{$i} {
+        background-color: var(--#{$i});
+
+        @if str-index($i, 'surface') {
+          color: var(--on-surface);
+        } @else {
+          color: var(--on-#{$i});
+        }
+      }
+    }
+
     border-radius: $list-item-border-radius;
 
     display: flex;
     align-items: center;
 
+    cursor: pointer;
+
     .before-list-content {
-      width: $icon-size;
+      min-width: $icon-size;
+      max-width: 20%;
 
       display: flex;
       justify-content: center;
@@ -158,6 +116,11 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
 
     .after-list-content {
       margin-left: $list-item-x-padding;
+
+      max-width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .list-index {
@@ -179,6 +142,63 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
         width: 100%;
         height: 100%;
         object-fit: cover;
+      }
+    }
+  }
+
+  .list-item-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+
+    max-width: 80%;
+
+    @include media(landscape) {
+      max-width: 400px;
+    }
+
+    border-radius: $list-item-border-radius;
+    overflow: hidden;
+
+    opacity: 0;
+    pointer-events: none;
+
+    display: flex;
+
+    .list-item-action {
+      flex: 1;
+
+      width: 100px;
+
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      @each $i in $list-item-colors {
+        &.list-item-action-#{$i} {
+          background-color: var(--#{$i});
+
+          @if str-index($i, 'surface') {
+            color: var(--on-surface);
+          } @else {
+            color: var(--on-#{$i});
+          }
+        }
+      }
+
+      cursor: pointer;
+
+      &:not(:last-child) {
+        margin-right: 2px;
+      }
+
+      .list-item-action-name {
+        padding: 0 16px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
     }
   }

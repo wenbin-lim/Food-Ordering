@@ -11,10 +11,11 @@ import Spinner from './Spinner';
 import CloseIcon from '../icons/CloseIcon';
 import ArrowIcon from '../icons/ArrowIcon';
 
-const SideSheet = ({ wrapper, className, children }) => {
+const SideSheet = ({ wrapper, className, children, ...rest }) => {
   return wrapper ? (
     <article
       className={sanitizeWhiteSpace(`sidesheet ${className ? className : ''}`)}
+      {...rest}
     >
       {children}
     </article>
@@ -28,13 +29,13 @@ SideSheet.propTypes = {
   className: PropTypes.string,
 };
 
-const Header = ({ title, closeHandler, children }) => {
+const Header = ({ title, closeHandler, icon = <CloseIcon />, children }) => {
   return (
     <header className='sidesheet-header'>
       {closeHandler && (
         <Button
           className={'sidesheet-header-close-btn'}
-          icon={<CloseIcon />}
+          icon={icon}
           onClick={closeHandler}
         />
       )}
@@ -51,21 +52,14 @@ Header.propTypes = {
   closeHandler: PropTypes.func,
 };
 
-const Content = ({
-  elementType = 'article',
-  id,
-  className,
-  onSubmit,
-  children,
-}) => {
+const Content = ({ elementType = 'article', className, children, ...rest }) => {
   return createElement(
     elementType,
     {
-      id,
       className: sanitizeWhiteSpace(
         `sidesheet-content ${className ? className : ''}`
       ),
-      onSubmit,
+      ...rest,
     },
     children
   );
@@ -78,12 +72,13 @@ Content.propTypes = {
   onSubmit: PropTypes.func,
 };
 
-const Footer = ({ className, children }) => {
+const Footer = ({ className, children, ...rest }) => {
   return (
     <footer
       className={sanitizeWhiteSpace(
         `sidesheet-footer ${className ? className : ''}`
       )}
+      {...rest}
     >
       {children}
     </footer>
@@ -94,7 +89,13 @@ Footer.propTypes = {
   className: PropTypes.string,
 };
 
-const FooterButton = ({ text, requesting, form }) => {
+const FooterButton = ({
+  text,
+  additionalContentClassName,
+  additionalContent,
+  requesting,
+  form,
+}) => {
   return (
     <Button
       className={'sidesheet-footer'}
@@ -110,6 +111,8 @@ const FooterButton = ({ text, requesting, form }) => {
           <ArrowIcon direction={'right'} />
         )
       }
+      additionalContentClassName={additionalContentClassName}
+      additionalContent={additionalContent}
       disabled={requesting}
       submit={form ? true : false}
       form={form}

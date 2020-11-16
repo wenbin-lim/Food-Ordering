@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useEffect } from 'react';
 import './App.css';
 
@@ -19,8 +20,8 @@ import { ReactQueryDevtools } from 'react-query-devtools';
 
 // Auth components
 import WawayaRoute from './routing/WawayaRoute';
-import CustomerRoute from './routing/CustomerRoute';
 import CompanyRoute from './routing/CompanyRoute';
+import CustomerRoute from './routing/CustomerRoute';
 
 // Components
 import Snackbar from './components/layout/Snackbar';
@@ -36,13 +37,14 @@ import Contact from './routes/main/Contact';
 // Customer App Pages
 import CustomerLogin from './routes/customer/CustomerLogin';
 import CustomerAppWrapper from './routes/customer/CustomerAppWrapper';
-import CustomerTakeaway from './routes/customer/CustomerTakeaway';
 import CustomerLanding from './routes/customer/CustomerLanding';
+import Cart from './routes/customer/Cart';
+// import CustomerTakeaway from './routes/customer/CustomerTakeaway';
 
 // Company/Main App Pages
 import CompanyAppWrapper from './routes/company/CompanyAppWrapper';
 import CompanyLanding from './routes/company/CompanyLanding';
-import Dashboard from './routes/company/admin/Dashboard';
+import AdminDashboard from './routes/company/admin/AdminDashboard';
 
 import CompanyUsers from './routes/company/users/CompanyUsers';
 import CompanyTables from './routes/company/tables/CompanyTables';
@@ -52,9 +54,9 @@ import CompanyCustomisations from './routes/company/customisations/CompanyCustom
 
 import MainMenu from './components/menus/MainMenu';
 import Menu from './components/menus/Menu';
-import Notifications from './routes/company/notifications/Notifications';
-import Bills from './routes/company/bills/Bills';
-import Orders from './routes/company/orders/Orders';
+// import Notifications from './routes/company/notifications/Notifications';
+// import Bills from './routes/company/bills/Bills';
+// import Orders from './routes/company/orders/Orders';
 // import Tables from './routes/company/tables/Tables';
 
 // Wawaya Master Pages
@@ -68,34 +70,37 @@ import Users from './routes/wawaya/users/Users';
 import Tables from './routes/wawaya/tables/Tables';
 import Menus from './routes/wawaya/menus/Menus';
 import Foods from './routes/wawaya/foods/Foods';
-import Customisations from './routes/wawaya/foods/Customisations';
+import Customisations from './routes/wawaya/customisations/Customisations';
 
 // Reused Components
 import UserAdd from './components/users/UserAdd';
-import UserInfo from './components/users/UserInfo';
+import User from './components/users/User';
 import UserEdit from './components/users/UserEdit';
 
 import TableAdd from './components/tables/TableAdd';
-import TableInfo from './components/tables/TableInfo';
+import Table from './components/tables/Table';
 import TableEdit from './components/tables/TableEdit';
 
 import MenuAdd from './components/menus/MenuAdd';
 import MenuInfo from './components/menus/MenuInfo';
 import MenuEdit from './components/menus/MenuEdit';
 
-import CustomisationAdd from './components/customisations/CustomisationAdd';
-import CustomisationInfo from './components/customisations/CustomisationInfo';
-import CustomisationEdit from './components/customisations/CustomisationEdit';
-
 import FoodAdd from './components/foods/FoodAdd';
 import FoodInfo from './components/foods/FoodInfo';
 import FoodEdit from './components/foods/FoodEdit';
 
-// Actions
-import { getCompaniesPublic, updateScreenOrientation } from './actions/app';
+import CustomisationAdd from './components/customisations/CustomisationAdd';
+import Customisation from './components/customisations/Customisation';
+import CustomisationEdit from './components/customisations/CustomisationEdit';
+
+// Functions
+import useGetAll from './query/hooks/useGetAll';
+import { updateScreenOrientation } from './actions/app';
 import { loadToken } from './actions/auth';
 
 const App = () => {
+  useGetAll('companies');
+
   useEffect(() => {
     const layoutEvents = ['resize', 'deviceorientation', 'orientationchange'];
 
@@ -132,147 +137,116 @@ const App = () => {
     <Provider store={store}>
       <Router>
         <Routes>
-          {/* <Route path='*' element={<Navigate to='/' />} /> */}
-
           <Route path='/' element={<MainAppWrapper />}>
             <Route path='' element={<Landing />} />
             <Route path='login' element={<Login />} />
             <Route path='about' element={<About />} />
             <Route path='contact' element={<Contact />} />
-            <Route
-              path='takeaway/:companyName'
-              element={<CustomerTakeaway />}
-            />
           </Route>
+
+          <Route
+            path='takeaway/:companyName'
+            element={<div>customer takeaway</div>}
+          />
 
           <Route path='dinein' element={<CustomerLogin />} />
 
-          <CustomerRoute
-            path='dinein/:companyName'
-            component={CustomerAppWrapper}
-          >
-            <CustomerRoute path='' component={CustomerLanding} />
-            <CustomerRoute path='menu' component={MainMenu} />
-            <CustomerRoute path='menu/:id' component={Menu} />
+          {/* prettier-ignore */}
+          <CustomerRoute path='dinein/:companyName' element={<CustomerAppWrapper />} >
+            <CustomerRoute path='/' element={<CustomerLanding/>} />
+            <CustomerRoute path='menu' element={<MainMenu />} />
+            <CustomerRoute path='menu/:id' element={<Menu />} />
+            <CustomerRoute path='cart' element={<Cart />} />
           </CustomerRoute>
 
-          <CompanyRoute path='/:companyName' component={CompanyAppWrapper}>
-            <CompanyRoute path='' component={CompanyLanding} />
+          <WawayaRoute path='/wawaya' element={<WawayaAppWrapper />}>
+            <WawayaRoute path='/' element={<WawayaDashboard />} />
 
-            <CompanyRoute path='admin' minAccess={3} component={Dashboard} />
-
-            <CompanyRoute path='users' minAccess={3} component={CompanyUsers}>
-              <CompanyRoute path='add' minAccess={3} component={UserAdd} />
-              <CompanyRoute path=':id' minAccess={3} component={UserInfo} />
-              <CompanyRoute
-                path=':id/edit'
-                minAccess={3}
-                component={UserEdit}
-              />
-            </CompanyRoute>
-
-            <CompanyRoute path='tables' minAccess={3} component={CompanyTables}>
-              <CompanyRoute path='add' minAccess={3} component={TableAdd} />
-              <CompanyRoute path=':id' minAccess={3} component={TableInfo} />
-              <CompanyRoute
-                path=':id/edit'
-                minAccess={3}
-                component={TableEdit}
-              />
-            </CompanyRoute>
-
-            <CompanyRoute path='menus' minAccess={3} component={CompanyMenus}>
-              <CompanyRoute path='add' minAccess={3} component={MenuAdd} />
-              <CompanyRoute path=':id' minAccess={3} component={MenuInfo} />
-              <CompanyRoute
-                path=':id/edit'
-                minAccess={3}
-                component={MenuEdit}
-              />
-            </CompanyRoute>
-
-            <CompanyRoute path='foods' minAccess={3} component={CompanyFoods}>
-              <CompanyRoute path='add' minAccess={3} component={FoodAdd} />
-              <CompanyRoute path=':id' minAccess={3} component={FoodInfo} />
-              <CompanyRoute
-                path=':id/edit'
-                minAccess={3}
-                component={FoodEdit}
-              />
-            </CompanyRoute>
-
-            <CompanyRoute
-              path='customisations'
-              minAccess={3}
-              component={CompanyCustomisations}
-            >
-              <CompanyRoute
-                path='add'
-                minAccess={3}
-                component={CustomisationAdd}
-              />
-              <CompanyRoute
-                path=':id'
-                minAccess={3}
-                component={CustomisationInfo}
-              />
-              <CompanyRoute
-                path=':id/edit'
-                minAccess={3}
-                component={CustomisationEdit}
-              />
-            </CompanyRoute>
-
-            <CompanyRoute path='menu' component={Outlet}>
-              <CompanyRoute path='' component={MainMenu} />
-              <CompanyRoute path=':id' component={Menu} />
-            </CompanyRoute>
-
-            {/* <CompanyRoute path='tables' component={Tables} /> */}
-            <CompanyRoute path='orders' component={Orders} />
-            <CompanyRoute path='bills' component={Bills} />
-            <CompanyRoute path='notifications' component={Notifications} />
-          </CompanyRoute>
-
-          <WawayaRoute path='/wawaya' component={WawayaAppWrapper}>
-            <WawayaRoute path='/' component={WawayaDashboard} />
-
-            <WawayaRoute path='companies' component={Companies}>
-              <WawayaRoute path='add' component={CompanyAdd} />
-              <WawayaRoute path=':id' component={Company} />
-              <WawayaRoute path=':id/edit' component={CompanyEdit} />
+            <WawayaRoute path='companies' element={<Companies />}>
+              <WawayaRoute path='add' element={<CompanyAdd />} />
+              <WawayaRoute path=':id' element={<Company />} />
+              <WawayaRoute path=':id/edit' element={<CompanyEdit />} />
             </WawayaRoute>
 
-            <WawayaRoute path='users' component={Users}>
-              <WawayaRoute path='add' component={UserAdd} />
-              <WawayaRoute path=':id' component={UserInfo} />
-              <WawayaRoute path=':id/edit' component={UserEdit} />
+            <WawayaRoute path='users' element={<Users />}>
+              <WawayaRoute path='add' element={<UserAdd />} />
+              <WawayaRoute path=':id' element={<User />} />
+              <WawayaRoute path=':id/edit' element={<UserEdit />} />
             </WawayaRoute>
 
-            <WawayaRoute path='tables' component={Tables}>
-              <WawayaRoute path='add' component={TableAdd} />
-              <WawayaRoute path=':id' component={TableInfo} />
-              <WawayaRoute path=':id/edit' component={TableEdit} />
+            <WawayaRoute path='tables' element={<Tables />}>
+              <WawayaRoute path='add' element={<TableAdd />} />
+              <WawayaRoute path=':id' element={<Table />} />
+              <WawayaRoute path=':id/edit' element={<TableEdit />} />
             </WawayaRoute>
 
-            <WawayaRoute path='menus' component={Menus}>
-              <WawayaRoute path='add' component={MenuAdd} />
-              <WawayaRoute path=':id' component={MenuInfo} />
-              <WawayaRoute path=':id/edit' component={MenuEdit} />
+            <WawayaRoute path='menus' element={<Menus />}>
+              <WawayaRoute path='add' element={<MenuAdd />} />
+              <WawayaRoute path=':id' element={<MenuInfo />} />
+              <WawayaRoute path=':id/edit' element={<MenuEdit />} />
             </WawayaRoute>
 
-            <WawayaRoute path='customisations' component={Customisations}>
-              <WawayaRoute path='add' component={CustomisationAdd} />
-              <WawayaRoute path=':id' component={CustomisationInfo} />
-              <WawayaRoute path=':id/edit' component={CustomisationEdit} />
+            <WawayaRoute path='foods' element={<Foods />}>
+              <WawayaRoute path='add' element={<FoodAdd />} />
+              <WawayaRoute path=':id' element={<FoodInfo />} />
+              <WawayaRoute path=':id/edit' element={<FoodEdit />} />
             </WawayaRoute>
 
-            <WawayaRoute path='foods' component={Foods}>
-              <WawayaRoute path='add' component={FoodAdd} />
-              <WawayaRoute path=':id' component={FoodInfo} />
-              <WawayaRoute path=':id/edit' component={FoodEdit} />
+            <WawayaRoute path='customisations' element={<Customisations />}>
+              <WawayaRoute path='add' element={<CustomisationAdd />} />
+              <WawayaRoute path=':id' element={<Customisation />} />
+              <WawayaRoute path=':id/edit' element={<CustomisationEdit />} />
             </WawayaRoute>
           </WawayaRoute>
+
+          <CompanyRoute path='/:companyName' element={<CompanyAppWrapper />}>
+            <CompanyRoute path='/' element={<CompanyLanding />} />
+
+            {/* prettier-ignore */}
+            <CompanyRoute path='admin' access={3} element={<AdminDashboard />} />
+
+            <CompanyRoute path='users' access={3} element={<CompanyUsers />}>
+              <CompanyRoute path='add' access={3} element={<UserAdd />} />
+              <CompanyRoute path=':id' access={3} element={<User />} />
+              <CompanyRoute path=':id/edit' access={3} element={<UserEdit />} />
+            </CompanyRoute>
+
+            <CompanyRoute path='tables' access={3} element={<CompanyTables />}>
+              <CompanyRoute path='add' access={3} element={<TableAdd />} />
+              <CompanyRoute path=':id' access={3} element={<Table />} />
+              {/* prettier-ignore */}
+              <CompanyRoute path=':id/edit' access={3} element={<TableEdit />} />
+            </CompanyRoute>
+
+            <CompanyRoute path='menus' access={3} element={<CompanyMenus />}>
+              <CompanyRoute path='add' access={3} element={<MenuAdd />} />
+              <CompanyRoute path=':id' access={3} element={<MenuInfo />} />
+              <CompanyRoute path=':id/edit' access={3} element={<MenuEdit />} />
+            </CompanyRoute>
+
+            <CompanyRoute path='foods' access={3} element={<CompanyFoods />}>
+              <CompanyRoute path='add' access={3} element={<FoodAdd />} />
+              <CompanyRoute path=':id' access={3} element={<FoodInfo />} />
+              <CompanyRoute path=':id/edit' access={3} element={<FoodEdit />} />
+            </CompanyRoute>
+
+            {/* prettier-ignore */}
+            <CompanyRoute path='customisations' access={3} element={<CompanyCustomisations />}>
+              <CompanyRoute path='add' access={3} element={<CustomisationAdd />}/>
+              <CompanyRoute path=':id' access={3} element={<Customisation />} />
+              <CompanyRoute path=':id/edit' access={3} element={<CustomisationEdit />} />
+            </CompanyRoute>
+
+            <CompanyRoute path='menu' element={<MainMenu />} />
+            <CompanyRoute path='menu/:id' element={<Menu />} />
+
+            {/* <CompanyRoute path='tables' element={Tables} />
+            <CompanyRoute path='orders' element={Orders} />
+            <CompanyRoute path='bills' element={Bills} />
+            <CompanyRoute path='notifications' element={Notifications} /> */}
+          </CompanyRoute>
+
+          <Route path='*' element={<Navigate to='/' />} />
         </Routes>
       </Router>
       <Snackbar />

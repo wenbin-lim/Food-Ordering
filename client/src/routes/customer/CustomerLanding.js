@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, Fragment } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // Components
 import Container from '../../components/layout/Container';
 import Button from '../../components/layout/Button';
 
-const CustomerLanding = ({ customerTableName }) => {
+const CustomerLanding = ({ user }) => {
   const navigate = useNavigate();
   const tableInfoNameRef = useRef(null);
 
@@ -26,16 +26,17 @@ const CustomerLanding = ({ customerTableName }) => {
         tableInfoName.style.fontSize = '10rem';
       }
     }
-  }, [customerTableName]);
+  }, [user]);
 
-  const parentContent = (
-    <Fragment>
+  return (
+    <Container className='customer-qr-landing'>
       <section className='table-info'>
         <h2 className='table-info-caption'>TABLE</h2>
         <p className='table-info-name' ref={tableInfoNameRef}>
-          {customerTableName}
+          {user?.name}
         </p>
       </section>
+
       <section className='button-group'>
         <Button
           text={'ORDER'}
@@ -59,20 +60,12 @@ const CustomerLanding = ({ customerTableName }) => {
           // onClick={() => navigate(`/${company.name}/table/menu`)}
         />
       </section>
-      <Outlet />
-    </Fragment>
-  );
-
-  return (
-    <Container
-      parentClass={'customer-qr-landing'}
-      parentContent={parentContent}
-    />
+    </Container>
   );
 };
 
 CustomerLanding.propTypes = {
-  customerTableName: PropTypes.string.isRequired,
+  table: PropTypes.object,
 };
 
 export default CustomerLanding;

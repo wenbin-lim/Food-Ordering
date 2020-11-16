@@ -1,46 +1,42 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { queryCache } from 'react-query';
 
 // Actions
-import { addCustomisation } from '../../actions/customisations';
 import { setSnackbar } from '../../actions/app';
 
 // Components
 import SideSheet from '../layout/SideSheet';
-import Tabs from '../layout/Tabs';
-import Spinner from '../layout/Spinner';
+import Tabs, { Tab } from '../layout/Tabs';
+import Dropdown from '../layout/Dropdown';
 import TextInput from '../layout/TextInput';
-import Button from '../layout/Button';
 import SwitchInput from '../layout/SwitchInput';
 import Options from './options/Options';
 
-// Icons
-import ArrowIcon from '../icons/ArrowIcon';
-
 // Custom Hooks
-import useInputError from '../../hooks/useInputError';
+import useErrors from '../../hooks/useErrors';
+import useAddOne from '../../query/hooks/useAddOne';
 
 const CustomisationAdd = ({
-  userAccess,
-  userCompanyId,
-  companies: { company },
-  customisations: { requesting, errors },
-  addCustomisation,
-  setSnackbar,
+  user: { access: userAccess },
+  company: userCompanyId,
 }) => {
-  const [inputErrorMessages] = useInputError(
-    {
-      name: '',
-      title: '',
-      min: '',
-      max: '',
-    },
-    errors
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [activeTab, setActiveTab] = useState(0);
+  const onClickTab = tabIndex => setActiveTab(tabIndex);
+
+  const companies = queryCache.getQueryData('companies');
+
+  const [addCustomisation, { isLoading: requesting, error }] = useAddOne(
+    'customisations'
   );
+  const [inputErrors] = useErrors(error, ['name', 'title', 'min', 'max']);
 
   const [formData, setFormData] = useState({
+    company: userCompanyId,
     name: '',
     title: '',
     availability: true,
@@ -50,181 +46,146 @@ const CustomisationAdd = ({
     options: [],
   });
 
-  let { name, title, availability, optional, min, max, options } = formData;
+  const {
+    company,
+    name,
+    title,
+    availability,
+    optional,
+    min,
+    max,
+    options,
+  } = formData;
 
   const onChange = ({ name, value }) =>
     setFormData({ ...formData, [name]: value });
 
-  const navigate = useNavigate();
-
   const onSubmit = async e => {
     e.preventDefault();
 
-    if (userAccess === 99 && !company)
-      return setSnackbar('Select a company first!', 'error');
+    const addCustomisationSuccess = await addCustomisation(formData);
 
-    let companyId = company && userAccess === 99 ? company._id : userCompanyId;
-
-    const addCustomisationSuccess = await addCustomisation(companyId, formData);
-
-    return addCustomisationSuccess && closeSideSheet();
+    return (
+      addCustomisationSuccess &&
+      dispatch(setSnackbar(`Added customisation of name '${name}'`, 'success'))
+    );
   };
 
-  const closeSideSheet = () => navigate('../');
-
-  const tabPageOne = (
-    <Fragment>
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'availability'}
-            name={'availability'}
-            value={availability}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'name'}
-            required={true}
-            name={'name'}
-            type={'text'}
-            value={name}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.name}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <TextInput
-            label={'title'}
-            required={true}
-            name={'title'}
-            type={'text'}
-            value={title}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.title}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        <div className='col'>
-          <SwitchInput
-            label={'optional'}
-            name={'optional'}
-            value={optional}
-            onChangeHandler={onChange}
-          />
-        </div>
-      </div>
-
-      <div className='row'>
-        {typeof optional === 'boolean' && !optional && (
-          <div className='col pr-h'>
-            <TextInput
-              label={'min selection'}
-              required={true}
-              name={'min'}
-              type={'numeric'}
-              value={min}
-              onChangeHandler={onChange}
-              error={inputErrorMessages.min}
-            />
-          </div>
-        )}
-        <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
-          <TextInput
-            label={'max selection'}
-            required={true}
-            name={'max'}
-            type={'numeric'}
-            value={max}
-            onChangeHandler={onChange}
-            error={inputErrorMessages.max}
-          />
-        </div>
-      </div>
-    </Fragment>
-  );
-
-  const tabPageTwo = (
-    <Options
-      options={options}
-      formName={'options'}
-      onChangeHandler={onChange}
-    />
-  );
-
-  const sideSheetContent = (
-    <form
-      id='customisationAddForm'
-      className='sidesheet-content tabs-wrapper p-0'
-      onSubmit={onSubmit}
-    >
-      <Tabs
-        wrapper={false}
-        headerClass={'mt-1 ml-1 mr-1 mb-0'}
-        tabs={[
-          { name: 'Main', content: tabPageOne, class: 'p-1' },
-          { name: 'Options', content: tabPageTwo, class: 'p-1' },
-        ]}
-      />
-    </form>
-  );
-
   return (
-    <SideSheet
-      wrapper={false}
-      headerTitle={'Add Customisation'}
-      closeSideSheetHandler={closeSideSheet}
-      contentWrapper={false}
-      content={sideSheetContent}
-      footerBtn={
-        <Button
-          fill={'contained'}
-          type={'primary'}
-          block={true}
-          blockBtnBottom={true}
-          text={'add'}
-          icon={
-            requesting ? (
-              <Spinner height={'1.5rem'} />
-            ) : (
-              <ArrowIcon direction='right' />
-            )
-          }
-          disabled={requesting}
-          submit={true}
-          form={'customisationAddForm'}
-        />
-      }
-    />
+    <SideSheet wrapper={false}>
+      <SideSheet.Header
+        title={'Add Customisation'}
+        closeHandler={() => navigate('../')}
+      >
+        <Tabs onClickTab={onClickTab}>
+          <Tab name={'Main'} />
+          <Tab name={'Options'} />
+        </Tabs>
+      </SideSheet.Header>
+      <SideSheet.Content
+        elementType={'form'}
+        id={'customisationAddForm'}
+        onSubmit={onSubmit}
+      >
+        {activeTab === 0 && (
+          <article>
+            {userAccess === 99 && Array.isArray(companies) && (
+              <Dropdown
+                required={true}
+                label={'Company'}
+                name={'company'}
+                options={companies.map(({ _id, displayedName }) => ({
+                  key: displayedName,
+                  value: _id,
+                }))}
+                value={company}
+                onChangeHandler={onChange}
+              />
+            )}
+
+            <SwitchInput
+              label={'Availability'}
+              name={'availability'}
+              value={availability}
+              onChangeHandler={onChange}
+            />
+
+            <TextInput
+              label={'name'}
+              required={true}
+              name={'name'}
+              type={'text'}
+              value={name}
+              onChangeHandler={onChange}
+              error={inputErrors.name}
+            />
+
+            <TextInput
+              label={'title'}
+              required={true}
+              name={'title'}
+              type={'text'}
+              value={title}
+              onChangeHandler={onChange}
+              error={inputErrors.title}
+            />
+
+            <SwitchInput
+              label={'optional'}
+              name={'optional'}
+              value={optional}
+              onChangeHandler={onChange}
+            />
+
+            <div className='row'>
+              {typeof optional === 'boolean' && !optional && (
+                <div className='col pr-h'>
+                  <TextInput
+                    label={'min selection'}
+                    required={true}
+                    name={'min'}
+                    type={'numeric'}
+                    value={min}
+                    onChangeHandler={onChange}
+                    error={inputErrors.min}
+                  />
+                </div>
+              )}
+              <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
+                <TextInput
+                  label={'max selection'}
+                  required={true}
+                  name={'max'}
+                  type={'numeric'}
+                  value={max}
+                  onChangeHandler={onChange}
+                  error={inputErrors.max}
+                />
+              </div>
+            </div>
+          </article>
+        )}
+
+        {activeTab === 1 && (
+          <Options
+            options={options}
+            formName={'options'}
+            onChangeHandler={onChange}
+          />
+        )}
+      </SideSheet.Content>
+      <SideSheet.FooterButton
+        text={'add'}
+        requesting={requesting}
+        form={'customisationAddForm'}
+      />
+    </SideSheet>
   );
 };
 
 CustomisationAdd.propTypes = {
-  userAccess: PropTypes.number.isRequired,
-  userCompanyId: PropTypes.string.isRequired,
-  companies: PropTypes.object.isRequired,
-  customisations: PropTypes.object.isRequired,
-  addCustomisation: PropTypes.func.isRequired,
-  setSnackbar: PropTypes.func.isRequired,
+  user: PropTypes.object,
+  company: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
-  customisations: state.customisations,
-  companies: state.companies,
-});
-
-const mapDispatchToProps = {
-  addCustomisation,
-  setSnackbar,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CustomisationAdd);
+export default CustomisationAdd;

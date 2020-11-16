@@ -12,9 +12,11 @@ const router = express.Router();
 const User = require('../models/User');
 const Table = require('../models/Table');
 const Bill = require('../models/Bill');
+const Order = require('../models/Order');
 
 // Miscellaneous Functions, Middlewares, Variables
 const auth = require('../middleware/auth');
+const { isValidObjectId } = require('mongoose');
 
 // ====================================================================================================
 // Routes
@@ -28,31 +30,22 @@ router.get('/', auth(true), async (req, res) => {
 
     if (user) {
       // need to authenticate to db in case user is already deleted and token is still there
-      let user = await User.findById(req.user)
+      const user = await User.findById(req.user)
         .select('-password')
         .populate('company', 'name');
 
-      return res.json({ user });
+      if (!user) {
+        return res.status(404).send('User not found');
+      }
+
+      return res.json(user);
     } else if (table) {
-      let table = await Table.findById(req.table)
-        .populate('company', 'name')
-        .populate({
-          path: 'bill',
-          populate: {
-            path: 'orders',
-            populate: {
-              path: 'customisations food',
-              populate: {
-                path: 'customisation customisations',
-                model: 'Customisation',
-              },
-            },
-          },
-        });
+      const table = await Table.findById(req.table).populate('company', 'name');
 
-      let bill = table?.bill;
-
-      return res.json({ table, bill });
+      if (!table) {
+        return res.status(404).send('Table not found');
+      }
+      return res.json(table);
     }
   } catch (err) {
     console.error(err.message);
@@ -120,80 +113,54 @@ router.post(
 // @route    POST api/auth/customer
 // @desc     Authenticate customer & get token
 // @access   Public
-router.post(
-  '/customer',
-  [
-    check('tableId', 'Invalid Credentials')
-      .exists({ checkFalsy: true })
-      .isMongoId(),
-    check('companyId', 'Invalid Credentials')
-      .exists({ checkFalsy: true })
-      .isMongoId(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req).array();
+router.post('/customer', async (req, res) => {
+  const { tableId, companyId } = req.body;
 
-    if (errors.length > 0) {
-      return res.status(400).json(errors);
-    }
-
-    const { tableId, companyId } = req.body;
-
-    try {
-      let table = await Table.findOne({
-        _id: tableId,
-        company: companyId,
-      })
-        .populate('company', 'name')
-        .populate({
-          path: 'bill',
-          populate: {
-            path: 'orders',
-            populate: {
-              path: 'customisations food',
-              populate: {
-                path: 'customisation customisations',
-                model: 'Customisation',
-              },
-            },
-          },
-        });
-
-      // check if table exists
-      if (!table) {
-        return res.status(403).json('Invalid Credentials');
-      }
-
-      let { bill } = table;
-
-      if (!bill) {
-        bill = new Bill({ company: companyId, orders: [] });
-        await bill.save();
-
-        table.bill = bill;
-        await table.save();
-      }
-
-      // return jwt back to customer
-      const payload = { table };
-
-      jwt.sign(
-        payload,
-        config.get('jwtSecret'),
-        {
-          // expiresIn: 10,
-        },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token, table, bill });
-        }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
+  if (!isValidObjectId(tableId) || !isValidObjectId(companyId)) {
+    return res.status(400).send('Bad Request');
   }
-);
+
+  try {
+    let table = await Table.findOne({
+      _id: tableId,
+      company: companyId,
+    }).populate('company', 'name');
+
+    // check if table exists
+    if (!table) {
+      return res.status(404).json('Not Found');
+    }
+
+    let { bill } = table;
+
+    if (!bill) {
+      bill = new Bill({ company: companyId });
+      await bill.save();
+
+      table.bill = bill;
+      await table.save();
+    }
+
+    // return jwt back to customer
+    const payload = { table };
+
+    jwt.sign(
+      payload,
+      config.get('jwtSecret'),
+      {
+        // expiresIn: 10,
+      },
+      (err, token) => {
+        if (err) throw err;
+
+        res.json({ user: table, token });
+      }
+    );
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 // Exporting module
 module.exports = router;

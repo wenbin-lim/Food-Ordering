@@ -120,7 +120,7 @@ router.get(
           ? { _id: req.params.id, company }
           : { _id: req.params.id };
 
-      let table = await Table.findOne(query);
+      let table = await Table.findOne(query).populate('company', 'name');
 
       if (!table) {
         return res.status(404).send('Table not found');

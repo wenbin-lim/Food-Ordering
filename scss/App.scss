@@ -83,6 +83,10 @@ html {
   font-size: 16px;
 }
 
+body {
+  touch-action: manipulation;
+}
+
 // Overrides
 @import '_overrides';
 
@@ -126,11 +130,15 @@ html {
 
 @import 'additional/options/_optionform';
 
-@import 'additional/customer/_customer.scss';
-
 @import 'additional/menu/_menu.scss';
 
 @import 'additional/food/_foodcard.scss';
+@import 'additional/food/_fooddialog.scss';
 @import 'additional/food/_food.scss';
 
+@import 'additional/customer/_qrlanding.scss';
+@import 'additional/customer/_cart.scss';
+
 @import 'additional/orders/_orderitem.scss';
+
+@import 'additional/cart/_cart.scss';

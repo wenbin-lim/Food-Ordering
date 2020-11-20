@@ -9,12 +9,15 @@ import FoodCard from '../foods/FoodCard';
 import Button from '../layout/Button';
 
 // Hooks
-import useGetAll from '../../query/hooks/useGetAll';
+import useGet from '../../query/hooks/useGet';
 import useErrors from '../../hooks/useErrors';
 
 const MainMenu = ({ company }) => {
-  const { data: menus, isLoading, errors } = useGetAll('menus', { company });
-  useErrors(errors);
+  const { data: menus, isLoading, error } = useGet('menus', {
+    route: '/api/menus',
+    params: { company },
+  });
+  useErrors(error);
 
   const navigate = useNavigate();
 

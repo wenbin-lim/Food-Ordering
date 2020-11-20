@@ -15,7 +15,7 @@ import Options from './options/Options';
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
 import useGetOne from '../../query/hooks/useGetOne';
-import useEditOne from '../../query/hooks/useEditOne';
+import usePut from '../../query/hooks/usePut';
 
 const CustomisationEdit = () => {
   let { id } = useParams();
@@ -26,14 +26,17 @@ const CustomisationEdit = () => {
 
   const { data: customisation, isLoading, error } = useGetOne(
     'customisation',
-    id
+    id,
+    {
+      route: `/api/customisations/${id}`,
+    }
   );
   useErrors(error);
 
   const [
     editCustomisation,
     { isLoading: requesting, error: editErrors },
-  ] = useEditOne('customisations');
+  ] = usePut('customisations', { route: `/api/customisations/${id}` });
   const [inputErrors] = useErrors(editErrors, ['name', 'title', 'min', 'max']);
 
   const [formData, setFormData] = useState({
@@ -78,10 +81,7 @@ const CustomisationEdit = () => {
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editCustomisationSuccess = await editCustomisation({
-      id,
-      newItem: formData,
-    });
+    const editCustomisationSuccess = await editCustomisation(formData);
 
     return (
       editCustomisationSuccess &&

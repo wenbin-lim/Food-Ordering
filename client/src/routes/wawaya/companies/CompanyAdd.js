@@ -12,13 +12,15 @@ import ImageInput from '../../../components/layout/ImageInput';
 
 // Custom Hooks
 import useErrors from '../../../hooks/useErrors';
-import useAddOne from '../../../query/hooks/useAddOne';
+import usePost from '../../../query/hooks/usePost';
 
 const CompanyAdd = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [addCompany, { isLoading: requesting, error }] = useAddOne('companies');
+  const [addCompany, { isLoading: requesting, error }] = usePost('companies', {
+    route: '/api/companies',
+  });
   const [inputErrors] = useErrors(error, [
     'name',
     'logoLarge',

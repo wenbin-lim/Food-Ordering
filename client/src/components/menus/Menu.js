@@ -13,7 +13,9 @@ import useErrors from '../../hooks/useErrors';
 const Menu = () => {
   let { id } = useParams();
 
-  const { data: menu, isLoading, error } = useGetOne('menu', id);
+  const { data: menu, isLoading, error } = useGetOne('menu', id, {
+    route: `/api/menus/${id}`,
+  });
   useErrors(error);
 
   const { name, foods } = { ...menu };

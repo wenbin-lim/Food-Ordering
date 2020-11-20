@@ -33,7 +33,7 @@ const CustomerLanding = ({ user }) => {
       <section className='table-info'>
         <h2 className='table-info-caption'>TABLE</h2>
         <p className='table-info-name' ref={tableInfoNameRef}>
-          {user?.name}
+          {user?.table?.name}
         </p>
       </section>
 

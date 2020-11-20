@@ -12,19 +12,22 @@ import TextInput from '../layout/TextInput';
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
 import useGetOne from '../../query/hooks/useGetOne';
-import useEditOne from '../../query/hooks/useEditOne';
+import usePut from '../../query/hooks/usePut';
 
 const TableEdit = () => {
   let { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { data: table, isLoading, error } = useGetOne('table', id);
+  const { data: table, isLoading, error } = useGetOne('table', id, {
+    route: `/api/tables/${id}`,
+  });
   useErrors(error);
 
-  const [editTable, { isLoading: requesting, error: editErrors }] = useEditOne(
-    'tables'
-  );
+  const [
+    editTable,
+    { isLoading: requesting, error: editErrors },
+  ] = usePut('tables', { route: `/api/tables/${id}` });
   const [inputErrors] = useErrors(editErrors, ['name']);
 
   const [formData, setFormData] = useState({
@@ -49,7 +52,7 @@ const TableEdit = () => {
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editTableSuccess = await editTable({ id, newItem: formData });
+    const editTableSuccess = await editTable(formData);
 
     return (
       editTableSuccess &&

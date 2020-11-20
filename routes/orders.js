@@ -47,7 +47,17 @@ const auth = require('../middleware/auth');
 // @access   Public/Private
 router.get('/', [auth(true, accessLevel.customer)], async (req, res) => {
   try {
-    let orders = await Order.find(req.query);
+    const { access } = req;
+    const { company, bill } = req.query;
+    let query = {};
+
+    if (access > accessLevel.customer) {
+      query = { company };
+    } else {
+      query = { bill };
+    }
+
+    let orders = await Order.find(query);
 
     res.json(orders);
   } catch (err) {
@@ -104,7 +114,6 @@ router.post(
 
       // validate quantity
       const { minQty, maxQty, customisations } = foundFood;
-      // quantity = parseInt(quantity);
 
       if (quantity < minQty) {
         errors.push({
@@ -123,14 +132,15 @@ router.post(
       }
 
       // validate customisations
-      customisationsUsed = Object.entries(customisationsUsed);
-
-      customisationsUsed.forEach(customisationUsed => {
-        const [customisationUsedId, optionsSelected] = customisationUsed;
+      customisationsUsed.forEach(thisCustomisationUsed => {
+        const {
+          customisation: customisationUsed,
+          optionsSelected,
+        } = thisCustomisationUsed;
 
         const foundCustomisation = customisations.find(
           customisation =>
-            customisation._id.toString() === customisationUsedId.toString()
+            customisation._id.toString() === customisationUsed._id.toString()
         );
 
         const { availability, optional, min, max } = foundCustomisation;
@@ -140,7 +150,7 @@ router.post(
           errors.push({
             location: 'body',
             msg: `Currently unavailable`,
-            param: customisationUsedId,
+            param: customisationUsed._id,
           });
         }
 
@@ -167,7 +177,7 @@ router.post(
             errors.push({
               location: 'body',
               msg,
-              param: customisationUsedId,
+              param: customisationUsed._id,
             });
           }
         }
@@ -176,28 +186,6 @@ router.post(
       if (errors.length > 0) {
         return res.status(400).json(errors);
       }
-
-      customisationsUsed = customisationsUsed.map(
-        ([customisationUsedId, optionsSelected]) => {
-          const foundCustomisation = customisations.find(
-            customisation =>
-              customisation._id.toString() === customisationUsedId.toString()
-          );
-
-          const availableOptions = foundCustomisation.options;
-
-          optionsSelected = optionsSelected.map(optionSelected =>
-            availableOptions.find(
-              option => option._id.toString() === optionSelected.toString()
-            )
-          );
-
-          return {
-            customisation: customisationUsedId,
-            optionsSelected,
-          };
-        }
-      );
 
       const order = new Order({
         food,
@@ -344,14 +332,15 @@ router.put(
       }
 
       // validate customisations
-      customisationsUsed = Object.entries(customisationsUsed);
-
-      customisationsUsed.forEach(customisationUsed => {
-        const [customisationUsedId, optionsSelected] = customisationUsed;
+      customisationsUsed.forEach(thisCustomisationUsed => {
+        const {
+          customisation: customisationUsed,
+          optionsSelected,
+        } = thisCustomisationUsed;
 
         const foundCustomisation = customisations.find(
           customisation =>
-            customisation._id.toString() === customisationUsedId.toString()
+            customisation._id.toString() === customisationUsed._id.toString()
         );
 
         const { availability, optional, min, max } = foundCustomisation;
@@ -361,7 +350,7 @@ router.put(
           errors.push({
             location: 'body',
             msg: `Currently unavailable`,
-            param: customisationUsedId,
+            param: customisationUsed._id,
           });
         }
 
@@ -388,7 +377,7 @@ router.put(
             errors.push({
               location: 'body',
               msg,
-              param: customisationUsedId,
+              param: customisationUsed._id,
             });
           }
         }
@@ -407,28 +396,6 @@ router.put(
       if (errors.length > 0) {
         return res.status(400).json(errors);
       }
-
-      customisationsUsed = customisationsUsed.map(
-        ([customisationUsedId, optionsSelected]) => {
-          const foundCustomisation = customisations.find(
-            customisation =>
-              customisation._id.toString() === customisationUsedId.toString()
-          );
-
-          const availableOptions = foundCustomisation.options;
-
-          optionsSelected = optionsSelected.map(optionSelected =>
-            availableOptions.find(
-              option => option._id.toString() === optionSelected.toString()
-            )
-          );
-
-          return {
-            customisation: customisationUsedId,
-            optionsSelected,
-          };
-        }
-      );
 
       order.quantity = quantity;
       order.additionalInstruction = additionalInstruction;

@@ -13,7 +13,9 @@ import useErrors from '../../hooks/useErrors';
 const Table = () => {
   let { id } = useParams();
   const navigate = useNavigate();
-  const { data: table, isLoading, error } = useGetOne('table', id);
+  const { data: table, isLoading, error } = useGetOne('table', id, {
+    route: `/api/tables/${id}`,
+  });
   useErrors(error);
 
   const {

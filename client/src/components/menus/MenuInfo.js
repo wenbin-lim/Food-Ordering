@@ -14,7 +14,9 @@ const MenuInfo = () => {
   let { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: menu, isLoading, error } = useGetOne('menu', id);
+  const { data: menu, isLoading, error } = useGetOne('menu', id, {
+    route: `/api/menus/${id}`,
+  });
   useErrors(error);
 
   const { name, availability, index, foods } = {

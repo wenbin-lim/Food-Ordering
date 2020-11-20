@@ -12,22 +12,24 @@ import AlertDialog from '../layout/AlertDialog';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useDeleteOne from '../../query/hooks/useDeleteOne';
+import useDelete from '../../query/hooks/useDelete';
 
 const TableItem = ({ index, data }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const [deleteTable, { error }] = useDeleteOne('tables');
-  useErrors(error);
-
   const { _id: tableId, name } = { ...data };
+
+  const [deleteTable, { error }] = useDelete('tables', {
+    route: `/api/tables/${tableId}`,
+  });
+  useErrors(error);
 
   const [showDeleteTableAlert, setShowDeleteTableAlert] = useState(false);
 
   const onTableDelete = async () => {
-    const deleteTableSuccess = await deleteTable(tableId);
+    const deleteTableSuccess = await deleteTable();
 
     deleteTableSuccess &&
       dispatch(setSnackbar(`Deleted table of name '${name}'`, 'success'));

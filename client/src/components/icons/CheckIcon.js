@@ -13,7 +13,7 @@ const CheckIcon = ({ width = 24, height = 24 }) => {
       strokeWidth='2'
       strokeLinecap='round'
       strokeLinejoin='round'
-      className='icon checkIcon'
+      className='icon check-icon'
     >
       <polyline points='20 6 9 17 4 12'></polyline>
     </svg>

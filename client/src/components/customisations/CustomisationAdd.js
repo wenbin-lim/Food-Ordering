@@ -17,7 +17,7 @@ import Options from './options/Options';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useAddOne from '../../query/hooks/useAddOne';
+import usePost from '../../query/hooks/usePost';
 
 const CustomisationAdd = ({
   user: { access: userAccess },
@@ -30,9 +30,10 @@ const CustomisationAdd = ({
 
   const companies = queryCache.getQueryData('companies');
 
-  const [addCustomisation, { isLoading: requesting, error }] = useAddOne(
-    'customisations'
-  );
+  const [
+    addCustomisation,
+    { isLoading: requesting, error },
+  ] = usePost('customisations', { route: '/api/customisations' });
   const [inputErrors] = useErrors(error, ['name', 'title', 'min', 'max']);
 
   const [formData, setFormData] = useState({

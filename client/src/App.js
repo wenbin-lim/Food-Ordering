@@ -54,10 +54,10 @@ import CompanyCustomisations from './routes/company/customisations/CompanyCustom
 
 import MainMenu from './components/menus/MainMenu';
 import Menu from './components/menus/Menu';
-// import Notifications from './routes/company/notifications/Notifications';
-// import Bills from './routes/company/bills/Bills';
-// import Orders from './routes/company/orders/Orders';
-// import Tables from './routes/company/tables/Tables';
+// import Waiter from './routes/company/waiter/Waiter';
+import Kitchen from './routes/company/kitchen/Kitchen';
+// import Cashier from './routes/company/cashier/Cashier';
+// // import Notifications from './routes/company/notifications/Notifications';
 
 // Wawaya Master Pages
 import WawayaAppWrapper from './routes/wawaya/WawayaAppWrapper';
@@ -94,12 +94,14 @@ import Customisation from './components/customisations/Customisation';
 import CustomisationEdit from './components/customisations/CustomisationEdit';
 
 // Functions
-import useGetAll from './query/hooks/useGetAll';
+import useGet from './query/hooks/useGet';
 import { updateScreenOrientation } from './actions/app';
 import { loadToken } from './actions/auth';
 
 const App = () => {
-  useGetAll('companies');
+  // useGet('companies', {
+  //   route: '/api/companies',
+  // });
 
   useEffect(() => {
     const layoutEvents = ['resize', 'deviceorientation', 'orientationchange'];
@@ -240,10 +242,10 @@ const App = () => {
             <CompanyRoute path='menu' element={<MainMenu />} />
             <CompanyRoute path='menu/:id' element={<Menu />} />
 
-            {/* <CompanyRoute path='tables' element={Tables} />
-            <CompanyRoute path='orders' element={Orders} />
-            <CompanyRoute path='bills' element={Bills} />
-            <CompanyRoute path='notifications' element={Notifications} /> */}
+            {/* <CompanyRoute path='waiter' element={<Waiter />} /> */}
+            <CompanyRoute path='kitchen' element={<Kitchen />} />
+            {/* <CompanyRoute path='cashier' element={<Cashier />} /> */}
+            {/* <CompanyRoute path='notifications' element={<Menu />} /> */}
           </CompanyRoute>
 
           <Route path='*' element={<Navigate to='/' />} />

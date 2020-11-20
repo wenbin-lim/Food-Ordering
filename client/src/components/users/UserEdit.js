@@ -16,19 +16,22 @@ import AlertDialog from '../layout/AlertDialog';
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
 import useGetOne from '../../query/hooks/useGetOne';
-import useEditOne from '../../query/hooks/useEditOne';
+import usePut from '../../query/hooks/usePut';
 
 const UserEdit = ({ user: { access: userAccess } }) => {
   let { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { data: user, isLoading, error } = useGetOne('user', id);
+  const { data: user, isLoading, error } = useGetOne('user', id, {
+    route: `/api/users/${id}`,
+  });
   useErrors(error);
 
-  const [editUser, { isLoading: requesting, error: editErrors }] = useEditOne(
-    'users'
-  );
+  const [
+    editUser,
+    { isLoading: requesting, error: editErrors },
+  ] = usePut('users', { route: `/api/users/${id}` });
   const [inputErrors] = useErrors(editErrors, ['username', 'password', 'name']);
 
   const [formData, setFormData] = useState({
@@ -73,11 +76,8 @@ const UserEdit = ({ user: { access: userAccess } }) => {
       userAccess < 99 ? (role.indexOf('admin') >= 0 ? 3 : 2) : access;
 
     const editUserSuccess = await editUser({
-      id,
-      newItem: {
-        ...formData,
-        access: newAccess,
-      },
+      ...formData,
+      access: newAccess,
     });
 
     return (

@@ -3,6 +3,7 @@ $orderitem-status-colors: 'error', 'success', 'warning';
 .orderitem {
   display: grid;
   grid-template-rows: auto auto;
+  row-gap: 8px;
 
   @include media(portrait) {
     grid-template-columns: 5fr 2fr 3fr;
@@ -15,7 +16,7 @@ $orderitem-status-colors: 'error', 'success', 'warning';
   align-items: center;
 
   grid-template-areas:
-    'orderitem-statusbar orderitem-statusbar orderitem-statusbar'
+    'orderitem-statusbar orderitem-qty orderitem-price'
     'orderitem-info orderitem-qty orderitem-price';
 
   .orderitem-statusbar {
@@ -23,8 +24,6 @@ $orderitem-status-colors: 'error', 'success', 'warning';
 
     display: flex;
     align-items: center;
-
-    margin-bottom: 8px;
 
     @each $i in $orderitem-status-colors {
       .orderitem-status-#{$i} {

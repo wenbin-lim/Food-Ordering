@@ -49,7 +49,7 @@ const CustomerLogin = ({ auth: { loading, errors, user }, customerLogin }) => {
   if (user) {
     // user may exist due to LOAD_TOKEN
     // but the loaded user might not be from customerLogin
-    if (user._id === tableId && user.company?._id === companyId) {
+    if (user.table?._id === tableId && user.company?._id === companyId) {
       return <Navigate to={`/dinein/${user?.company?.name}`} />;
     }
   }

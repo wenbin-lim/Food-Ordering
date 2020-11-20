@@ -100,7 +100,7 @@ const MenuIcon = ({
       strokeWidth='2'
       strokeLinecap='round'
       strokeLinejoin='round'
-      className='icon menuIcon'
+      className='icon menu-icon'
     >
       <line ref={line1} x1='3' y1='6' x2='21' y2='6'></line>
       <line ref={line2} x1='3' y1='12' x2='21' y2='12'></line>

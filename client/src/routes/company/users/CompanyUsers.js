@@ -9,11 +9,14 @@ import List from '../../../components/layout/List';
 import UserItem from '../../../components/users/UserItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const CompanyUsers = ({ company }) => {
-  const { data: users, isLoading, error } = useGetAll('users', { company });
+  const { data: users, isLoading, error } = useGet('users', {
+    route: '/api/users',
+    params: { company },
+  });
   useErrors(error);
 
   const navigate = useNavigate();

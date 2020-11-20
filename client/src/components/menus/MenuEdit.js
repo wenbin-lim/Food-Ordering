@@ -15,9 +15,9 @@ import SearchInput from '../layout/SearchInput';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useGetAll from '../../query/hooks/useGetAll';
+import useGet from '../../query/hooks/useGet';
 import useGetOne from '../../query/hooks/useGetOne';
-import useEditOne from '../../query/hooks/useEditOne';
+import usePut from '../../query/hooks/usePut';
 import useSearch from '../../hooks/useSearch';
 
 const MenuEdit = () => {
@@ -27,12 +27,15 @@ const MenuEdit = () => {
   const [activeTab, setActiveTab] = useState(0);
   const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  const { data: menu, isLoading, error } = useGetOne('menu', id);
+  const { data: menu, isLoading, error } = useGetOne('menu', id, {
+    route: `/api/menus/${id}`,
+  });
   useErrors(error);
 
-  const [editMenu, { isLoading: requesting, error: editErrors }] = useEditOne(
-    'menus'
-  );
+  const [
+    editMenu,
+    { isLoading: requesting, error: editErrors },
+  ] = usePut('menus', { route: `/api/menus/${id}` });
   const [inputErrors] = useErrors(editErrors, ['name', 'index']);
 
   const [formData, setFormData] = useState({
@@ -65,10 +68,7 @@ const MenuEdit = () => {
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editMenuSuccess = await editMenu({
-      id,
-      newItem: formData,
-    });
+    const editMenuSuccess = await editMenu(formData);
 
     return (
       editMenuSuccess &&
@@ -79,11 +79,11 @@ const MenuEdit = () => {
   const closeSideSheet = () => navigate('../../');
 
   // Foods
-  const { data: availableFoods, error: foodsError } = useGetAll(
-    'foods',
-    { company },
-    company
-  );
+  const { data: availableFoods, error: foodsError, refetch } = useGet('foods', {
+    route: '/api/foods',
+    params: { company },
+    enabled: company,
+  });
   useErrors(foodsError);
 
   const [searchQuery, setSearchQuery] = useState('');

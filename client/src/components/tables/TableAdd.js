@@ -14,7 +14,7 @@ import Dropdown from '../layout/Dropdown';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useAddOne from '../../query/hooks/useAddOne';
+import usePost from '../../query/hooks/usePost';
 
 const TableAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   const navigate = useNavigate();
@@ -22,7 +22,9 @@ const TableAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
 
   const companies = queryCache.getQueryData('companies');
 
-  const [addTable, { isLoading: requesting, error }] = useAddOne('tables');
+  const [addTable, { isLoading: requesting, error }] = usePost('tables', {
+    route: '/api/tables',
+  });
   const [inputErrors] = useErrors(error, ['name']);
 
   const [formData, setFormData] = useState({

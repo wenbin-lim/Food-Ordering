@@ -89,6 +89,8 @@ $dropdown-border-size: 2px;
 
       border-radius: $dropdown-border-radius / 2;
 
+      margin-bottom: var(-padding);
+
       cursor: pointer;
 
       .dropdown-option {

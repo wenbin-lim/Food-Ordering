@@ -7,14 +7,14 @@ import { Route, Navigate, useParams } from 'react-router-dom';
 import Spinner from '../components/layout/Spinner';
 
 // Hooks
-import useGetAll from '../query/hooks/useGetAll';
+import useGet from '../query/hooks/useGet';
 
 const CustomerRoute = ({ element, path, auth, children, ...rest }) => {
   const { companyName } = useParams();
 
-  const { data: companies, isLoading: companiesLoading } = useGetAll(
-    'companies'
-  );
+  const { data: companies, isLoading: companiesLoading } = useGet('companies', {
+    route: '/api/companies',
+  });
 
   const { loading: authLoading, user } = auth;
   const { company } = { ...user };
@@ -29,19 +29,23 @@ const CustomerRoute = ({ element, path, auth, children, ...rest }) => {
     );
 
     if (customerCompany) {
-      return (
-        <Route
-          path={path}
-          element={cloneElement(element, {
-            user,
-            company: customerCompanyId,
-            companyDetails: customerCompany,
-            ...rest,
-          })}
-        >
-          {children}
-        </Route>
-      );
+      if (user?.access >= 1) {
+        return <Navigate to={`/${companyName}`} replace={true} />;
+      } else {
+        return (
+          <Route
+            path={path}
+            element={cloneElement(element, {
+              user,
+              company: customerCompanyId,
+              companyDetails: customerCompany,
+              ...rest,
+            })}
+          >
+            {children}
+          </Route>
+        );
+      }
     } else {
       return <Navigate to='/' replace={true} />;
     }

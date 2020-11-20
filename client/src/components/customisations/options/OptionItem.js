@@ -22,8 +22,12 @@ const OptionItem = ({ actions, option }) => {
       </ListItem.After>
       {Array.isArray(actions) && actions.length > 0 && (
         <ListItem.Actions>
-          {actions.map(({ name, callback }) => (
-            <Action name={name} onClick={callback} />
+          {actions.map(({ name, callback }, index) => (
+            <Action
+              key={`action-${name}-${index}`}
+              name={name}
+              onClick={callback}
+            />
           ))}
         </ListItem.Actions>
       )}

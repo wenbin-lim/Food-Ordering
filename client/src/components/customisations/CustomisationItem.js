@@ -12,17 +12,19 @@ import AlertDialog from '../layout/AlertDialog';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useDeleteOne from '../../query/hooks/useDeleteOne';
+import useDelete from '../../query/hooks/useDelete';
 
 const CustomisationItem = ({ index, data }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const [deleteCustomisation, { error }] = useDeleteOne('customisations');
-  useErrors(error);
-
   const { _id: customisationId, name, availability } = { ...data };
+
+  const [deleteCustomisation, { error }] = useDelete('customisations', {
+    route: `/api/customisations/${customisationId}`,
+  });
+  useErrors(error);
 
   const [
     showDeleteCustomisationAlert,
@@ -30,9 +32,7 @@ const CustomisationItem = ({ index, data }) => {
   ] = useState(false);
 
   const onCustomisationDelete = async () => {
-    const deleteCustomisationSuccess = await deleteCustomisation(
-      customisationId
-    );
+    const deleteCustomisationSuccess = await deleteCustomisation();
 
     deleteCustomisationSuccess &&
       dispatch(

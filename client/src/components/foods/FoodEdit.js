@@ -16,9 +16,9 @@ import SearchInput from '../layout/SearchInput';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useGetAll from '../../query/hooks/useGetAll';
+import useGet from '../../query/hooks/useGet';
 import useGetOne from '../../query/hooks/useGetOne';
-import useEditOne from '../../query/hooks/useEditOne';
+import usePut from '../../query/hooks/usePut';
 import useSearch from '../../hooks/useSearch';
 
 const FoodEdit = () => {
@@ -28,12 +28,15 @@ const FoodEdit = () => {
   const [activeTab, setActiveTab] = useState(0);
   const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  const { data: food, isLoading, error } = useGetOne('food', id);
+  const { data: food, isLoading, error } = useGetOne('food', id, {
+    route: `/api/foods/${id}`,
+  });
   useErrors(error);
 
-  const [editFood, { isLoading: requesting, error: editErrors }] = useEditOne(
-    'foods'
-  );
+  const [
+    editFood,
+    { isLoading: requesting, error: editErrors },
+  ] = usePut('foods', { route: `/api/foods/${id}` });
   const [inputErrors] = useErrors(editErrors, [
     'name',
     'price',
@@ -134,14 +137,11 @@ const FoodEdit = () => {
     e.preventDefault();
 
     const editFoodSuccess = await editFood({
-      id,
-      newItem: {
-        ...formData,
-        allergics: allergics
-          ? allergics.split(',').filter(allergy => allergy !== '')
-          : [],
-        tags: tags ? tags.split(',').filter(tag => tag !== '') : [],
-      },
+      ...formData,
+      allergics: allergics
+        ? allergics.split(',').filter(allergy => allergy !== '')
+        : [],
+      tags: tags ? tags.split(',').filter(tag => tag !== '') : [],
     });
 
     return (
@@ -153,10 +153,14 @@ const FoodEdit = () => {
   const closeSideSheet = () => navigate('../../');
 
   // Customisations
-  const {
-    data: availableCustomisations,
-    error: customisationsError,
-  } = useGetAll('customisations', { company }, company);
+  const { data: availableCustomisations, error: customisationsError } = useGet(
+    'customisations',
+    {
+      route: '/api/customisations',
+      params: { company },
+      enabled: company,
+    }
+  );
   useErrors(customisationsError);
 
   const [searchQuery, setSearchQuery] = useState('');

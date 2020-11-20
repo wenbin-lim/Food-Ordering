@@ -18,8 +18,8 @@ import SearchInput from '../layout/SearchInput';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useGetAll from '../../query/hooks/useGetAll';
-import useAddOne from '../../query/hooks/useAddOne';
+import useGet from '../../query/hooks/useGet';
+import usePost from '../../query/hooks/usePost';
 import useSearch from '../../hooks/useSearch';
 
 const MenuAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
@@ -30,7 +30,9 @@ const MenuAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
 
   const companies = queryCache.getQueryData('companies');
 
-  const [addMenu, { isLoading: requesting, error }] = useAddOne('menus');
+  const [addMenu, { isLoading: requesting, error }] = usePost('menus', {
+    route: '/api/menus',
+  });
   const [inputErrors] = useErrors(error, ['name']);
 
   const [formData, setFormData] = useState({
@@ -57,13 +59,11 @@ const MenuAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   };
 
   // Foods
-  const { data: availableFoods, error: foodsError, refetch } = useGetAll(
-    'foods',
-    {
-      company,
-    },
-    company
-  );
+  const { data: availableFoods, error: foodsError, refetch } = useGet('foods', {
+    route: '/api/foods',
+    params: { company },
+    enabled: company,
+  });
   useErrors(foodsError);
 
   useEffect(() => {

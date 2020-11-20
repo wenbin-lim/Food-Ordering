@@ -13,7 +13,10 @@ import useErrors from '../../hooks/useErrors';
 const User = ({ user: { access: userAccess } }) => {
   let { id } = useParams();
   const navigate = useNavigate();
-  const { data: user, isLoading, error } = useGetOne('user', id);
+
+  const { data: user, isLoading, error } = useGetOne('user', id, {
+    route: `/api/users/${id}`,
+  });
   useErrors(error);
 
   const { _id: userId, username, name, access, role } = {

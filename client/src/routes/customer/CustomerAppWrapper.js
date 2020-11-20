@@ -16,7 +16,7 @@ import MenuIcon from '../../components/icons/MenuIcon';
 import CartIcon from '../../components/icons/CartIcon';
 
 // Hooks
-import useGetAll from '../../query/hooks/useGetAll';
+import useGet from '../../query/hooks/useGet';
 
 const CustomerAppWrapper = ({ company, companyDetails }) => {
   const { socialMediaLinks, logo: companyLogos } = companyDetails;
@@ -24,7 +24,11 @@ const CustomerAppWrapper = ({ company, companyDetails }) => {
     ...companyLogos,
   };
 
-  const { data: menus } = useGetAll('menus', { company });
+  const { data: menus } = useGet('menus', {
+    route: '/api/menus',
+    params: { company },
+    enabled: company,
+  });
 
   const [showSidebar, setShowSidebar] = useState(false);
 

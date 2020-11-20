@@ -14,22 +14,24 @@ import AlertDialog from '../../../components/layout/AlertDialog';
 
 // Custom Hooks
 import useErrors from '../../../hooks/useErrors';
-import useDeleteOne from '../../../query/hooks/useDeleteOne';
+import useDelete from '../../../query/hooks/useDelete';
 
 const CompanyItem = ({ index, data, onClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const [deleteCompany, { error }] = useDeleteOne('companies');
-  useErrors(error);
-
   const { _id: companyId, name, displayedName, creationDate } = { ...data };
+
+  const [deleteCompany, { error }] = useDelete('companies', {
+    route: `/api/companies/${companyId}`,
+  });
+  useErrors(error);
 
   const [showDeleteCompanyAlert, setShowDeleteCompanyAlert] = useState(false);
 
   const onCompanyDelete = async () => {
-    const deleteCompanySuccess = await deleteCompany(companyId);
+    const deleteCompanySuccess = await deleteCompany();
 
     deleteCompanySuccess &&
       dispatch(
@@ -53,7 +55,9 @@ const CompanyItem = ({ index, data, onClick }) => {
         <ListItem.Before>
           <h2 className='list-index'>{index}</h2>
         </ListItem.Before>
-        <ListItem.Content onClick={() => onClick(companyId)}>
+        <ListItem.Content
+          onClick={() => typeof onClick === 'function' && onClick(companyId)}
+        >
           <p className='body-1'>
             <b>{displayedName ? displayedName : 'No name defined'}</b>
           </p>

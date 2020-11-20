@@ -7,7 +7,7 @@ import { Route, Navigate, useParams } from 'react-router-dom';
 import Spinner from '../components/layout/Spinner';
 
 // Hooks
-import useGetAll from '../query/hooks/useGetAll';
+import useGet from '../query/hooks/useGet';
 
 const CompanyRoute = ({
   element,
@@ -19,9 +19,9 @@ const CompanyRoute = ({
 }) => {
   const { companyName } = useParams();
 
-  const { data: companies, isLoading: companiesLoading } = useGetAll(
-    'companies'
-  );
+  const { data: companies, isLoading: companiesLoading } = useGet('companies', {
+    route: '/api/companies',
+  });
 
   const { loading: authLoading, user } = auth;
   const { company } = { ...user };

@@ -7,11 +7,13 @@ import List from '../../../components/layout/List';
 import CompanyItem from './CompanyItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const Companies = () => {
-  const { data: companies, isLoading, error } = useGetAll('companies');
+  const { data: companies, isLoading, error } = useGet('companies', {
+    route: '/api/companies',
+  });
   useErrors(error);
 
   const navigate = useNavigate();

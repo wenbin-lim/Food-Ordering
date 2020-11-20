@@ -9,7 +9,7 @@ import CompanyItem from '../companies/CompanyItem';
 import UserItem from '../../../components/users/UserItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const Users = () => {
@@ -21,7 +21,7 @@ const Users = () => {
     data: companies,
     isFetching: companiesLoading,
     error: companiesError,
-  } = useGetAll('companies');
+  } = useGet('companies', { route: '/api/companies' });
   useErrors(companiesError);
 
   const {
@@ -29,7 +29,11 @@ const Users = () => {
     isFetching: usersLoading,
     error: usersError,
     refetch,
-  } = useGetAll('users', { company }, company);
+  } = useGet('users', {
+    route: '/api/users',
+    params: { company },
+    enabled: company,
+  });
   useErrors(usersError);
 
   const onClickCompanyItem = companyId => setActiveCompany(companyId);

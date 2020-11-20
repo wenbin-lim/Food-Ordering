@@ -9,11 +9,14 @@ import List from '../../../components/layout/List';
 import TableItem from '../../../components/tables/TableItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const CompanyTables = ({ company }) => {
-  const { data: tables, isLoading, error } = useGetAll('tables', { company });
+  const { data: tables, isLoading, error } = useGet('tables', {
+    route: '/api/tables',
+    params: { company },
+  });
   useErrors(error);
 
   const navigate = useNavigate();

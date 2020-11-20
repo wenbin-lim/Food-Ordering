@@ -36,9 +36,10 @@ const TableSchema = mongoose.Schema({
     ref: 'Company',
     required: true,
   },
-  bill: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Bill',
+  occupied: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
   creationDate: {
     type: Date,
@@ -46,13 +47,6 @@ const TableSchema = mongoose.Schema({
   },
 });
 
-const autoPopulateBill = function (next) {
-  this.populate('bill');
-  next();
-};
-
-TableSchema.pre('findOne', autoPopulateBill);
-TableSchema.pre('find', autoPopulateBill);
 // ====================================================================================================
 // Exports
 // ====================================================================================================

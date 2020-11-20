@@ -16,7 +16,8 @@ const Customisation = () => {
 
   const { data: customisation, isLoading, error } = useGetOne(
     'customisation',
-    id
+    id,
+    { route: `/api/customisations/${id}` }
   );
   useErrors(error);
 

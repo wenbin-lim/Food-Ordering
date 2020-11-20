@@ -9,7 +9,7 @@ import CompanyItem from '../companies/CompanyItem';
 import MenuItem from '../../../components/menus/MenuItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const Menus = () => {
@@ -21,7 +21,7 @@ const Menus = () => {
     data: companies,
     isFetching: companiesLoading,
     error: companiesError,
-  } = useGetAll('companies');
+  } = useGet('companies', { route: '/api/companies' });
   useErrors(companiesError);
 
   const {
@@ -29,7 +29,11 @@ const Menus = () => {
     isFetching: menusLoading,
     error: menusError,
     refetch,
-  } = useGetAll('menus', { company }, company);
+  } = useGet('menus', {
+    route: '/api/menus',
+    params: { company },
+    enabled: company,
+  });
   useErrors(menusError);
 
   const onClickCompanyItem = companyId => setActiveCompany(companyId);

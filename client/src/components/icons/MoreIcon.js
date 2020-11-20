@@ -30,7 +30,7 @@ const MoreIcon = ({ width = 24, height = 24, type }) => {
       strokeWidth='2'
       strokeLinecap='round'
       strokeLinejoin='round'
-      className='icon moreIcon'
+      className='icon more-icon'
     >
       {type === 'horizontal' ? horizontal : vertical}
     </svg>

@@ -133,12 +133,16 @@ body {
 @import 'additional/menu/_menu.scss';
 
 @import 'additional/food/_foodcard.scss';
-@import 'additional/food/_fooddialog.scss';
 @import 'additional/food/_food.scss';
 
 @import 'additional/customer/_qrlanding.scss';
 @import 'additional/customer/_cart.scss';
 
 @import 'additional/orders/_orderitem.scss';
+@import 'additional/orders/_orderdialog.scss';
 
 @import 'additional/cart/_cart.scss';
+
+@import 'additional/kitchen/_kitchen.scss';
+@import 'additional/kitchen/_kitchenitem.scss';
+@import 'additional/kitchen/_kitchenorderitem.scss';

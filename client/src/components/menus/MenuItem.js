@@ -12,22 +12,24 @@ import AlertDialog from '../layout/AlertDialog';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useDeleteOne from '../../query/hooks/useDeleteOne';
+import useDelete from '../../query/hooks/useDelete';
 
 const MenuItem = ({ data }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const [deleteMenu, { error }] = useDeleteOne('menus');
-  useErrors(error);
-
   const { _id: menuId, name, index, availability } = { ...data };
+
+  const [deleteMenu, { error }] = useDelete('menus', {
+    route: `/api/menus/${menuId}`,
+  });
+  useErrors(error);
 
   const [showDeleteMenuAlert, setShowDeleteMenuAlert] = useState(false);
 
   const onMenuDelete = async () => {
-    const deleteMenuSuccess = await deleteMenu(menuId);
+    const deleteMenuSuccess = await deleteMenu();
 
     deleteMenuSuccess &&
       dispatch(setSnackbar(`Deleted menu of name '${name}'`, 'success'));

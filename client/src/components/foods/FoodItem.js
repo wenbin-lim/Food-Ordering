@@ -15,22 +15,24 @@ import ImageIcon from '../icons/ImageIcon';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useDeleteOne from '../../query/hooks/useDeleteOne';
+import useDelete from '../../query/hooks/useDelete';
 
 const FoodItem = ({ className, editable = true, data }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const [deleteFood, { error }] = useDeleteOne('foods');
-  useErrors(error);
-
   const { _id: foodId, name, image, availability } = { ...data };
+
+  const [deleteFood, { error }] = useDelete('foods', {
+    route: `/api/foods/${foodId}`,
+  });
+  useErrors(error);
 
   const [showDeleteFoodAlert, setShowDeleteFoodAlert] = useState(false);
 
   const onFoodDelete = async () => {
-    const deleteFoodSuccess = await deleteFood(foodId);
+    const deleteFoodSuccess = await deleteFood();
 
     deleteFoodSuccess &&
       dispatch(setSnackbar(`Deleted food of name '${name}'`, 'success'));

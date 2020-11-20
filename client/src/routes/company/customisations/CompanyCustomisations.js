@@ -9,14 +9,14 @@ import List from '../../../components/layout/List';
 import CustomisationItem from '../../../components/customisations/CustomisationItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const CompanyCustomisations = ({ company }) => {
-  const { data: customisations, isLoading, error } = useGetAll(
-    'customisations',
-    { company }
-  );
+  const { data: customisations, isLoading, error } = useGet('customisations', {
+    route: '/api/customisations',
+    params: { company },
+  });
   useErrors(error);
 
   const navigate = useNavigate();

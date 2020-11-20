@@ -12,9 +12,7 @@ import { setSnackbar } from '../../actions/app';
 import Container from '../../components/layout/Container';
 import Tabs, { Tab } from '../../components/layout/Tabs';
 import List from '../../components/layout/List';
-import Dialog from '../../components/layout/Dialog';
-import Flippable from '../../components/layout/Flippable';
-import SideSheet from '../../components/layout/SideSheet';
+import Spinner from '../../components/layout/Spinner';
 import Button from '../../components/layout/Button';
 import OrderItem from '../../components/orders/OrderItem';
 
@@ -22,14 +20,14 @@ import OrderItem from '../../components/orders/OrderItem';
 import ArrowIcon from '../../components/icons/ArrowIcon';
 
 // Hooks
-import useGetAll from '../../query/hooks/useGetAll';
-import useEditMany from '../../query/hooks/useEditMany';
+import useGet from '../../query/hooks/useGet';
+import usePut from '../../query/hooks/usePut';
 import useErrors from '../../hooks/useErrors';
 
 const Cart = ({ user }) => {
   const dispatch = useDispatch();
 
-  const { bill } = user;
+  const { _id: bill } = user;
   const [activeTab, setActiveTab] = useState(0);
   const onClickTab = tabIndex => setActiveTab(tabIndex);
 
@@ -37,17 +35,23 @@ const Cart = ({ user }) => {
   const [addedOrders, setAddedOrders] = useState([]);
   const [confirmedOrders, setConfirmedOrders] = useState([]);
 
-  const {
-    data: orders,
-    isLoading: ordersLoading,
-    error: ordersError,
-  } = useGetAll('orders', { bill: bill._id }, bill._id);
+  const { data: orders, isLoading: ordersLoading, error: ordersError } = useGet(
+    'orders',
+    {
+      route: '/api/orders',
+      params: { bill },
+      enabled: bill,
+    }
+  );
   useErrors(ordersError);
 
   const [
     checkoutOrders,
     { isLoading: checkoutRequesting, error: checkoutErrors },
-  ] = useEditMany('orders');
+  ] = usePut('orders', {
+    route: '/api/orders',
+  });
+  useErrors(checkoutErrors);
 
   useEffect(() => {
     if (orders) {
@@ -84,7 +88,7 @@ const Cart = ({ user }) => {
   }, [activeTab, ordersLoading, orders]);
 
   const onClickFooterBtn = async () => {
-    if (activeTab === 0) {
+    if (activeTab === 0 && addedOrders.length > 0) {
       const checkoutOrdersSuccess = await checkoutOrders({
         editType: 'confirmingOrders',
         orders: addedOrders,
@@ -93,7 +97,6 @@ const Cart = ({ user }) => {
       if (checkoutOrdersSuccess) {
         dispatch(setSnackbar(checkoutOrdersSuccess, 'success'));
       }
-      console.log(checkoutOrdersSuccess);
     } else if (activeTab === 1) {
     }
   };
@@ -132,7 +135,19 @@ const Cart = ({ user }) => {
         <Button
           className='cart-footer-btn'
           text={activeTab === 0 ? 'Checkout' : 'Bill'}
-          icon={<ArrowIcon direction='right' />}
+          icon={
+            activeTab === 0 ? (
+              checkoutRequesting ? (
+                <Spinner height='1.5rem' />
+              ) : (
+                <ArrowIcon direction='right' />
+              )
+            ) : false ? (
+              <Spinner height='1.5rem' />
+            ) : (
+              <ArrowIcon direction='right' />
+            )
+          }
           ripple={false}
           onClick={onClickFooterBtn}
         />

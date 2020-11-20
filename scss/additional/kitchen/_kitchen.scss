@@ -1,0 +1,30 @@
+.kitchen {
+  height: calc(var(--vh) * 100);
+  padding-left: 0;
+  padding-right: 0;
+
+  .kitchen-orders {
+    position: relative;
+
+    height: 100%;
+    overflow: auto;
+    @include custom_scrollbar;
+    padding-left: var(--padding);
+    padding-right: var(--padding);
+
+    .kitchenitem {
+      margin-bottom: 16px;
+    }
+  }
+
+  .kitchen-refresh-btn {
+    position: absolute;
+    bottom: calc(
+      var(--bottomnav-height) + env(safe-area-inset-bottom) + var(--padding)
+    );
+    right: var(--padding);
+
+    z-index: $fab-elevation;
+    @include box-shadow(2);
+  }
+}

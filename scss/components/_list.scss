@@ -5,7 +5,7 @@ $list-item-border-radius: 8px;
 $list-item-gap: 8px;
 
 $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
-  'secondary', 'error', 'success', 'warning';
+  'secondary', 'focus', 'error', 'success', 'warning';
 
 .list-wrapper {
   position: relative;
@@ -65,15 +65,15 @@ $list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
     // dont know why the scrollbar in ios keep appearing below the list
     // padding-left: var(--scrollbar-size);
     // padding-right: var(--scrollbar-size);
-
-    .list-item-wrapper {
-      margin-bottom: $list-item-gap;
-    }
   }
 }
 
 .list-item-wrapper {
   position: relative;
+
+  &:not(:last-child) {
+    margin-bottom: $list-item-gap;
+  }
 
   .list-item {
     padding-top: $list-item-y-padding;

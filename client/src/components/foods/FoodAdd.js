@@ -19,8 +19,8 @@ import SearchInput from '../layout/SearchInput';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useGetAll from '../../query/hooks/useGetAll';
-import useAddOne from '../../query/hooks/useAddOne';
+import useGet from '../../query/hooks/useGet';
+import usePost from '../../query/hooks/usePost';
 import useSearch from '../../hooks/useSearch';
 
 const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
@@ -31,7 +31,9 @@ const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
 
   const companies = queryCache.getQueryData('companies');
 
-  const [addFood, { isLoading: requesting, error }] = useAddOne('foods');
+  const [addFood, { isLoading: requesting, error }] = usePost('foods', {
+    route: '/api/foods',
+  });
   const [inputErrors] = useErrors(error, [
     'name',
     'price',
@@ -102,13 +104,11 @@ const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
     data: availableCustomisations,
     error: customisationsError,
     refetch,
-  } = useGetAll(
-    'customisations',
-    {
-      company,
-    },
-    company
-  );
+  } = useGet('customisations', {
+    route: '/api/customisations',
+    params: { company },
+    enabled: company,
+  });
   useErrors(customisationsError);
 
   useEffect(() => {

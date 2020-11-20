@@ -16,7 +16,7 @@ import Dropdown from '../layout/Dropdown';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useAddOne from '../../query/hooks/useAddOne';
+import usePost from '../../query/hooks/usePost';
 
 const UserAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   const navigate = useNavigate();
@@ -24,7 +24,9 @@ const UserAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
 
   const companies = queryCache.getQueryData('companies');
 
-  const [addUser, { isLoading: requesting, error }] = useAddOne('users');
+  const [addUser, { isLoading: requesting, error }] = usePost('users', {
+    route: '/api/users',
+  });
   const [inputErrors] = useErrors(error, ['username', 'password', 'name']);
 
   const [formData, setFormData] = useState({

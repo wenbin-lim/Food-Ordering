@@ -1,0 +1,12 @@
+.kitchenitem {
+  @include box-shadow(2);
+
+  padding: var(--padding);
+  border-radius: 16px;
+
+  .kitchenitem-header {
+    @include heading-3;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+}

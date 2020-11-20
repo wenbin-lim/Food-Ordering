@@ -1,16 +1,16 @@
-$fooddialog-border-radius: 24px;
+$orderdialog-border-radius: 24px;
 
-.fooddialog {
-  .fooddialog-front,
-  .fooddialog-back {
+.orderdialog {
+  .orderdialog-front,
+  .orderdialog-back {
     background-color: var(--background);
     color: var(--on-background);
 
     @include media(landscape) {
-      border-radius: $fooddialog-border-radius;
+      border-radius: $orderdialog-border-radius;
     }
 
-    .fooddialog-totalprice {
+    .orderdialog-totalprice {
       font-size: 1.75rem;
       font-weight: normal;
     }
@@ -54,7 +54,7 @@ $fooddialog-border-radius: 24px;
     }
   }
 
-  .fooddialog-front {
+  .orderdialog-front {
     display: grid;
 
     @include media(portrait) {
@@ -70,37 +70,33 @@ $fooddialog-border-radius: 24px;
         'image content'
         'image footer';
 
-      .fooddialog-front-image {
+      .orderdialog-front-image {
         grid-area: image;
       }
 
-      .fooddialog-front-content {
+      .orderdialog-front-content {
         grid-area: content;
       }
 
-      .fooddialog-front-footer {
+      .orderdialog-front-footer {
         grid-area: footer;
       }
     }
 
     position: relative;
 
-    .fooddialog-front-image {
+    .orderdialog-front-image {
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
 
-      img {
-        // set position static for image if not safari's overflow hidden wont work
-        position: static;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
     }
 
-    .fooddialog-close-btn {
+    .orderdialog-close-btn {
       position: absolute;
       top: 16px;
       left: 16px;
@@ -108,7 +104,7 @@ $fooddialog-border-radius: 24px;
       backdrop-filter: blur(10px) contrast(80%);
     }
 
-    .fooddialog-front-content {
+    .orderdialog-front-content {
       padding: var(--padding);
 
       display: grid;
@@ -124,7 +120,7 @@ $fooddialog-border-radius: 24px;
       overflow: auto;
       @include custom-scrollbar;
 
-      .fooddialog-front-name {
+      .orderdialog-front-name {
         grid-area: name;
 
         @include heading-1;
@@ -137,7 +133,7 @@ $fooddialog-border-radius: 24px;
         }
       }
 
-      .fooddialog-front-portionsize {
+      .orderdialog-front-portionsize {
         grid-area: portionsize;
 
         align-self: center;
@@ -146,14 +142,14 @@ $fooddialog-border-radius: 24px;
         margin-bottom: 8px;
       }
 
-      .fooddialog-front-desc {
+      .orderdialog-front-desc {
         grid-area: desc;
 
         @include body-1;
         margin-bottom: 12px;
       }
 
-      .fooddialog-front-preparationtime {
+      .orderdialog-front-preparationtime {
         grid-area: preparationtime;
 
         @include body-2;
@@ -161,7 +157,7 @@ $fooddialog-border-radius: 24px;
         margin-bottom: 4px;
       }
 
-      .fooddialog-front-allergics {
+      .orderdialog-front-allergics {
         grid-area: allergics;
 
         display: flex;
@@ -173,14 +169,14 @@ $fooddialog-border-radius: 24px;
         }
       }
 
-      .fooddialog-front-tags {
+      .orderdialog-front-tags {
         grid-area: tags;
 
         display: flex;
         flex-direction: row-reverse;
         flex-wrap: wrap;
 
-        .fooddialog-front-tag {
+        .orderdialog-front-tag {
           margin-bottom: 4px;
           margin-right: 4px;
 
@@ -192,7 +188,7 @@ $fooddialog-border-radius: 24px;
     }
   }
 
-  .fooddialog-back {
+  .orderdialog-back {
     @include media(landscape) {
       overflow: hidden;
     }

@@ -76,6 +76,7 @@ const OrderSchema = mongoose.Schema({
 
 const autoPopulate = function (next) {
   this.populate('food');
+  this.populate('bill');
   this.populate({
     path: 'customisationsUsed',
     populate: {

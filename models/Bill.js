@@ -57,6 +57,10 @@ const BillSchema = mongoose.Schema({
   endTime: {
     type: Date,
   },
+  table: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Table',
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
@@ -67,6 +71,14 @@ const BillSchema = mongoose.Schema({
     ref: 'User',
   },
 });
+
+const autoPopulateTable = function (next) {
+  this.populate('table');
+  next();
+};
+
+BillSchema.pre('findOne', autoPopulateTable);
+BillSchema.pre('find', autoPopulateTable);
 
 // ====================================================================================================
 // Exports

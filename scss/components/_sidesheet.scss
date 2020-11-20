@@ -75,6 +75,7 @@
     .radio-group:not(:first-child),
     .checkbox-group:not(:first-child),
     .switch-group:not(:first-child),
+    .dropdown-group:not(:first-child),
     .row:not(:first-child) {
       margin-top: 1rem;
     }

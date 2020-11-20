@@ -31,7 +31,7 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
     // token exists, user has private access
     try {
       const decodedToken = jwt.verify(token, config.get('jwtSecret'));
-      const { user, table } = decodedToken;
+      const { user, bill } = decodedToken;
 
       if (user) {
         const {
@@ -50,7 +50,7 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         req.company = companyId;
         req.access = access;
         req.user = userId;
-      } else if (table) {
+      } else if (bill) {
         if (customerAccess < minAccessLevel) {
           console.error(
             'Authorised customer trying to access a higher access level route'
@@ -59,13 +59,13 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         }
 
         const {
-          _id: tableId,
+          _id: billId,
           company: { _id: companyId },
-        } = table;
+        } = bill;
 
         req.company = companyId;
         req.access = customerAccess;
-        req.table = tableId;
+        req.bill = billId;
       }
 
       next();

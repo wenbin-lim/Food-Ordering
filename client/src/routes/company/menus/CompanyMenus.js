@@ -9,11 +9,14 @@ import List from '../../../components/layout/List';
 import MenuItem from '../../../components/menus/MenuItem';
 
 // Hooks
-import useGetAll from '../../../query/hooks/useGetAll';
+import useGet from '../../../query/hooks/useGet';
 import useErrors from '../../../hooks/useErrors';
 
 const CompanyMenus = ({ company }) => {
-  const { data: menus, isLoading, error } = useGetAll('menus', { company });
+  const { data: menus, isLoading, error } = useGet('menus', {
+    route: '/api/menus',
+    params: { company },
+  });
   useErrors(error);
 
   const navigate = useNavigate();

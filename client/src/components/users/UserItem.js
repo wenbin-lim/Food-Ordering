@@ -15,22 +15,24 @@ import AvatarIcon from '../icons/AvatarIcon';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useDeleteOne from '../../query/hooks/useDeleteOne';
+import useDelete from '../../query/hooks/useDelete';
 
 const UserItem = ({ data }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const [deleteUser, { error }] = useDeleteOne('users');
-  useErrors(error);
-
   const { _id: userId, name, role, access } = { ...data };
+
+  const [deleteUser, { error }] = useDelete('users', {
+    route: `/api/users/${userId}`,
+  });
+  useErrors(error);
 
   const [showDeleteUserAlert, setShowDeleteUserAlert] = useState(false);
 
   const onUserDelete = async () => {
-    const deleteUserSuccess = await deleteUser(userId);
+    const deleteUserSuccess = await deleteUser();
 
     deleteUserSuccess &&
       dispatch(setSnackbar(`Deleted user of name '${name}'`, 'success'));

@@ -22,6 +22,7 @@
   "foodStatus": {
     "added": "added",
     "preparing": "preparing",
+    "cooking": "cooking",
     "hold": "hold",
     "ready": "ready",
     "served": "served",

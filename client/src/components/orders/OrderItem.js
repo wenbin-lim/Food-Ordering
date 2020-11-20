@@ -13,13 +13,13 @@ import OrderDialog from './OrderDialog';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useDeleteOne from '../../query/hooks/useDeleteOne';
+import useDelete from '../../query/hooks/useDelete';
+
+// Misc
+import checkIfSameDate from '../../utils/checkIfSameDate';
 
 const OrderItem = ({ data, showStatus = false, editable }) => {
   const dispatch = useDispatch();
-
-  const [deleteOrder, { error }] = useDeleteOne('orders');
-  useErrors(error);
 
   const {
     _id: orderId,
@@ -33,12 +33,18 @@ const OrderItem = ({ data, showStatus = false, editable }) => {
   } = data;
   const { name: foodName } = { ...food };
 
+  const [deleteOrder, { error }] = useDelete('orders', {
+    route: `/api/orders/${orderId}`,
+  });
+  useErrors(error);
+
   const [showOrderDialog, setshowOrderDialog] = useState(false);
 
   const statusColor = status => {
     switch (status) {
       case 'added':
       case 'preparing':
+      case 'cooking':
       case 'ready':
         return 'warning';
       case 'on hold':
@@ -54,7 +60,7 @@ const OrderItem = ({ data, showStatus = false, editable }) => {
   };
 
   const onOrderDelete = async () => {
-    const deleteOrderSuccess = await deleteOrder(orderId);
+    const deleteOrderSuccess = await deleteOrder();
 
     return (
       deleteOrderSuccess && dispatch(setSnackbar('Order deleted!', 'success'))
@@ -70,7 +76,10 @@ const OrderItem = ({ data, showStatus = false, editable }) => {
               <div className={`orderitem-status-${statusColor(status)}`}></div>
               <span className='orderitem-date'>
                 ordered at{' '}
-                <Moment local format='hh:mmA'>
+                <Moment
+                  local
+                  format={checkIfSameDate(date) ? 'HH:mmA' : 'HH:mmA, DD MMM'}
+                >
                   {date}
                 </Moment>
               </span>

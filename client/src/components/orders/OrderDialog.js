@@ -25,8 +25,8 @@ import ArrowIcon from '../icons/ArrowIcon';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
-import useAddOne from '../../query/hooks/useAddOne';
-import useEditOne from '../../query/hooks/useEditOne';
+import usePost from '../../query/hooks/usePost';
+import usePut from '../../query/hooks/usePut';
 
 const OrderQuantity = ({ min, max, quantity, onClickMinus, onClickPlus }) => {
   return (
@@ -174,13 +174,17 @@ const OrderDialog = ({
     return initial;
   });
 
-  const [addOrder, { isLoading: addRequesting, error: addErrors }] = useAddOne(
-    'orders'
+  const [addOrder, { isLoading: addRequesting, error: addErrors }] = usePost(
+    'orders',
+    {
+      route: '/api/orders',
+    }
   );
+
   const [
     editOrder,
     { isLoading: editRequesting, error: editErrors },
-  ] = useEditOne('orders');
+  ] = usePut('orders', { route: `/api/orders/${order?._id}` });
 
   const [inputErrors] = useErrors(
     order ? editErrors : addErrors,
@@ -250,18 +254,34 @@ const OrderDialog = ({
   }, [quantity, customisationsUsed]);
 
   const addToCart = async () => {
-    if (user?.bill?._id) {
+    const { _id: bill } = user;
+
+    if (user?._id) {
+      let sanitizedCustomisationsUsed = Object.entries(customisationsUsed).map(
+        ([customisationId, optionSelectedIds]) => {
+          const customisation = availableCustomisations.find(
+            customisation => customisation._id === customisationId
+          );
+
+          const { options: availableOptions } = { ...customisation };
+          const optionsSelected = optionSelectedIds.map(optionId =>
+            availableOptions.find(option => option._id === optionId)
+          );
+
+          return {
+            customisation,
+            optionsSelected,
+          };
+        }
+      );
       if (order) {
         const editOrderSuccess = await editOrder({
-          id: order._id,
-          newItem: {
-            food: foodId,
-            quantity,
-            customisationsUsed,
-            additionalInstruction,
-            price: totalPrice,
-            bill: user.bill._id,
-          },
+          food: foodId,
+          quantity,
+          customisationsUsed: sanitizedCustomisationsUsed,
+          additionalInstruction,
+          price: totalPrice.toFixed(2),
+          bill,
         });
 
         if (editOrderSuccess) {
@@ -272,10 +292,10 @@ const OrderDialog = ({
         const addOrderSuccess = await addOrder({
           food: foodId,
           quantity,
-          customisationsUsed,
+          customisationsUsed: sanitizedCustomisationsUsed,
           additionalInstruction,
-          price: totalPrice,
-          bill: user.bill._id,
+          price: totalPrice.toFixed(2),
+          bill,
         });
 
         if (addOrderSuccess) {
@@ -296,37 +316,38 @@ const OrderDialog = ({
   return (
     <Dialog
       ref={dialogRef}
-      className={'flippable-wrapper fooddialog'}
+      className={'flippable-wrapper orderdialog'}
       fullscreen={screenOrientation}
       onCloseDialog={onCloseOrderDialog}
     >
       <Flippable ref={flippableRef} wrapper={false}>
-        <Flippable.Front className='fooddialog-front'>
-          <section className='fooddialog-front-image'>
-            {image ? (
-              <img src={image} alt={`${name}-foodimage`} />
-            ) : (
-              <ImageIcon width={128} />
-            )}
+        <Flippable.Front className='orderdialog-front'>
+          <section
+            className='orderdialog-front-image'
+            style={{
+              backgroundImage: image ? `url(${image})` : null,
+            }}
+          >
+            {!image && <ImageIcon width={128} />}
             <Button
-              className={'fooddialog-close-btn'}
+              className={'orderdialog-close-btn'}
               icon={<CloseIcon />}
               onClick={closeDialog}
             />
           </section>
 
-          <section className='fooddialog-front-content'>
-            <h1 className='fooddialog-front-name'>
+          <section className='orderdialog-front-content'>
+            <h1 className='orderdialog-front-name'>
               {name ? name : 'No name defined'}
             </h1>
-            <p className='fooddialog-front-portionsize'>
+            <p className='orderdialog-front-portionsize'>
               {portionSize ? `For ${portionSize}` : ''}
             </p>
-            <p className='fooddialog-front-desc'>{desc}</p>
-            <p className='fooddialog-front-preparationtime'>
+            <p className='orderdialog-front-desc'>{desc}</p>
+            <p className='orderdialog-front-preparationtime'>
               {preparationTime}
             </p>
-            <section className='fooddialog-front-allergics'>
+            <section className='orderdialog-front-allergics'>
               {allergics.map((allergy, index) => (
                 <span key={`${allergy}-${index}`} className='chip'>
                   {allergy}
@@ -334,16 +355,16 @@ const OrderDialog = ({
               ))}
             </section>
 
-            <section className='fooddialog-front-tags'>
+            <section className='orderdialog-front-tags'>
               {tags.map((tag, index) => (
-                <span key={`${tag}-${index}`} className='fooddialog-front-tag'>
+                <span key={`${tag}-${index}`} className='orderdialog-front-tag'>
                   #{tag}
                 </span>
               ))}
             </section>
           </section>
 
-          <section className='fooddialog-front-footer'>
+          <section className='orderdialog-front-footer'>
             {!hasBackFace && (
               <OrderQuantity
                 min={minQty}
@@ -377,10 +398,10 @@ const OrderDialog = ({
             />
           </section>
         </Flippable.Front>
-        <Flippable.Back className='fooddialog-back sidesheet'>
+        <Flippable.Back className='orderdialog-back sidesheet'>
           <SideSheet wrapper={false}>
             <SideSheet.Header closeHandler={flipCard} icon={<ArrowIcon />} />
-            <SideSheet.Content className='fooddialog-back-content'>
+            <SideSheet.Content className='orderdialog-back-content'>
               {availableCustomisations.length > 0 &&
                 availableCustomisations.map(customisation => (
                   <CustomisationInput
@@ -416,7 +437,7 @@ const OrderDialog = ({
                 type='primary'
                 block={true}
                 blockBtnBottom={true}
-                additionalContentClassName='fooddialog-totalprice'
+                additionalContentClassName='orderdialog-totalprice'
                 additionalContent={`$${totalPrice.toFixed(2)}`}
                 text={order ? 'Edit' : 'Add'}
                 icon={

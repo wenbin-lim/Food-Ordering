@@ -13,7 +13,7 @@ import ImageInput from '../../../components/layout/ImageInput';
 // Custom Hooks
 import useErrors from '../../../hooks/useErrors';
 import useGetOne from '../../../query/hooks/useGetOne';
-import useEditOne from '../../../query/hooks/useEditOne';
+import usePut from '../../../query/hooks/usePut';
 
 const CompanyEdit = () => {
   let { id } = useParams();
@@ -24,7 +24,7 @@ const CompanyEdit = () => {
   const [
     editCompany,
     { isLoading: requesting, error: editErrors },
-  ] = useEditOne('companies');
+  ] = usePut('companies', { route: `/api/companies/${id}` });
   useErrors(error);
 
   const [inputErrors] = useErrors(editErrors, [
@@ -72,7 +72,7 @@ const CompanyEdit = () => {
   const onSubmit = async e => {
     e.preventDefault();
 
-    const editCompanySuccess = await editCompany({ id, newItem: formData });
+    const editCompanySuccess = await editCompany(formData);
 
     return (
       editCompanySuccess &&

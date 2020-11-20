@@ -30,7 +30,7 @@ import FoodIcon from '../../components/icons/FoodIcon';
 import FoodCustomisationIcon from '../../components/icons/FoodCustomisationIcon';
 
 // Hooks
-import useGetAll from '../../query/hooks/useGetAll';
+import useGet from '../../query/hooks/useGet';
 
 // Actions
 import { logout } from '../../actions/auth';
@@ -47,7 +47,11 @@ const CompanyAppWrapper = ({
     ...companyLogos,
   };
 
-  const { data: menus } = useGetAll('menus', { company });
+  const { data: menus } = useGet('menus', {
+    route: '/api/menus',
+    params: { company },
+    enabled: company,
+  });
 
   const [showSidebar, setShowSidebar] = useState(false);
 

@@ -10,6 +10,7 @@ const router = express.Router();
 
 // Models
 const User = require('../models/User');
+const Company = require('../models/Company');
 const Table = require('../models/Table');
 const Bill = require('../models/Bill');
 const Order = require('../models/Order');
@@ -26,7 +27,7 @@ const { isValidObjectId } = require('mongoose');
 // @access   Private
 router.get('/', auth(true), async (req, res) => {
   try {
-    const { user, table } = req;
+    const { user, bill } = req;
 
     if (user) {
       // need to authenticate to db in case user is already deleted and token is still there
@@ -39,14 +40,16 @@ router.get('/', auth(true), async (req, res) => {
       }
 
       return res.json(user);
-    } else if (table) {
-      const table = await Table.findById(req.table).populate('company', 'name');
+    } else if (bill) {
+      const bill = await Bill.findById(req.bill).populate('company', 'name');
 
-      if (!table) {
-        return res.status(404).send('Table not found');
+      if (!bill) {
+        return res.status(404).send('User not found');
       }
-      return res.json(table);
+      return res.json(bill);
     }
+
+    return res.status(401).send('Unauthorized');
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -121,28 +124,49 @@ router.post('/customer', async (req, res) => {
   }
 
   try {
+    let company = await Company.findById(companyId).select('name');
+
+    // check if company exists
+    if (!company) {
+      return res.status(404).json('Not Found');
+    }
+
     let table = await Table.findOne({
       _id: tableId,
       company: companyId,
-    }).populate('company', 'name');
+    });
 
     // check if table exists
     if (!table) {
       return res.status(404).json('Not Found');
     }
 
-    let { bill } = table;
+    let bill = new Bill({
+      company,
+      table,
+    });
 
-    if (!bill) {
-      bill = new Bill({ company: companyId });
-      await bill.save();
+    if (table.occupied) {
+      const foundBill = await Bill.findOne({ table: tableId })
+        .populate('company', 'name')
+        .populate('table');
 
-      table.bill = bill;
+      if (!foundBill) {
+        return res
+          .status(404)
+          .json('An unexpected error occured, please try again later!');
+      }
+
+      bill = foundBill;
+    } else {
+      table.occupied = true;
       await table.save();
+
+      await bill.save();
     }
 
-    // return jwt back to customer
-    const payload = { table };
+    // return jwt back to user
+    const payload = { bill };
 
     jwt.sign(
       payload,
@@ -153,7 +177,7 @@ router.post('/customer', async (req, res) => {
       (err, token) => {
         if (err) throw err;
 
-        res.json({ user: table, token });
+        res.json({ user: bill, token });
       }
     );
   } catch (err) {

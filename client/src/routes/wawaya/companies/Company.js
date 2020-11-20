@@ -13,7 +13,9 @@ import useErrors from '../../../hooks/useErrors';
 const Company = () => {
   let { id } = useParams();
   const navigate = useNavigate();
-  const { data: company, isLoading, error } = useGetOne('company', id);
+  const { data: company, isLoading, error } = useGetOne('company', id, {
+    route: `/api/companies/${id}`,
+  });
   useErrors(error);
 
   const {

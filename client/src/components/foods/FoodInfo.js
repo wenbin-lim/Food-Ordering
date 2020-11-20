@@ -15,7 +15,10 @@ import useErrors from '../../hooks/useErrors';
 const FoodInfo = () => {
   let { id } = useParams();
   const navigate = useNavigate();
-  const { data: food, isLoading, error } = useGetOne('food', id);
+
+  const { data: food, isLoading, error } = useGetOne('food', id, {
+    route: `/api/foods/${id}`,
+  });
   useErrors(error);
 
   const {
@@ -160,8 +163,10 @@ const FoodInfo = () => {
               <div className='col'>
                 <p className='caption'>Customisations</p>
                 {customisations.length > 0 ? (
-                  customisations.map(({ name }) => (
-                    <p className='body-2'>{name}</p>
+                  customisations.map(({ _id, name }) => (
+                    <p key={_id} className='body-2'>
+                      {name}
+                    </p>
                   ))
                 ) : (
                   <p className='body-1'>No customisations defined yet</p>

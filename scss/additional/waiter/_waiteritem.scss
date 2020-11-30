@@ -1,0 +1,26 @@
+$waiteritem-status-colors: 'background', 'surface1', 'surface2', 'surface3',
+  'focus', 'error', 'success', 'warning';
+
+.waiteritem {
+  @each $i in $waiteritem-status-colors {
+    .waiteritem-status-#{$i} {
+      background-color: var(--#{$i});
+      color: var(--on-#{$i});
+
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+  }
+
+  .waiteritem-content {
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+    .waiteritem-table-name {
+      @include body-1;
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+  }
+}

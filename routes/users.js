@@ -1,53 +1,32 @@
-// ====================================================================================================
-// RESTful Routes
-// Name      Path              HTTP Verb
-// ----------------------------------------------------------------------------------------------------
-// Index    /route              GET
-// New      /route/new          GET
-// Create   /route              POST
-// Show     /route/:id          GET
-// Edit     /route/:id/edit     GET
-// Update   /route/:id          PUT
-// Delete   /route/:id          DELETE
-// ====================================================================================================
-
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const express = require('express');
 const config = require('config');
 const { check, body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-// ====================================================================================================
 // Variables
-// ====================================================================================================
 const router = express.Router();
 const accessLevel = config.get('accessLevel');
 
-// ====================================================================================================
 // Models
-// ====================================================================================================
 const User = require('../models/User');
 
-// ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
-// ====================================================================================================
 const auth = require('../middleware/auth');
 
-// ====================================================================================================
 // Routes
-// ====================================================================================================
-
 // @route    GET api/users
 // @desc     List all users
 // @access   Private
 router.get('/', auth(true, accessLevel.admin), async (req, res) => {
   try {
-    const { company } = req.query;
+    const { access, company } = req;
 
-    let users = await User.find({ company }).select('-password');
+    let query = {
+      company: access < accessLevel.wawaya ? company : req.query.company,
+    };
+
+    let users = await User.find(query).select('-password');
 
     res.json(users);
   } catch (err) {
@@ -128,7 +107,7 @@ router.post(
         password,
         access,
         role,
-        company,
+        company: req.access < accessLevel.wawaya ? req.company : company,
       });
 
       // encrypt password

@@ -10,6 +10,7 @@ import Spinner from './Spinner';
 // Icons
 import CloseIcon from '../icons/CloseIcon';
 import ArrowIcon from '../icons/ArrowIcon';
+import MoreIcon from '../icons/MoreIcon';
 
 const SideSheet = ({ wrapper, className, children, ...rest }) => {
   return wrapper ? (
@@ -29,17 +30,30 @@ SideSheet.propTypes = {
   className: PropTypes.string,
 };
 
-const Header = ({ title, closeHandler, icon = <CloseIcon />, children }) => {
+const Header = ({
+  title,
+  closeHandler,
+  closeBtnIcon = <CloseIcon />,
+  moreBtnActionHandler,
+  children,
+}) => {
   return (
     <header className='sidesheet-header'>
       {closeHandler && (
         <Button
-          className={'sidesheet-header-close-btn'}
-          icon={icon}
+          className='sidesheet-header-close-btn'
+          icon={closeBtnIcon}
           onClick={closeHandler}
         />
       )}
       {title && <h3 className='sidesheet-header-title'>{title}</h3>}
+      {moreBtnActionHandler && (
+        <Button
+          className='sidesheet-header-more-btn'
+          icon={<MoreIcon type='horizontal' />}
+          onClick={moreBtnActionHandler}
+        />
+      )}
       {children && (
         <section className='sidesheet-header-content'>{children}</section>
       )}
@@ -50,6 +64,8 @@ const Header = ({ title, closeHandler, icon = <CloseIcon />, children }) => {
 Header.propTypes = {
   title: PropTypes.string,
   closeHandler: PropTypes.func,
+  closeBtnIcon: PropTypes.element,
+  moreBtnActionHandler: PropTypes.func,
 };
 
 const Content = ({ elementType = 'article', className, children, ...rest }) => {
@@ -95,20 +111,21 @@ const FooterButton = ({
   additionalContent,
   requesting,
   form,
+  onClick,
 }) => {
   return (
     <Button
-      className={'sidesheet-footer'}
-      fill={'contained'}
-      type={'primary'}
+      className='sidesheet-footer'
+      fill='contained'
+      type='primary'
       block={true}
       blockBtnBottom={true}
       text={text}
       icon={
         requesting ? (
-          <Spinner height={'1.5rem'} />
+          <Spinner height='1.5rem' />
         ) : (
-          <ArrowIcon direction={'right'} />
+          <ArrowIcon direction='right' />
         )
       }
       additionalContentClassName={additionalContentClassName}
@@ -116,6 +133,7 @@ const FooterButton = ({
       disabled={requesting}
       submit={form ? true : false}
       form={form}
+      onClick={onClick}
     />
   );
 };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { queryCache } from 'react-query';
 
 // Actions
 import { setSnackbar } from '../../actions/app';
@@ -29,7 +28,11 @@ const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   const [activeTab, setActiveTab] = useState(0);
   const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  const companies = queryCache.getQueryData('companies');
+  const { data: companies, error: companiesError } = useGet('companies', {
+    route: '/api/companies',
+    enabled: userAccess === 99,
+  });
+  useErrors(companiesError);
 
   const [addFood, { isLoading: requesting, error }] = usePost('foods', {
     route: '/api/foods',
@@ -128,7 +131,7 @@ const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   return (
     <SideSheet wrapper={false}>
       <SideSheet.Header title={'Add Food'} closeHandler={() => navigate('../')}>
-        <Tabs onClickTab={onClickTab}>
+        <Tabs onClickTab={onClickTab} justifyTab='center'>
           <Tab name={'Main'} />
           <Tab name={'Customisations'} />
         </Tabs>

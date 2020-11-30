@@ -1,0 +1,35 @@
+$cashieritem-status-colors: 'background', 'surface1', 'surface2', 'surface3',
+  'focus', 'error', 'success', 'warning';
+
+.cashieritem {
+  .cashieritem-status {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+
+    @each $i in $cashieritem-status-colors {
+      &.cashieritem-status-#{$i} {
+        background-color: var(--#{$i});
+        color: var(--on-#{$i});
+      }
+    }
+  }
+
+  .cashieritem-content {
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+    .cashieritem-table-name {
+      @include body-1;
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .cashieritem-paymentmethod,
+    .cashieritem-discountcode {
+      display: flex;
+      justify-content: space-between;
+      @include body-2;
+    }
+  }
+}

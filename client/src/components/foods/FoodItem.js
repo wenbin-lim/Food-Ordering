@@ -9,6 +9,7 @@ import { setSnackbar } from '../../actions/app';
 // Components
 import ListItem, { Action } from '../layout/ListItem';
 import AlertDialog from '../layout/AlertDialog';
+import OrderDialog from '../orders/OrderDialog';
 
 // Icons
 import ImageIcon from '../icons/ImageIcon';
@@ -17,7 +18,14 @@ import ImageIcon from '../icons/ImageIcon';
 import useErrors from '../../hooks/useErrors';
 import useDelete from '../../query/hooks/useDelete';
 
-const FoodItem = ({ className, editable = true, data }) => {
+const FoodItem = ({
+  className,
+  showOrderDialogOnClick = false,
+  addToWhichBillId,
+  editable = true,
+  allowDelete = true,
+  data,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -30,6 +38,8 @@ const FoodItem = ({ className, editable = true, data }) => {
   useErrors(error);
 
   const [showDeleteFoodAlert, setShowDeleteFoodAlert] = useState(false);
+
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
 
   const onFoodDelete = async () => {
     const deleteFoodSuccess = await deleteFood();
@@ -48,9 +58,12 @@ const FoodItem = ({ className, editable = true, data }) => {
     return deleteFoodSuccess && match && navigate('', { replace: true });
   };
 
+  const onClickFoodItem = () =>
+    showOrderDialogOnClick && setShowOrderDialog(true);
+
   return (
     <Fragment>
-      <ListItem className={className}>
+      <ListItem className={className} onClick={onClickFoodItem}>
         <ListItem.Before>
           <div className='list-image'>
             {image ? (
@@ -66,19 +79,21 @@ const FoodItem = ({ className, editable = true, data }) => {
             <span className='badge badge-small badge-error'>Unavailable</span>
           )}
         </ListItem.Content>
-        {editable && (
+        {!showOrderDialogOnClick && editable && (
           <ListItem.Actions>
             <Action name='View' onClick={() => navigate(foodId)} />
             <Action name='Edit' onClick={() => navigate(`${foodId}/edit`)} />
-            <Action
-              name='Delete'
-              onClick={() => setShowDeleteFoodAlert(true)}
-            />
+            {allowDelete && (
+              <Action
+                name='Delete'
+                onClick={() => setShowDeleteFoodAlert(true)}
+              />
+            )}
           </ListItem.Actions>
         )}
       </ListItem>
 
-      {editable && showDeleteFoodAlert && (
+      {!showOrderDialogOnClick && editable && showDeleteFoodAlert && (
         <AlertDialog
           title={'Delete food?'}
           text={'Action cannot be undone'}
@@ -90,13 +105,24 @@ const FoodItem = ({ className, editable = true, data }) => {
           onCloseAlertDialog={() => setShowDeleteFoodAlert(false)}
         />
       )}
+
+      {showOrderDialogOnClick && !editable && showOrderDialog && (
+        <OrderDialog
+          foodDetails={data}
+          onCloseOrderDialog={() => setShowOrderDialog(false)}
+          addToWhichBillId={addToWhichBillId}
+        />
+      )}
     </Fragment>
   );
 };
 
 FoodItem.propTypes = {
   className: PropTypes.string,
+  showOrderDialogOnClick: PropTypes.bool,
+  addToWhichBillId: PropTypes.string,
   editable: PropTypes.bool,
+  allowDelete: PropTypes.bool,
   data: PropTypes.object,
 };
 

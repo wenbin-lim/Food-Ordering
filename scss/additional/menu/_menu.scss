@@ -65,12 +65,11 @@ $foodcard-landscape-height: 300px;
       &.allow-horizontal-scroll {
         grid-auto-flow: column;
 
-        // for box-shadow in foodcard
         padding-left: 8px;
         padding-right: 8px;
 
         padding-bottom: var(--scrollbar-size);
-        overflow-x: auto;
+        overflow: auto;
         @include custom-scrollbar;
 
         @include media(portrait) {

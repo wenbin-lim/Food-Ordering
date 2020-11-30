@@ -1,26 +1,13 @@
-/* datepicker group variables */
-$datepicker-group-margin: 1rem 0;
-
 /* Variables */
 $datepicker-padding: 0.5rem 1rem;
 $datepicker-border-radius: 2rem;
 $datepicker-border-size: 2px;
 
 .datepicker-group {
-  margin: $datepicker-group-margin;
+  display: grid;
+  grid-gap: 4px;
 
-  label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    @include caption;
-
-    .required-input {
-      color: var(--error);
-      text-transform: none;
-    }
-  }
+  @include input-label;
 
   .datepicker-input-field {
     width: 100%;
@@ -39,138 +26,122 @@ $datepicker-border-size: 2px;
       box-shadow: 0px 0px 0px $datepicker-border-size var(--error) !important;
     }
   }
+}
 
-  .datepicker-scrim {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: $sheet-elevation;
-    width: 100vw;
-    height: calc(100 * var(--vh));
+.datepicker-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: $sheet-elevation;
+  width: 100vw;
+  height: calc(100 * var(--vh));
 
-    background-color: var(--scrim);
+  background-color: var(--scrim);
+  backdrop-filter: blur(5px);
+
+  display: grid;
+  place-items: center;
+
+  .datepicker {
+    padding: $datepicker-border-radius / 2;
+    border-radius: $datepicker-border-radius;
+
+    background-color: var(--background);
+
+    user-select: none;
 
     display: grid;
-    place-items: center;
+    grid-template-rows: auto 1fr;
+    grid-row-gap: 8px;
 
-    .datepicker {
-      padding: $datepicker-border-radius / 2;
-      border-radius: $datepicker-border-radius;
+    width: 90vw;
+    height: 90vw;
 
-      background-color: var(--background);
+    max-width: 400px;
+    max-height: 400px;
 
-      user-select: none;
+    .datepicker-header {
+      position: relative;
+      display: flex;
+      justify-content: space-evenly;
 
-      display: grid;
-      grid-template-rows: auto 1fr;
-      grid-row-gap: 8px;
+      .datepicker-month,
+      .datepicker-year {
+        flex-basis: 40%;
+        padding: 4px 0;
 
-      .datepicker-header {
-        display: flex;
-        justify-content: space-evenly;
+        text-align: center;
 
-        .datepicker-month,
-        .datepicker-year {
-          flex-basis: 40%;
-          padding: 4px 0;
+        border-radius: 12px;
 
-          text-align: center;
+        background-color: var(--surface1);
+        color: var(--on-surface);
 
-          border-radius: 12px;
-
-          background-color: var(--surface1);
-          color: var(--on-surface);
-
-          cursor: pointer;
-        }
-
-        .months,
-        .years {
-          position: absolute;
-          z-index: 1;
-          top: 0;
-          width: 100%;
-
-          border-radius: 12px;
-
-          background-color: var(--surface1);
-          color: var(--on-surface);
-
-          .month,
-          .year {
-            padding: 4px 0;
-
-            &:active {
-              background-color: var(--surface3);
-            }
-          }
-        }
+        cursor: pointer;
       }
 
-      .datepicker-calendar {
-        .days-header {
-          font-size: 0.8em;
+      .months,
+      .years {
+        max-height: 300px;
+        overflow: auto;
+        @include custom_scrollbar;
+        @include box-shadow(2);
 
-          display: grid;
-          place-items: center;
-        }
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        width: 40%;
 
-        .days {
-          display: grid;
-          place-items: center;
+        border-radius: 12px;
 
-          background-color: var(--surface1);
+        background-color: var(--surface1);
+        color: var(--on-surface);
+
+        .month,
+        .year {
+          padding: 4px 0;
+          background-color: var(--surface2);
           color: var(--on-surface);
-          border-radius: 10px;
 
-          cursor: pointer;
-
-          &:hover {
+          &:active {
             background-color: var(--surface3);
           }
-
-          &.disabled {
-            background-color: var(--background) !important;
-            cursor: default !important;
-          }
-
-          &.selected {
-            background-color: var(--secondary) !important;
-            color: var(--on-secondary) !important;
-            font-weight: bold !important;
-          }
         }
       }
     }
-  }
 
-  .datepicker-input-message {
-    @include body-2;
+    .datepicker-calendar {
+      .days-header {
+        font-size: 0.8em;
 
-    &.error-message {
-      color: var(--error);
-    }
-  }
-}
-
-// Media queries
-@media only screen and (orientation: portrait) {
-  .datepicker-group {
-    .datepicker-scrim {
-      .datepicker {
-        width: 90vw;
-        height: 90vw;
+        display: grid;
+        place-items: center;
       }
-    }
-  }
-}
 
-@media only screen and (orientation: landscape) {
-  .datepicker-group {
-    .datepicker-scrim {
-      .datepicker {
-        width: 400px;
-        height: 400px;
+      .days {
+        display: grid;
+        place-items: center;
+
+        background-color: var(--surface1);
+        color: var(--on-surface);
+        border-radius: 10px;
+
+        cursor: pointer;
+
+        &:hover {
+          background-color: var(--surface3);
+        }
+
+        &.disabled {
+          background-color: var(--background) !important;
+          cursor: default !important;
+        }
+
+        &.selected {
+          background-color: var(--secondary) !important;
+          color: var(--on-secondary) !important;
+          font-weight: bold !important;
+        }
       }
     }
   }

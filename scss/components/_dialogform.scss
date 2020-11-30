@@ -1,0 +1,57 @@
+.dialog-form {
+  @include media(portrait) {
+    width: 90vw;
+    max-height: 90vw;
+  }
+
+  @include media(landscape) {
+    width: 400px;
+    max-height: 400px;
+  }
+
+  background-color: var(--background);
+  color: var(--on-background);
+
+  border-radius: 36px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'title'
+    'content'
+    'submit-btn';
+
+  row-gap: var(--padding);
+
+  .dialog-form-title {
+    grid-area: title;
+    padding-left: var(--padding);
+    padding-right: var(--padding);
+    padding-top: var(--padding);
+
+    @include heading-3;
+    text-align: center;
+  }
+
+  .dialog-form-content {
+    grid-area: content;
+    padding-left: var(--padding);
+    padding-right: var(--padding);
+
+    overflow: auto;
+    @include custom_scrollbar;
+
+    .input-group:not(:first-child),
+    .image-input-group:not(:first-child),
+    .radio-group:not(:first-child),
+    .checkbox-group:not(:first-child),
+    .switch-group:not(:first-child),
+    .dropdown-group:not(:first-child),
+    .row:not(:first-child) {
+      margin-top: 1rem;
+    }
+  }
+
+  .dialog-form-submit-btn {
+    grid-area: submit-btn;
+  }
+}

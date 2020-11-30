@@ -1,13 +1,9 @@
-import React, { useState, Fragment, cloneElement } from 'react';
+import React, { useState, cloneElement, Children } from 'react';
 import PropTypes from 'prop-types';
 
 // Components
-import Button from './Button';
 import SearchInput from './SearchInput';
 import ListPreloader from '../preloaders/ListPreloader';
-
-// Icons
-import PlusIcon from '../icons/PlusIcon';
 
 // Misc
 import { v4 as uuid } from 'uuid';
@@ -17,112 +13,135 @@ import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 import useSearch from '../../hooks/useSearch';
 
 const List = ({
-  wrapper,
   className,
-  title,
-  loading,
-  error,
-  listClassName,
-  listArr,
   enableSearch = true,
   searchQueryFields = ['name'],
   searchCaseSensitive = false,
-  listItem,
-  addBtnCallback,
+  children,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const filteredListArr = useSearch(
-    listArr,
+
+  const items = Children.toArray(children).find(({ type }) => type === Items);
+
+  return (
+    <article
+      className={sanitizeWhiteSpace(`list ${className ? className : ''}`)}
+    >
+      {(Children.toArray(children).find(({ type }) => type === Header) ||
+        enableSearch) && (
+        <header className='list-header'>
+          {Children.toArray(children).find(({ type }) => type === Header)}
+          {enableSearch && (
+            <section className='list-header-search'>
+              <SearchInput onSearch={query => setSearchQuery(query)} />
+            </section>
+          )}
+        </header>
+      )}
+
+      {items &&
+        cloneElement(items, {
+          searchQuery,
+          enableSearch,
+          searchQueryFields,
+          searchCaseSensitive,
+        })}
+
+      {Children.map(
+        children,
+        child => child?.type !== Header && child?.type !== Items && child
+      )}
+    </article>
+  );
+};
+
+List.propTypes = {
+  className: PropTypes.string,
+  enableSearch: PropTypes.bool,
+  searchQueryFields: PropTypes.arrayOf(PropTypes.string),
+  searchCaseSensitive: PropTypes.bool,
+};
+
+const Header = ({ title, className, children, ...rest }) => {
+  return (
+    <section
+      className={sanitizeWhiteSpace(
+        `list-header-left ${className ? className : ''}`
+      )}
+      {...rest}
+    >
+      <h1 className='list-title'>{title}</h1>
+      {children && <div className='list-header-left-children'>{children}</div>}
+    </section>
+  );
+};
+
+Header.propTypes = {
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
+  className: PropTypes.string,
+};
+
+const Items = ({
+  className,
+  loading,
+  error,
+  array,
+  itemElement,
+  // passed down from List
+  enableSearch,
+  searchQueryFields,
+  searchCaseSensitive,
+  searchQuery,
+}) => {
+  const filteredArray = useSearch(
+    array,
     searchQuery,
     searchQueryFields,
     searchCaseSensitive
   );
 
-  const onSearch = query => setSearchQuery(query);
-
-  const listContent = (
-    <Fragment>
-      {(title || enableSearch) && (
-        <header className='list-header'>
-          {title && <h3 className='list-header-title'>{title}</h3>}
-          {enableSearch && (
-            <div className='list-header-right'>
-              <SearchInput name='search' onSearch={onSearch} />
-            </div>
-          )}
-        </header>
-      )}
-
-      <article
-        className={sanitizeWhiteSpace(
-          `list ${listClassName ? listClassName : ''}`
-        )}
-      >
-        {loading || error ? (
-          <ListPreloader />
-        ) : enableSearch ? (
-          filteredListArr.length > 0 ? (
-            filteredListArr.map((data, index) =>
-              cloneElement(listItem, {
-                key: data._id ? data._id : uuid(),
-                data,
-                index: index + 1,
-              })
-            )
-          ) : (
-            <p className='caption text-center'>Nothing found</p>
-          )
-        ) : listArr.length > 0 ? (
-          listArr.map((data, index) =>
-            cloneElement(listItem, {
-              key: data._id ? data._id : uuid(),
-              data,
+  return (
+    <section
+      className={sanitizeWhiteSpace(`list-items ${className ? className : ''}`)}
+    >
+      {loading || error ? (
+        <ListPreloader />
+      ) : enableSearch ? (
+        Array.isArray(filteredArray) && filteredArray.length > 0 ? (
+          filteredArray.map((item, index) =>
+            cloneElement(itemElement, {
+              key: item?.id ? item.id : uuid(),
+              data: item,
               index: index + 1,
             })
           )
         ) : (
           <p className='caption text-center'>Nothing found</p>
-        )}
-      </article>
-
-      {addBtnCallback && (
-        <Button
-          className={'list-add-btn'}
-          fill={'contained'}
-          type={'primary'}
-          icon={<PlusIcon />}
-          onClick={addBtnCallback}
-        />
+        )
+      ) : Array.isArray(array) && array.length > 0 ? (
+        array.map((item, index) =>
+          cloneElement(itemElement, {
+            key: item?.id ? item.id : uuid(),
+            data: item,
+            index: index + 1,
+          })
+        )
+      ) : (
+        <p className='caption text-center'>Nothing found</p>
       )}
-    </Fragment>
-  );
-
-  return wrapper ? (
-    <article
-      className={sanitizeWhiteSpace(
-        `list-wrapper ${className ? className : ''}`
-      )}
-    >
-      {listContent}
-    </article>
-  ) : (
-    listContent
+    </section>
   );
 };
 
-List.propTypes = {
-  wrapper: PropTypes.bool,
+Items.propTypes = {
   className: PropTypes.string,
-  title: PropTypes.string,
   loading: PropTypes.bool,
   error: PropTypes.object,
-  listClassName: PropTypes.string,
-  listArr: PropTypes.array,
-  enableSearch: PropTypes.bool,
-  searchQueryFields: PropTypes.arrayOf(PropTypes.string),
-  searchCaseSensitive: PropTypes.bool,
-  listItem: PropTypes.element,
-  addBtnCallback: PropTypes.func,
+  array: PropTypes.array,
+  itemElement: PropTypes.element,
 };
+
+List.Header = Header;
+List.Items = Items;
 
 export default List;

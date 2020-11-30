@@ -14,6 +14,9 @@ import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 // Animations
 import { TimelineMax } from 'gsap';
 
+// Misc
+import { v4 as uuid } from 'uuid';
+
 const Dialog = forwardRef(
   (
     {
@@ -36,7 +39,8 @@ const Dialog = forwardRef(
     const animationTime = 0.3;
 
     const [dialogScrim] = useState(document.createElement(scrimElementType));
-    dialogScrim.id = 'dialog-root';
+    const dialogScrimId = uuid();
+    dialogScrim.id = dialogScrimId;
     dialogScrim.classList.add('dialog-scrim');
 
     var scrimBgColor = getComputedStyle(
@@ -58,8 +62,6 @@ const Dialog = forwardRef(
       const dialog = dialogRef.current;
 
       if (dialogScrim && dialog) {
-        dialog.addEventListener('mousedown', e => e.stopPropagation());
-
         const dialogAnimation = fullscreen ? { x: 0 } : { scale: 1 };
 
         tlm
@@ -105,7 +107,9 @@ const Dialog = forwardRef(
           const mouseUpElementId = mouseUpEvt.target.id;
 
           if (mouseDownElementId === mouseUpElementId) {
-            closeDialog();
+            if (mouseUpElementId === dialogScrimId) {
+              closeDialog();
+            }
           }
         },
         { once: true }

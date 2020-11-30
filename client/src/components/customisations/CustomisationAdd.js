@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { queryCache } from 'react-query';
 
 // Actions
 import { setSnackbar } from '../../actions/app';
@@ -17,6 +16,7 @@ import Options from './options/Options';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
+import useGet from '../../query/hooks/useGet';
 import usePost from '../../query/hooks/usePost';
 
 const CustomisationAdd = ({
@@ -28,7 +28,11 @@ const CustomisationAdd = ({
   const [activeTab, setActiveTab] = useState(0);
   const onClickTab = tabIndex => setActiveTab(tabIndex);
 
-  const companies = queryCache.getQueryData('companies');
+  const { data: companies, error: companiesError } = useGet('companies', {
+    route: '/api/companies',
+    enabled: userAccess === 99,
+  });
+  useErrors(companiesError);
 
   const [
     addCustomisation,
@@ -78,7 +82,7 @@ const CustomisationAdd = ({
         title={'Add Customisation'}
         closeHandler={() => navigate('../')}
       >
-        <Tabs onClickTab={onClickTab}>
+        <Tabs onClickTab={onClickTab} justifyTab='center'>
           <Tab name={'Main'} />
           <Tab name={'Options'} />
         </Tabs>

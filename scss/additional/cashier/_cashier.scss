@@ -1,0 +1,44 @@
+.cashier {
+  position: relative;
+  height: 100%;
+
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'header'
+    'list';
+
+  .cashier-header {
+    grid-area: header;
+    margin-bottom: 8px;
+
+    background-color: var(--primary);
+    color: var(--on-primary);
+
+    padding: var(--padding);
+    border-radius: 12px;
+
+    .totalbill,
+    .readyforbill {
+      display: flex;
+      justify-content: space-between;
+      @include body-1;
+    }
+  }
+
+  .cashier-bills {
+    grid-area: list;
+
+    overflow: auto;
+    @include custom-scrollbar;
+  }
+
+  .cashier-add-btn {
+    position: absolute;
+    bottom: var(--padding);
+    right: var(--padding);
+
+    z-index: $fab-elevation;
+    @include box-shadow(2);
+  }
+}

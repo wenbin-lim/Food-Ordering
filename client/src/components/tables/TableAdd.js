@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { queryCache } from 'react-query';
 
 // Actions
 import { setSnackbar } from '../../actions/app';
@@ -14,13 +13,18 @@ import Dropdown from '../layout/Dropdown';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
+import useGet from '../../query/hooks/useGet';
 import usePost from '../../query/hooks/usePost';
 
 const TableAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const companies = queryCache.getQueryData('companies');
+  const { data: companies, error: companiesError } = useGet('companies', {
+    route: '/api/companies',
+    enabled: userAccess === 99,
+  });
+  useErrors(companiesError);
 
   const [addTable, { isLoading: requesting, error }] = usePost('tables', {
     route: '/api/tables',

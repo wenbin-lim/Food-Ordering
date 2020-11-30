@@ -108,12 +108,15 @@ body {
 @import 'components/_datetimepicker';
 @import 'components/_dialog';
 @import 'components/_dialogalert';
+@import 'components/_dialogform';
 @import 'components/_dropdown';
+@import 'components/_fixedactionbuttons';
 @import 'components/_flippable';
 @import 'components/_icon';
 @import 'components/_imageinput';
 @import 'components/_inputs';
 @import 'components/_list';
+@import 'components/_listitem';
 @import 'components/_menudropdown';
 @import 'components/_navbar';
 @import 'components/_preloader';
@@ -134,15 +137,24 @@ body {
 
 @import 'additional/food/_foodcard.scss';
 @import 'additional/food/_food.scss';
+@import 'additional/food/_foodlistdialog.scss';
 
 @import 'additional/customer/_qrlanding.scss';
 @import 'additional/customer/_cart.scss';
 
 @import 'additional/orders/_orderitem.scss';
 @import 'additional/orders/_orderdialog.scss';
+@import 'additional/orders/_orderactivitydialog.scss';
+
+@import 'additional/bills/_receipt.scss';
 
 @import 'additional/cart/_cart.scss';
 
 @import 'additional/kitchen/_kitchen.scss';
 @import 'additional/kitchen/_kitchenitem.scss';
-@import 'additional/kitchen/_kitchenorderitem.scss';
+
+@import 'additional/waiter/_waiter.scss';
+@import 'additional/waiter/_waiteritem.scss';
+
+@import 'additional/cashier/_cashier.scss';
+@import 'additional/cashier/_cashieritem.scss';

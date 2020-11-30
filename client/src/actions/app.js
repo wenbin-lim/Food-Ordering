@@ -19,7 +19,7 @@ export const setSnackbar = (
   msg,
   type = '',
   action,
-  timeout = 2000
+  timeout = 1500
 ) => dispatch => {
   const id = uuid();
 
@@ -28,9 +28,11 @@ export const setSnackbar = (
     payload: { msg, type, timeout, id, action },
   });
 
-  setTimeout(() => {
-    dispatch(removeSnackbar(id));
-  }, timeout);
+  if (timeout !== 0) {
+    setTimeout(() => {
+      dispatch(removeSnackbar(id));
+    }, timeout);
+  }
 };
 
 // Set snackbar based on error status

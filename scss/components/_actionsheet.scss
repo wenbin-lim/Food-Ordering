@@ -11,27 +11,27 @@ $actionsheet-action-border-radius: 16px;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
-
-  background-color: var(--scrim);
+  height: calc(var(--vh) * 100);
 
   z-index: $actionsheet-elevation;
 
-  // Before animation state
-  opacity: 0;
+  // before animation
+  backdrop-filter: blur(0px);
+  background-color: transparent;
 
   .actionsheet {
-    position: fixed;
-    bottom: 0;
+    position: absolute;
+    bottom: calc(var(--padding) + env(safe-area-inset-bottom));
     left: 0;
     right: 0;
 
+    width: 90vw;
+    max-width: 400px;
+
     margin: 0 auto;
 
-    overflow: hidden;
-
     // Before animation state
-    transform: translateY(110%);
+    transform: translateY(calc(100% + var(--padding)));
 
     .action {
       // using <button> as html element
@@ -39,54 +39,38 @@ $actionsheet-action-border-radius: 16px;
       width: 100%;
 
       display: block;
-
-      padding: 1rem 0;
+      padding: 16px;
 
       background-color: $actionsheet-color;
       color: $on-actionsheet-color;
 
-      &:first-child {
-        border-radius: $actionsheet-action-border-radius
-          $actionsheet-action-border-radius 0 0;
-      }
-
-      &:not(:last-child):not(:nth-last-child(2)) {
-        margin-bottom: 1px;
-      }
-
-      &:nth-last-child(2) {
-        border-radius: 0 0 $actionsheet-action-border-radius
-          $actionsheet-action-border-radius;
-      }
-
-      &:last-child {
-        margin-top: 16px;
-        margin-bottom: Max(env(safe-area-inset-bottom), 24px);
-        border-radius: $actionsheet-action-border-radius;
-      }
+      @include body-1;
+      font-size: 0.8rem;
 
       // Highlight button on tap
       &:hover,
       &:active {
-        filter: brightness(1.5);
+        filter: brightness(1.2);
       }
-    }
-  }
-}
 
-// Media queries
-@media only screen and (orientation: portrait) {
-  .actionsheet-scrim {
-    .actionsheet {
-      width: 90vw;
-    }
-  }
-}
+      &:first-child {
+        border-top-left-radius: $actionsheet-action-border-radius;
+        border-top-right-radius: $actionsheet-action-border-radius;
+      }
 
-@media only screen and (orientation: landscape) {
-  .actionsheet-scrim {
-    .actionsheet {
-      width: 400px;
+      &:not(:last-child):not(:nth-last-child(2)) {
+        margin-bottom: 2px;
+      }
+
+      &:nth-last-child(2) {
+        border-bottom-left-radius: $actionsheet-action-border-radius;
+        border-bottom-right-radius: $actionsheet-action-border-radius;
+      }
+
+      &:last-child {
+        margin-top: 16px;
+        border-radius: $actionsheet-action-border-radius;
+      }
     }
   }
 }

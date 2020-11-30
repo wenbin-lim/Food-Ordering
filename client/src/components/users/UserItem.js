@@ -56,14 +56,15 @@ const UserItem = ({ data }) => {
         </ListItem.Before>
         <ListItem.Content>
           <p className='body-1'>{name ? name : 'No name defined'}</p>
-          {role.map((role, index) => (
-            <span
-              key={`user-${userId}-role-${index}`}
-              className='badge badge-small badge-secondary mr-h'
-            >
-              {role}
-            </span>
-          ))}
+          {Array.isArray(role) &&
+            role.map((role, index) => (
+              <span
+                key={`user-${userId}-role-${index}`}
+                className='badge badge-small badge-secondary mr-h'
+              >
+                {role}
+              </span>
+            ))}
         </ListItem.Content>
         <ListItem.Actions>
           <Action name='View' onClick={() => navigate(userId)} />

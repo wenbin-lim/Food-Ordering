@@ -7,7 +7,7 @@ const config = require('config');
 // ====================================================================================================
 // Variables
 // ====================================================================================================
-const foodStatus = config.get('foodStatus');
+const orderStatus = config.get('orderStatus');
 
 // ====================================================================================================
 // Define Schema
@@ -49,23 +49,47 @@ const OrderSchema = mongoose.Schema({
     },
   ],
   additionalInstruction: String,
+  isAdditionalItem: {
+    type: Boolean,
+    default: false,
+  },
+  additionalItemName: String,
   price: {
     type: Number,
     min: 0,
     default: 0,
   },
-  status: {
+  currentStatus: {
     type: String,
-    enum: Object.keys(foodStatus),
-    default: foodStatus.added,
+    enum: Object.values(orderStatus),
+    default: orderStatus.new,
   },
   date: {
     type: Date,
     default: Date.now,
   },
+  activities: [
+    {
+      status: {
+        type: String,
+        enum: Object.values(orderStatus),
+        default: orderStatus.new,
+      },
+      remarks: String,
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   bill: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bill',
+    required: true,
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
@@ -76,12 +100,28 @@ const OrderSchema = mongoose.Schema({
 
 const autoPopulate = function (next) {
   this.populate('food');
-  this.populate('bill');
+  this.populate({
+    path: 'bill',
+    model: 'Bill',
+    populate: {
+      path: 'table',
+      model: 'Table',
+      select: 'name',
+    },
+  });
   this.populate({
     path: 'customisationsUsed',
     populate: {
       path: 'customisation',
       model: 'Customisation',
+    },
+  });
+  this.populate({
+    path: 'activities',
+    populate: {
+      path: 'user',
+      model: 'User',
+      select: 'name',
     },
   });
   next();

@@ -1,12 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setSnackbar } from '../actions/app';
+import { logout } from '../actions/auth';
 
-export default function useErrors(
-  err,
-  inputs = ['name', 'test'],
-  invalidFieldsSnackbar = false
-) {
+/* 
+  // must return a function
+
+  const snackbarActionSwitchFunc = actionName => {
+    switch (actionName) {
+      case 'refresh':
+        return () => console.log('refresh');
+      case 'somethingelse':
+        return () => console.log('something else');
+      default:
+        return () => {};
+    }
+  };
+*/
+export default function useErrors(err, inputs = [], options = {}) {
+  const { showSnackbarForInvalidFields, snackbarActionSwitchFunc } = options;
   const dispatch = useDispatch();
 
   let initialInputsErrors = inputs.reduce((result, inputName) => {
@@ -20,7 +32,13 @@ export default function useErrors(
     let newInputErrors = initialInputsErrors;
 
     if (err) {
-      const { status, data } = err.response;
+      const { response } = err;
+
+      if (!response) {
+        console.error(err);
+      }
+
+      const { status, data } = { ...response };
 
       switch (status) {
         case 400:
@@ -34,7 +52,7 @@ export default function useErrors(
               invalidFields.push(param.toUpperCase());
             }
           });
-          invalidFieldsSnackbar &&
+          showSnackbarForInvalidFields &&
             invalidFields.length > 0 &&
             dispatch(
               setSnackbar(
@@ -46,7 +64,32 @@ export default function useErrors(
         case 401:
         case 403:
         case 404:
-          dispatch(setSnackbar(data, 'error'));
+        case 406:
+          if (status === 401 || status === 403) {
+            dispatch(logout());
+          }
+          if (typeof data === 'string') {
+            dispatch(setSnackbar(data, 'error'));
+          } else if (typeof data === 'object') {
+            // snackbar with action
+            const { msg, actionName } = data;
+
+            if (typeof snackbarActionSwitchFunc === 'function') {
+              dispatch(
+                setSnackbar(
+                  msg,
+                  'error',
+                  {
+                    name: 'refresh',
+                    callback: snackbarActionSwitchFunc(actionName),
+                  },
+                  0
+                )
+              );
+            } else {
+              dispatch(setSnackbar(msg, 'error'));
+            }
+          }
           break;
         case 500:
         default:

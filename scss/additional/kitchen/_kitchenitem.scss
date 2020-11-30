@@ -3,10 +3,28 @@
 
   padding: var(--padding);
   border-radius: 16px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'header'
+    'orders';
 
   .kitchenitem-header {
+    grid-area: header;
+
     @include heading-3;
     margin-bottom: 8px;
     text-align: center;
+  }
+
+  .kitchenitem-orders {
+    grid-area: orders;
+
+    @include media(landscape) {
+      overflow: auto;
+      @include custom_scrollbar;
+      padding-left: var(--scrollbar-size);
+      padding-right: var(--scrollbar-size);
+    }
   }
 }

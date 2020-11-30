@@ -1,277 +1,75 @@
-// ====================================================================================================
-// RESTful Routes
-// Name      Path              HTTP Verb
-// ----------------------------------------------------------------------------------------------------
-// Index    /bills              GET
-// New      /bills/new          GET
-// Create   /bills              POST
-// Show     /bills/:id          GET
-// Edit     /bills/:id/edit     GET
-// Update   /bills/:id          PUT
-// Delete   /bills/:id          DELETE
-// ====================================================================================================
-
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const express = require('express');
 const config = require('config');
 const { check, body, validationResult } = require('express-validator');
+const endOfDayfrom = require('date-fns/endOfDay');
+const startOfDay = require('date-fns/startOfDay');
 
-// ====================================================================================================
 // Variables
-// ====================================================================================================
 const router = express.Router();
 const accessLevel = config.get('accessLevel');
-const foodStatus = config.get('foodStatus');
+const billStatus = config.get('billStatus');
+const orderStatus = config.get('orderStatus');
 
-// ====================================================================================================
 // Models
-// ====================================================================================================
 const Bill = require('../models/Bill');
-const Food = require('../models/Food');
+const Order = require('../models/Order');
+const Table = require('../models/Table');
 
-// ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
-// ====================================================================================================
 const auth = require('../middleware/auth');
 
-// ====================================================================================================
 // Routes
-// ====================================================================================================
 
 // @route    GET api/bills
 // @desc     List all bills
 // @access   Public/Private
-router.get('/', async (req, res) => {});
+router.get('/', [auth(true, accessLevel.staff)], async (req, res) => {
+  try {
+    const { access, company } = req;
+    let query = {
+      company: access < accessLevel.wawaya ? company : req.query.company,
+    };
+
+    const { type } = req.query;
+
+    if (type === 'unsettled') {
+      query.status = { $ne: billStatus.settled };
+    } else if (type === 'byStartTime') {
+      const { startTime } = req.query;
+      query.startTime = {
+        $gte: startOfDay(new Date(startTime)),
+        $lte: endOfDayfrom(new Date(startTime)),
+      };
+    }
+
+    let bills = await Bill.find(query)
+      .populate('table', 'name')
+      .sort({ startTime: 1 });
+
+    res.json(bills);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 // @route    POST api/bills
 // @desc     Create new bills
 // @access   Public/Private
-router.post('/', async (req, res) => {});
+// router.post('/', [auth(true, accessLevel.customer)], async (req, res) => {});
 
 // @route    GET api/bills/:id
 // @desc     Get single bills
 // @access   Public/Private
-router.get('/:id', async (req, res) => {});
-
-// @route    PUT api/bills/:id
-// @desc     Update single bills
-// @access   Public/Private
-router.put('/:id', async (req, res) => {});
-
-// @route    PUT api/bills/:id/orders/new
-// @desc     adding new order to bill
-// @access   Private for customer
-router.put(
-  '/:id/orders/new',
+router.get(
+  '/:id',
   [
     auth(true, accessLevel.customer),
     check(
       'id',
       'An unexpected error occured, please try again later!'
     ).isMongoId(),
-    check(
-      'foodId',
-      'An unexpected error occured, please try again later!'
-    ).isMongoId(),
-    check(
-      'foodQty',
-      'An unexpected error occured, please try again later!'
-    ).isInt({ min: 1, allow_leading_zeroes: false }),
-  ],
-  async (req, res) => {
-    let errors = validationResult(req).array();
-
-    let {
-      orderId,
-      foodId,
-      foodQty,
-      foodPrice,
-      additionalInstruction,
-      customisations,
-    } = req.body;
-
-    try {
-      let bill = await Bill.findById(req.params.id).populate({
-        path: 'orders',
-        populate: {
-          path: 'customisations food',
-          populate: {
-            path: 'customisation customisations',
-            model: 'Customisation',
-          },
-        },
-      });
-
-      if (!bill) {
-        return res.status(404).send('Bill not found');
-      }
-
-      let food = await Food.findById(foodId).populate('customisations');
-      const {
-        name: foodName,
-        availability: foodAvailability,
-        minQty: foodMinQty,
-        maxQty: foodMaxQty,
-      } = food;
-
-      if (!food || !foodAvailability) {
-        return res.status(404).send(`${foodName} is currently unavailable`);
-      }
-
-      // validate foodQty
-      if (parseInt(foodQty) < foodMinQty) {
-        errors.push({
-          location: 'body',
-          msg: `Ordered quantity must be more than ${foodMinQty}`,
-          param: 'foodQty',
-        });
-      }
-      if (parseInt(foodQty) > foodMaxQty) {
-        errors.push({
-          location: 'body',
-          msg: `Ordered quantity must be less than ${foodMaxQty}`,
-          param: 'foodQty',
-        });
-      }
-
-      // validate customisations
-      let availableCustomisations = food.customisations;
-      let selectedCustomisations = Object.entries(customisations);
-      let newCustomisations = [];
-
-      selectedCustomisations.forEach(selected => {
-        const [selectedId, selectedValue] = selected;
-
-        let found = availableCustomisations.find(
-          availableCustomisation =>
-            availableCustomisation._id.toString() === selectedId.toString()
-        );
-
-        const {
-          availability: foundAvailability,
-          optional: foundOptional,
-          min: foundMin,
-          max: foundMax,
-        } = found;
-
-        if (!foundAvailability) {
-          errors.push({
-            location: 'body',
-            msg: `Currently unavailable`,
-            param: selectedId,
-          });
-        }
-
-        if (!foundOptional) {
-          if (foundMax > 1) {
-            // checkbox
-            if (!Array.isArray(selectedValue)) {
-              errors.push({
-                location: 'body',
-                msg: `Currently unavailable`,
-                param: selectedId,
-              });
-            } else {
-              const numSelectedValues = selectedValue.length;
-
-              if (numSelectedValues === 0) {
-                errors.push({
-                  location: 'body',
-                  msg: 'Please select an option',
-                  param: selectedId,
-                });
-              } else if (numSelectedValues < foundMin) {
-                errors.push({
-                  location: 'body',
-                  msg: `Please select ${
-                    foundMin - numSelectedValues
-                  } more option`,
-                  param: selectedId,
-                });
-              } else if (numSelectedValues > foundMax) {
-                errors.push({
-                  location: 'body',
-                  msg: `Please remove ${
-                    numSelectedValues - foundMax
-                  } more option`,
-                  param: selectedId,
-                });
-              }
-            }
-          } else {
-            // radio
-            if (!selectedValue) {
-              errors.push({
-                location: 'body',
-                msg: 'Please select an option',
-                param: selectedId,
-              });
-            }
-          }
-        }
-
-        let optionsChosen = [];
-        if (foundMax > 1) {
-          // checkbox
-          optionsChosen = selectedValue.map(value => value.split(',')[0]);
-        } else {
-          optionsChosen.push(selectedValue.split(',')[0]);
-        }
-
-        newCustomisations.push({
-          customisation: found,
-          optionsChosen,
-        });
-      });
-
-      if (errors.length > 0) {
-        return res.status(400).json(errors);
-      }
-
-      if (orderId) {
-        bill.orders = bill.orders.filter(
-          order => order._id.toString() !== orderId.toString()
-        );
-      }
-
-      const newOrder = {
-        food,
-        quantity: foodQty,
-        price: foodPrice,
-        additionalInstruction,
-        customisations: newCustomisations,
-      };
-
-      bill.orders.push(newOrder);
-
-      await bill.save();
-
-      res.json(bill);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
-  }
-);
-
-// @route    PUT api/bills/:id/orders/confirm
-// @desc     confirming orders, change order status from added to preparing
-// @access   Private for customer
-router.put(
-  '/:id/orders/confirm',
-  [
-    auth(true, accessLevel.customer),
-    check(
-      'id',
-      'An unexpected error occured, please try again later!'
-    ).isMongoId(),
-    body('orders').toArray(),
-    check(
-      'orders.*',
-      'An unexpected error occured when trying to confirm orders, please try again later!'
-    ),
   ],
   async (req, res) => {
     let errors = validationResult(req).array();
@@ -281,47 +79,189 @@ router.put(
     }
 
     try {
-      let bill = await Bill.findById(req.params.id).populate({
-        path: 'orders',
-        populate: {
-          path: 'customisations food',
-          populate: {
-            path: 'customisation customisations',
-            model: 'Customisation',
-          },
-        },
-      });
+      const { access, company, bill: customerBillId } = req;
+
+      let query = {
+        company: access < accessLevel.wawaya ? company : req.query.company,
+        _id: access > accessLevel.customer ? req.params.id : customerBillId,
+      };
+
+      const bill = await Bill.findOne(query)
+        .populate('table', 'name')
+        .populate('company')
+        .populate('user');
 
       if (!bill) {
         return res.status(404).send('Bill not found');
       }
 
-      let { orders: ordersToBeConfirmed } = req.body;
-      const { orders: billOrders } = bill;
+      res.json(bill);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
 
-      let ordersAlreadyConfirmed = billOrders.filter(
-        order => order.status !== foodStatus.added
+// @route    PUT api/bills/:id
+// @desc     Update single bills
+// @access   Public/Private
+router.put(
+  '/:id',
+  [
+    auth(true, accessLevel.customer),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+    check(
+      'paymentMethod',
+      'An unexpected error occured, please try again later!'
+    ).exists({ checkFalsy: true }),
+    check('subTotal')
+      .optional({ checkFalsy: true })
+      .isDecimal({ decimal_digits: '0,2' })
+      .withMessage('Discount can only accept up to 2 decimal places'),
+    check('total')
+      .optional({ checkFalsy: true })
+      .isDecimal({ decimal_digits: '0,2' })
+      .withMessage('Discount can only accept up to 2 decimal places'),
+    check('gst')
+      .optional({ checkFalsy: true })
+      .isDecimal({ decimal_digits: '0,2' })
+      .withMessage('Discount can only accept up to 2 decimal places'),
+    check('serviceCharge')
+      .optional({ checkFalsy: true })
+      .isDecimal({ decimal_digits: '0,2' })
+      .withMessage('Discount can only accept up to 2 decimal places'),
+    check('roundingAmt')
+      .optional({ checkFalsy: true })
+      .isDecimal({ decimal_digits: '0,2' })
+      .withMessage('Discount can only accept up to 2 decimal places'),
+    check('discount')
+      .optional({ checkFalsy: true })
+      .isDecimal({ decimal_digits: '0,2' })
+      .withMessage('Discount can only accept up to 2 decimal places'),
+  ],
+  async (req, res) => {
+    const {
+      paymentMethod,
+      discountCode,
+      subTotal,
+      total,
+      gst,
+      serviceCharge,
+      discount,
+      roundingAmt,
+      status,
+    } = req.body;
+
+    let errors = validationResult(req).array();
+
+    try {
+      const { access, company, bill: customerBillId } = req;
+
+      let query = {
+        company: access < accessLevel.wawaya ? company : req.query.company,
+        _id: access > accessLevel.customer ? req.params.id : customerBillId,
+      };
+
+      const bill = await Bill.findOne(query).populate(
+        'company',
+        'acceptedPaymentMethods'
       );
 
-      ordersToBeConfirmed = ordersToBeConfirmed.map(order => {
-        order.status = foodStatus.preparing;
-        return order;
-      });
+      if (!bill) {
+        return res.status(404).send('Bill not found');
+      }
 
-      bill.orders = ordersAlreadyConfirmed.concat(ordersToBeConfirmed);
+      // validate payment methods
+      const {
+        company: { acceptedPaymentMethods },
+      } = bill;
 
-      await bill.save();
+      if (acceptedPaymentMethods.indexOf(paymentMethod) < 0) {
+        errors.push({
+          location: 'body',
+          msg: `Payment method not accepted by company`,
+          param: 'paymentMethod',
+        });
+      }
 
-      bill = await Bill.findById(req.params.id).populate({
-        path: 'orders',
-        populate: {
-          path: 'customisations food',
-          populate: {
-            path: 'customisation customisations',
-            model: 'Customisation',
-          },
-        },
-      });
+      // validate discount code
+      if (discountCode && discountCode !== 'discount') {
+        errors.push({
+          location: 'body',
+          msg: `Invalid Discount Code`,
+          param: 'discountCode',
+        });
+      }
+
+      // validate status
+      if (status) {
+        if (!billStatus[status]) {
+          errors.push({
+            location: 'body',
+            msg: 'An unexpected error occured, please try again later!',
+            param: 'status',
+          });
+        }
+      }
+
+      if (errors.length > 0) {
+        return res.status(400).json(errors);
+      }
+
+      if (status === billStatus.settled) {
+        // check all orders are either served, cancelled or removed
+        const orders = await Order.find({ bill: req.params.id });
+        let validateOrders = true;
+
+        orders.forEach(({ currentStatus }) => {
+          if (
+            currentStatus === orderStatus.new ||
+            currentStatus === orderStatus.preparing ||
+            currentStatus === orderStatus.cooking ||
+            currentStatus === orderStatus.hold ||
+            currentStatus === orderStatus.updated ||
+            currentStatus === orderStatus.ready ||
+            currentStatus === orderStatus.rejected
+          ) {
+            validateOrders = false;
+          }
+        });
+
+        if (!validateOrders) {
+          return res
+            .status(406)
+            .json({ msg: 'Orders are outdated', actionName: 'refetch' });
+        }
+
+        // remove bill from table
+        const table = await Table.findById(bill.table);
+
+        if (!table) {
+          return res
+            .status(404)
+            .send('An unexpected error occured, please try again later!');
+        }
+
+        table.bill = undefined;
+        await table.save();
+
+        bill.endTime = new Date();
+        bill.user = req.user;
+      }
+
+      bill.subTotal = subTotal ? subTotal : 0;
+      bill.total = total ? total : 0;
+      bill.discount = discount ? discount : 0;
+      bill.serviceCharge = serviceCharge ? serviceCharge : 0;
+      bill.gst = gst ? gst : 0;
+      bill.roundingAmt = roundingAmt ? roundingAmt : 0;
+      bill.paymentMethod = paymentMethod;
+      bill.discountCode = discountCode ? discountCode : null;
+      bill.status = status;
 
       await bill.save();
 
@@ -336,7 +276,43 @@ router.put(
 // @route    DELETE api/bills/:id
 // @desc     Delete single bills
 // @access   Public/Private
-router.delete('/:id', async (req, res) => {});
+router.delete(
+  '/:id',
+  [
+    auth(true, accessLevel.admin),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    try {
+      const { access, company } = req;
+
+      let query =
+        access < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let deletedBill = await Bill.findOneAndRemove(query);
+
+      if (!deletedBill) {
+        return res.status(404).send('Bill not found');
+      }
+
+      res.json(deletedBill);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
 
 // ====================================================================================================
 // Exporting module

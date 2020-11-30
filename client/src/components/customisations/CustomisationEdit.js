@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -17,7 +18,7 @@ import useErrors from '../../hooks/useErrors';
 import useGetOne from '../../query/hooks/useGetOne';
 import usePut from '../../query/hooks/usePut';
 
-const CustomisationEdit = () => {
+const CustomisationEdit = ({ user }) => {
   let { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -95,7 +96,7 @@ const CustomisationEdit = () => {
         title={'Edit Customisation'}
         closeHandler={() => navigate('../')}
       >
-        <Tabs onClickTab={onClickTab}>
+        <Tabs onClickTab={onClickTab} justifyTab='center'>
           <Tab name={'Main'} />
           <Tab name={'Options'} />
         </Tabs>
@@ -114,65 +115,72 @@ const CustomisationEdit = () => {
               onChangeHandler={onChange}
             />
 
-            <TextInput
-              label={'name'}
-              required={true}
-              name={'name'}
-              type={'text'}
-              value={name}
-              onChangeHandler={onChange}
-              error={inputErrors.name}
-            />
-
-            <TextInput
-              label={'title'}
-              required={true}
-              name={'title'}
-              type={'text'}
-              value={title}
-              onChangeHandler={onChange}
-              error={inputErrors.title}
-            />
-
-            <SwitchInput
-              label={'optional'}
-              name={'optional'}
-              value={optional}
-              onChangeHandler={onChange}
-            />
-
-            <div className='row'>
-              {typeof optional === 'boolean' && !optional && (
-                <div className='col pr-h'>
-                  <TextInput
-                    label={'min selection'}
-                    required={true}
-                    name={'min'}
-                    type={'numeric'}
-                    value={min}
-                    onChangeHandler={onChange}
-                    error={inputErrors.min}
-                  />
-                </div>
-              )}
-              <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
+            {user.access > 2 && (
+              <Fragment>
                 <TextInput
-                  label={'max selection'}
+                  label={'name'}
                   required={true}
-                  name={'max'}
-                  type={'numeric'}
-                  value={max}
+                  name={'name'}
+                  type={'text'}
+                  value={name}
                   onChangeHandler={onChange}
-                  error={inputErrors.max}
+                  error={inputErrors.name}
                 />
-              </div>
-            </div>
+
+                <TextInput
+                  label={'title'}
+                  required={true}
+                  name={'title'}
+                  type={'text'}
+                  value={title}
+                  onChangeHandler={onChange}
+                  error={inputErrors.title}
+                />
+
+                <SwitchInput
+                  label={'optional'}
+                  name={'optional'}
+                  value={optional}
+                  onChangeHandler={onChange}
+                />
+
+                <div className='row'>
+                  {typeof optional === 'boolean' && !optional && (
+                    <div className='col pr-h'>
+                      <TextInput
+                        label={'min selection'}
+                        required={true}
+                        name={'min'}
+                        type={'numeric'}
+                        value={min}
+                        onChangeHandler={onChange}
+                        error={inputErrors.min}
+                      />
+                    </div>
+                  )}
+                  <div className={`col ${optional ? '' : 'pl-h'}`.trim()}>
+                    <TextInput
+                      label={'max selection'}
+                      required={true}
+                      name={'max'}
+                      type={'numeric'}
+                      value={max}
+                      onChangeHandler={onChange}
+                      error={inputErrors.max}
+                    />
+                  </div>
+                </div>
+              </Fragment>
+            )}
           </article>
         )}
 
         {activeTab === 1 && (
           <Options
             options={options}
+            allowAddOption={user.access > 2 ? true : false}
+            allowDeleteOption={user.access > 2 ? true : false}
+            allowEditOptionNameAndPrice={user.access > 2 ? true : false}
             formName={'options'}
             onChangeHandler={onChange}
           />
@@ -185,6 +193,10 @@ const CustomisationEdit = () => {
       />
     </SideSheet>
   );
+};
+
+CustomisationEdit.propTypes = {
+  user: PropTypes.object,
 };
 
 export default CustomisationEdit;

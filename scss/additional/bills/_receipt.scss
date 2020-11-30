@@ -1,0 +1,76 @@
+.receipt {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  padding-left: 12px;
+  padding-right: 12px;
+
+  .receipt-companyinfo {
+    text-align: center;
+    margin-bottom: 16px;
+
+    .receipt-companyname {
+      @include heading-3;
+    }
+
+    .receipt-companyaddress,
+    .receipt-companycontact,
+    .receipt-gstregnumber {
+      @include body-2;
+    }
+  }
+
+  .receipt-billinfo {
+    margin-top: 16px;
+    margin-bottom: 16px;
+
+    .receipt-billinfo-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+    }
+  }
+
+  .receipt-orderinfo {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    display: grid;
+    row-gap: 8px;
+
+    .receipt-orderitem {
+      display: grid;
+      grid-template-columns: 48px 1fr 100px;
+
+      // .receipt-orderitem-qty,
+      // // .receipt-orderitem-name,
+      .receipt-orderitem-price {
+        text-align: right;
+      }
+
+      .receipt-orderitem-details {
+        .receipt-orderitem-customisation {
+          @include body-2;
+        }
+      }
+    }
+  }
+
+  .receipt-priceinfo {
+    margin-top: 16px;
+
+    .receipt-priceinfo-row {
+      display: flex;
+      justify-content: space-between;
+
+      margin-bottom: 4px;
+    }
+
+    .receipt-totalprice {
+      margin-top: 12px;
+      margin-bottom: 12px;
+
+      @include heading-3;
+    }
+  }
+}

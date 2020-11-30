@@ -79,7 +79,7 @@ const MenuEdit = () => {
   const closeSideSheet = () => navigate('../../');
 
   // Foods
-  const { data: availableFoods, error: foodsError, refetch } = useGet('foods', {
+  const { data: availableFoods, error: foodsError } = useGet('foods', {
     route: '/api/foods',
     params: { company },
     enabled: company,
@@ -97,7 +97,7 @@ const MenuEdit = () => {
   return (
     <SideSheet wrapper={false}>
       <SideSheet.Header title={'Edit Menu'} closeHandler={closeSideSheet}>
-        <Tabs onClickTab={onClickTab}>
+        <Tabs onClickTab={onClickTab} justifyTab='center'>
           <Tab name={'Main'} />
           <Tab name={'Food'} />
         </Tabs>

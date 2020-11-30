@@ -1,150 +1,153 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  Children,
+  cloneElement,
+} from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 
 // Animations
-import { Power4, TimelineMax } from 'gsap';
+import { TimelineMax } from 'gsap';
 
 // Misc
-import { v4 as uuid } from 'uuid';
+import sanitizeWhiteSpace from '../../utils/sanitizeWhiteSpace';
 
-/* 
-  =====
-  Props
-  =====
-  @name       actions 
-  @type       array of object {name, callback || link}
-  @desc       create a list of buttons that have individual actions/callbacks from Parent
-  @required   false
-  @example
+const ActionSheet = ({ className, onCloseActionSheet, children, ...rest }) => {
+  const [actionSheetScrim] = useState(document.createElement('div'));
+  actionSheetScrim.id = 'actionsheet-root';
+  actionSheetScrim.classList.add('actionsheet-scrim');
 
-  const [actions] = useState([
-    {
-      name: 'action 1',
-      callback: () => alert('action 1'),
-      link: '/path',
-    },
-    {
-      name: 'action 2',
-      callback: () => alert('action 2'),
-    },
-    {
-      name: 'action 3',
-      callback: () => alert('action 3'),
-    },
-  ]);
+  var scrimBgColor = getComputedStyle(
+    document.documentElement
+  ).getPropertyValue('--scrim');
 
-  @name       closeActionSheetHandler
-  @type       function
-  @desc       function from Parent to unmount this component by changing the show state to false
-  @required   true
-*/
-
-const ActionSheet = ({ actions, closeActionSheetHandler }) => {
-  const scrimRef = useRef(null);
   const actionSheetRef = useRef(null);
+  const animationTime = 0.3;
 
   const [tlm] = useState(
     new TimelineMax({
       paused: true,
       reversed: true,
-      onReverseComplete: closeActionSheetHandler,
+      onReverseComplete: onCloseActionSheet,
     })
   );
-  const animationTime = 0.3;
 
   useEffect(() => {
-    tlm
-      .to(
-        scrimRef.current,
-        animationTime,
-        {
-          opacity: 1,
-          ease: Power4.easeInOut,
-        },
-        'animation'
-      )
-      .to(
-        actionSheetRef.current,
-        animationTime,
-        {
-          y: 0,
-          ease: Power4.easeInOut,
-        },
-        'animation'
-      );
-
-    // Animate ActionSheet into view
-    tlm.play();
-
     document.body.style.overflow = 'hidden';
+    document.body.appendChild(actionSheetScrim);
+
+    const actionSheet = actionSheetRef.current;
+
+    if (actionSheetScrim && actionSheet) {
+      actionSheet.addEventListener('mousedown', e => e.stopPropagation());
+
+      tlm
+        .to(
+          actionSheetScrim,
+          animationTime,
+          {
+            backdropFilter: 'blur(5px)',
+            backgroundColor: scrimBgColor,
+          },
+          'animation'
+        )
+        .to(
+          actionSheet,
+          animationTime,
+          {
+            y: 0,
+          },
+          'animation'
+        );
+
+      tlm.play();
+    }
 
     return () => {
+      document.body.removeChild(actionSheetScrim);
       document.body.style.overflow = 'auto';
     };
     // eslint-disable-next-line
   }, []);
 
-  const closeActionSheet = () => {
-    tlm.reverse();
-  };
-
-  let navigate = useNavigate();
-
-  const onClickButton = action => {
-    const { link, callback } = action;
-
+  const closeActionSheet = callback => {
     tlm
       .eventCallback('onReverseComplete', () => {
-        closeActionSheetHandler();
+        onCloseActionSheet();
         if (typeof callback === 'function') {
           callback();
-        } else if (typeof link === 'string') {
-          navigate(link);
         }
-        tlm.eventCallback('onReverseComplete', null);
       })
       .reverse();
   };
 
-  return (
+  actionSheetScrim.addEventListener('mousedown', mouseDownEvt => {
+    const mouseDownElementId = mouseDownEvt.target.id;
+
+    actionSheetScrim.addEventListener(
+      'mouseup',
+      mouseUpEvt => {
+        const mouseUpElementId = mouseUpEvt.target.id;
+
+        if (mouseDownElementId === mouseUpElementId) {
+          closeActionSheet();
+        }
+      },
+      { once: true }
+    );
+  });
+
+  return createPortal(
     <div
-      className='actionsheet-scrim'
-      onClick={closeActionSheet}
-      ref={scrimRef}
+      className={sanitizeWhiteSpace(
+        `actionsheet ${className ? className : ''}`
+      )}
+      ref={actionSheetRef}
+      {...rest}
     >
-      <div
-        className='actionsheet'
-        onClick={e => e.stopPropagation()}
-        ref={actionSheetRef}
-      >
-        {actions &&
-          actions.map(action => (
-            <button
-              className='action'
-              key={uuid()}
-              onClick={e => onClickButton(action)}
-            >
-              {action.name}
-            </button>
-          ))}
-        <button className='action' onClick={closeActionSheet}>
-          Cancel
-        </button>
-      </div>
-    </div>
+      {Children.map(
+        children,
+        child =>
+          child?.type === Action &&
+          cloneElement(child, {
+            closeActionSheet,
+          })
+      )}
+      <Action name='Close' closeActionSheet={closeActionSheet} />
+    </div>,
+    actionSheetScrim
+  );
+};
+ActionSheet.propTypes = {
+  className: PropTypes.string,
+  onCloseActionSheet: PropTypes.func,
+};
+
+export const Action = ({
+  className,
+  name,
+  onClick,
+  closeActionSheet,
+  children,
+}) => {
+  return (
+    <button
+      className={sanitizeWhiteSpace(`action ${className ? className : ''}`)}
+      onClick={e => closeActionSheet(onClick)}
+    >
+      {name && <div className={'action-name'}>{name}</div>}
+      {children}
+    </button>
   );
 };
 
-ActionSheet.propTypes = {
-  actions: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      link: PropTypes.string,
-      callback: PropTypes.func,
-    })
-  ),
-  closeActionSheetHandler: PropTypes.func.isRequired,
+Action.propTypes = {
+  className: PropTypes.string,
+  name: PropTypes.string,
+  onClick: PropTypes.func,
+  closeActionSheet: PropTypes.func,
 };
 
 export default ActionSheet;

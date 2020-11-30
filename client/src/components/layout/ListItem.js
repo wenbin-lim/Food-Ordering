@@ -88,7 +88,7 @@ const ListItem = forwardRef(
       }
     );
 
-    const toggleActions = open => {
+    const toggleActions = (open, callback) => {
       const listItem = listItemRef.current;
       const actions = actionsRef.current;
 
@@ -128,6 +128,10 @@ const ListItem = forwardRef(
               );
             }
           });
+
+          if (typeof callback === 'function') {
+            callback();
+          }
         });
       }
     };
@@ -258,6 +262,7 @@ Actions.propTypes = {
 
 export const Action = ({
   name,
+  icon,
   className,
   color = 'surface1',
   toggleActions,
@@ -271,19 +276,18 @@ export const Action = ({
           className ? className : ''
         }`
       )}
-      onClick={e => {
-        onClick(e);
-        toggleActions(false);
-      }}
+      onClick={e => toggleActions(false, onClick)}
       {...rest}
     >
-      <span className='list-item-action-name'>{name}</span>
+      {name && <span className='list-item-action-name'>{name}</span>}
+      {icon && <div className='list-item-action-icon'>{icon}</div>}
     </div>
   );
 };
 
 Action.propTypes = {
-  name: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+  name: PropTypes.string,
+  icon: PropTypes.element,
   className: PropTypes.string,
   color: PropTypes.oneOf([
     'background',

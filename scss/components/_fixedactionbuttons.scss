@@ -1,0 +1,80 @@
+.fixed-action-buttons {
+  position: fixed;
+  z-index: $fab-elevation;
+  display: flex;
+
+  &.fixed-to-parent {
+    position: absolute !important;
+  }
+
+  &.buttons-horizontal {
+    &.fixed-to-left {
+      flex-direction: row;
+
+      .fixed-action-button:not(:last-child) {
+        margin-right: 8px;
+      }
+    }
+
+    &.fixed-to-right {
+      flex-direction: row-reverse;
+
+      .fixed-action-button:not(:last-child) {
+        margin-left: 8px;
+      }
+    }
+  }
+
+  &.buttons-vertical {
+    &.fixed-to-top {
+      flex-direction: column;
+
+      .fixed-action-button:not(:last-child) {
+        margin-bottom: 8px;
+      }
+    }
+
+    &.fixed-to-bottom {
+      flex-direction: column-reverse;
+
+      .fixed-action-button:not(:last-child) {
+        margin-top: 8px;
+      }
+    }
+  }
+
+  &.fixed-to-bottom {
+    bottom: var(--padding);
+  }
+
+  &.fixed-to-top {
+    top: var(--padding);
+  }
+
+  &.fixed-to-right {
+    right: var(--padding);
+  }
+
+  &.fixed-to-left {
+    left: var(--padding);
+  }
+
+  .hide-fab {
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+
+    transition: opacity 0.3s, transform 0.3s;
+
+    position: relative;
+    z-index: -1;
+  }
+
+  .show-fab {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+
+    transition: opacity 0.3s, transform 0.3s;
+  }
+}

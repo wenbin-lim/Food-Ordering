@@ -47,9 +47,13 @@ const { cloudinary } = require('../config/cloudinary');
 // @access   Private for staff and above
 router.get('/', auth(true, accessLevel.staff), async (req, res) => {
   try {
-    const { company } = req.query;
+    const { access, company } = req;
 
-    let foods = await Food.find({ company });
+    let query = {
+      company: access < accessLevel.wawaya ? company : req.query.company,
+    };
+
+    let foods = await Food.find(query);
 
     res.json(foods);
   } catch (err) {
@@ -166,7 +170,7 @@ router.post(
       allowAdditionalInstruction,
       image,
       customisations,
-      company,
+      company: req.access < accessLevel.wawaya ? req.company : company,
     });
 
     try {
@@ -202,7 +206,7 @@ router.post(
 router.get(
   '/:id',
   [
-    auth(true, accessLevel.customer),
+    auth(true, accessLevel.staff),
     check(
       'id',
       'An unexpected error occured, please try again later!'
@@ -243,7 +247,7 @@ router.get(
 router.put(
   '/:id',
   [
-    auth(true, accessLevel.admin),
+    auth(true, accessLevel.staff),
     check(
       'id',
       'An unexpected error occured, please try again later!'

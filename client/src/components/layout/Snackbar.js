@@ -74,22 +74,20 @@ export const Snackbar = ({ snackbars, removeSnackbar }) => {
 
   return (
     <div className='snackbar-wrapper'>
-      {snackbars.map(snackbar => (
+      {snackbars.map(({ id, type, msg, action }) => (
         <div
-          id={snackbar.id}
-          key={snackbar.id}
-          className={`snackbar snackbar-${snackbar.type}`}
+          id={id}
+          key={id}
+          className={`snackbar snackbar-${type}`}
           {...onDrag()}
         >
-          {snackbar.msg}
-          {snackbar.action && (
+          {msg}
+          {action && (
             <Button
               classes='snackbar-action-btn'
               small={true}
-              text={snackbar.action.name}
-              onClick={e =>
-                snackbarActionHandler(e, snackbar.id, snackbar.action.callback)
-              }
+              text={action.name}
+              onClick={e => snackbarActionHandler(e, id, action.callback)}
             />
           )}
         </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -21,7 +22,7 @@ import useGetOne from '../../query/hooks/useGetOne';
 import usePut from '../../query/hooks/usePut';
 import useSearch from '../../hooks/useSearch';
 
-const FoodEdit = () => {
+const FoodEdit = ({ user }) => {
   let { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -174,17 +175,29 @@ const FoodEdit = () => {
   return (
     <SideSheet wrapper={false}>
       <SideSheet.Header title={'Edit Food'} closeHandler={closeSideSheet}>
-        <Tabs onClickTab={onClickTab}>
-          <Tab name={'Main'} />
-          <Tab name={'Customisations'} />
-        </Tabs>
+        {user.access > 2 && (
+          <Tabs onClickTab={onClickTab} justifyTab='center'>
+            <Tab name={'Main'} />
+            <Tab name={'Customisations'} />
+          </Tabs>
+        )}
       </SideSheet.Header>
       <SideSheet.Content
         elementType={'form'}
         id={'foodEditForm'}
         onSubmit={onSubmit}
       >
-        {activeTab === 0 && (
+        {user.access === 2 && (
+          <SwitchInput
+            label={'Availability'}
+            name={'availability'}
+            type={'text'}
+            value={availability}
+            onChangeHandler={onChange}
+          />
+        )}
+
+        {user.access > 2 && activeTab === 0 && (
           <article>
             <SwitchInput
               label={'Availability'}
@@ -309,7 +322,7 @@ const FoodEdit = () => {
           </article>
         )}
 
-        {activeTab === 1 && (
+        {user.access > 2 && activeTab === 1 && (
           <article>
             <SearchInput name='search' onSearch={onSearch} />
             {Array.isArray(filteredAvailableCustomisations) &&
@@ -339,6 +352,10 @@ const FoodEdit = () => {
       />
     </SideSheet>
   );
+};
+
+FoodEdit.propTypes = {
+  user: PropTypes.object,
 };
 
 export default FoodEdit;

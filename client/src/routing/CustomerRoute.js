@@ -17,7 +17,7 @@ const CustomerRoute = ({ element, path, auth, children, ...rest }) => {
   });
 
   const { loading: authLoading, user } = auth;
-  const { company } = { ...user };
+  const { company, status } = { ...user };
   const { _id: customerCompanyId } = { ...company };
 
   if (companiesLoading || authLoading) {
@@ -28,7 +28,7 @@ const CustomerRoute = ({ element, path, auth, children, ...rest }) => {
         company.name === companyName && company._id === customerCompanyId
     );
 
-    if (customerCompany) {
+    if (customerCompany && status !== 'settled') {
       if (user?.access >= 1) {
         return <Navigate to={`/${companyName}`} replace={true} />;
       } else {

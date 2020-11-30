@@ -14,7 +14,7 @@ import AlertDialog from '../layout/AlertDialog';
 import useErrors from '../../hooks/useErrors';
 import useDelete from '../../query/hooks/useDelete';
 
-const CustomisationItem = ({ index, data }) => {
+const CustomisationItem = ({ index, data, allowDelete = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -70,10 +70,12 @@ const CustomisationItem = ({ index, data }) => {
             name='Edit'
             onClick={() => navigate(`${customisationId}/edit`)}
           />
-          <Action
-            name='Delete'
-            onClick={() => setShowDeleteCustomisationAlert(true)}
-          />
+          {allowDelete && (
+            <Action
+              name='Delete'
+              onClick={() => setShowDeleteCustomisationAlert(true)}
+            />
+          )}
         </ListItem.Actions>
       </ListItem>
 
@@ -96,6 +98,7 @@ const CustomisationItem = ({ index, data }) => {
 CustomisationItem.propTypes = {
   index: PropTypes.number,
   data: PropTypes.object,
+  allowDelete: PropTypes.bool,
 };
 
 export default CustomisationItem;

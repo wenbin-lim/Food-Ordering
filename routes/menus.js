@@ -44,10 +44,14 @@ const auth = require('../middleware/auth');
 // @access   Private for customer and above
 router.get('/', auth(true, accessLevel.customer), async (req, res) => {
   try {
-    const { company } = req.query;
+    const { access, company } = req;
+
+    let query = {
+      company: access < accessLevel.wawaya ? company : req.query.company,
+    };
 
     // foods is populated by pre find hook
-    let menus = await Menu.find({ company }).sort({ index: 1 });
+    let menus = await Menu.find(query).sort({ index: 1 });
 
     res.json(menus);
   } catch (err) {
@@ -99,7 +103,7 @@ router.post(
         availability,
         index,
         foods,
-        company,
+        company: req.access < accessLevel.wawaya ? req.company : company,
       });
 
       await menu.save();

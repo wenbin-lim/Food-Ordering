@@ -24,11 +24,7 @@ const { cloudinary } = require('../config/cloudinary');
 // @access   Private
 router.get('/', async (req, res) => {
   try {
-    let selectQuery = 'displayedName name socialMediaLinks logo';
-
-    if (req.access === wawayaAccess) {
-      selectQuery = '';
-    }
+    let selectQuery = '';
 
     let companies = await Company.find().select(selectQuery);
 

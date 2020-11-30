@@ -17,10 +17,11 @@ $tabs-justify-types: 'start', 'end', 'center', 'space-between', 'space-around',
     grid-area: tabs-header;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 
     overflow-x: auto;
     @include custom-scrollbar;
-    padding-bottom: var(--padding);
+    padding-bottom: var(--scrollbar-size);
 
     @each $i in $tabs-justify-types {
       &.tabs-justify-#{$i} {

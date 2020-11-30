@@ -1,0 +1,152 @@
+/* Variables */
+$list-item-x-padding: 8px;
+$list-item-y-padding: 12px;
+$list-item-border-radius: 8px;
+$list-item-gap: 8px;
+
+$list-item-colors: 'background', 'surface1', 'surface2', 'surface3', 'primary',
+  'secondary', 'focus', 'error', 'success', 'warning';
+
+.list-item-wrapper {
+  position: relative;
+
+  &:not(:last-child) {
+    margin-bottom: $list-item-gap;
+  }
+
+  .list-item {
+    padding-top: $list-item-y-padding;
+    padding-bottom: $list-item-y-padding;
+    padding-left: $list-item-x-padding;
+    padding-right: $list-item-x-padding;
+
+    @each $i in $list-item-colors {
+      &.list-item-#{$i} {
+        background-color: var(--#{$i});
+
+        @if str-index($i, 'surface') {
+          color: var(--on-surface);
+        } @else {
+          color: var(--on-#{$i});
+        }
+      }
+    }
+
+    border-radius: $list-item-border-radius;
+
+    display: flex;
+    align-items: center;
+
+    cursor: pointer;
+
+    .before-list-content {
+      min-width: $icon-size;
+      max-width: 20%;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .list-content {
+      flex: 1;
+      padding-left: $list-item-x-padding;
+      padding-right: $list-item-x-padding;
+    }
+
+    .after-list-content {
+      margin-left: $list-item-x-padding;
+
+      max-width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .list-index {
+      @include heading-2;
+    }
+
+    .list-image {
+      width: $icon-size;
+      height: $icon-size;
+      border-radius: 50%;
+      overflow: hidden;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--surface3);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+
+  .list-item-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+
+    width: 80%;
+
+    @include media(landscape) {
+      max-width: 400px;
+    }
+
+    border-radius: $list-item-border-radius;
+    overflow: hidden;
+
+    opacity: 0;
+    pointer-events: none;
+
+    display: flex;
+
+    .list-item-action {
+      flex: 1;
+
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      @each $i in $list-item-colors {
+        &.list-item-action-#{$i} {
+          background-color: var(--#{$i});
+
+          @if str-index($i, 'surface') {
+            color: var(--on-surface);
+          } @else {
+            color: var(--on-#{$i});
+          }
+        }
+      }
+
+      cursor: pointer;
+
+      &:not(:last-child) {
+        margin-right: 2px;
+      }
+
+      .list-item-action-name {
+        padding: 0 12px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .list-item-action-icon {
+        width: $icon-size;
+        height: $icon-size;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  }
+}

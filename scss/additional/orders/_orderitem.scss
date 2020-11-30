@@ -1,9 +1,10 @@
-$orderitem-status-colors: 'error', 'success', 'warning';
+$orderitem-status-colors: 'surface3', 'focus', 'error', 'success', 'warning';
 
 .orderitem {
   display: grid;
   grid-template-rows: auto auto;
   row-gap: 8px;
+  align-items: center;
 
   @include media(portrait) {
     grid-template-columns: 5fr 2fr 3fr;
@@ -12,8 +13,6 @@ $orderitem-status-colors: 'error', 'success', 'warning';
   @include media(landscape) {
     grid-template-columns: 7fr 1fr 2fr;
   }
-
-  align-items: center;
 
   grid-template-areas:
     'orderitem-statusbar orderitem-qty orderitem-price'
@@ -33,13 +32,14 @@ $orderitem-status-colors: 'error', 'success', 'warning';
         width: 0.8em;
         height: 0.8em;
         border-radius: 50%;
+        margin-right: 8px;
+        flex-shrink: 0;
       }
     }
 
-    .orderitem-date {
+    .orderitem-status-info {
       @include body-2;
       opacity: 0.3;
-      margin-left: 8px;
     }
   }
 

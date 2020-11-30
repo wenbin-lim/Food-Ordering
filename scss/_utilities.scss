@@ -11,6 +11,10 @@
   text-align: right !important;
 }
 
+.text-bold {
+  font-weight: bold !important;
+}
+
 .allow-text-selection {
   user-select: text;
 }
@@ -112,6 +116,8 @@ $columns: 12;
 .row {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
 
   .col {
     flex: 1;

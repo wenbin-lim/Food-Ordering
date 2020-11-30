@@ -37,7 +37,7 @@ const AlertDialog = ({ title, text, action, onCloseAlertDialog }) => {
   return (
     <Dialog
       ref={alertDialogRef}
-      className={'dialog-alert'}
+      className='dialog-alert'
       onCloseDialog={onCloseAlertDialog}
     >
       <section className='dialog-alert-content'>
@@ -46,18 +46,18 @@ const AlertDialog = ({ title, text, action, onCloseAlertDialog }) => {
       </section>
       <footer className='dialog-alert-btn-group'>
         <Button
-          className={'dialog-alert-btn-confirm'}
-          fill={'contained'}
+          className='dialog-alert-btn-confirm'
+          fill='contained'
           type={type}
           text={name}
           small={true}
           onClick={() => closeAlertDialog(true)}
         />
         <Button
-          className={'dialog-alert-btn-cancel'}
-          fill={'outline'}
-          type={'background'}
-          text={'Cancel'}
+          className='dialog-alert-btn-cancel'
+          fill='outline'
+          type='background'
+          text='Cancel'
           small={true}
           onClick={() => closeAlertDialog(false)}
         />

@@ -1,29 +1,8 @@
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const mongoose = require('mongoose');
 
-// ====================================================================================================
 // Variables
-// ====================================================================================================
 
-// ====================================================================================================
-// Define Schema
-// -------------
-// Schema Types:
-// 1. String - Options: lowercase(Boolean), uppercase(Boolean), trim(Boolean)
-// 2. Number
-// 3. Date
-// 4. Boolean
-// 5. ObjectId using {type: mongoose.Schema.Types.ObjectId, ref: 'Model'}
-// 6. Array using []
-// 7. Object using {}
-// ------------------
-// Schema Type Options
-// 1. required(Boolean)
-// 2. default
-// 3. unique(Boolean)
-// ====================================================================================================
 const TableSchema = mongoose.Schema({
   name: {
     type: String,
@@ -36,10 +15,9 @@ const TableSchema = mongoose.Schema({
     ref: 'Company',
     required: true,
   },
-  occupied: {
-    type: Boolean,
-    required: true,
-    default: false,
+  bill: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bill',
   },
   creationDate: {
     type: Date,
@@ -47,7 +25,7 @@ const TableSchema = mongoose.Schema({
   },
 });
 
-// ====================================================================================================
+/* PLEASE DONT POPULATE BILL HERE THANKS!!! */
+
 // Exports
-// ====================================================================================================
 module.exports = mongoose.model('Table', TableSchema);

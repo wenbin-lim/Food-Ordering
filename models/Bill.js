@@ -1,32 +1,17 @@
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const mongoose = require('mongoose');
 const config = require('config');
 
-// ====================================================================================================
 // Variables
-// ====================================================================================================
 const paymentMethods = config.get('paymentMethods');
+const billStatus = config.get('billStatus');
 
-// ====================================================================================================
-// Define Schema
-// -------------
-// Schema Types:
-// 1. String - Options: lowercase(Boolean), uppercase(Boolean), trim(Boolean)
-// 2. Number
-// 3. Date
-// 4. Boolean
-// 5. ObjectId using {type: mongoose.Schema.Types.ObjectId, ref: 'Model'}
-// 6. Array using []
-// 7. Object using {}
-// ------------------
-// Schema Type Options
-// 1. required(Boolean)
-// 2. default
-// 3. unique(Boolean)
-// ====================================================================================================
 const BillSchema = mongoose.Schema({
+  subTotal: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
   total: {
     type: Number,
     min: 0,
@@ -38,6 +23,16 @@ const BillSchema = mongoose.Schema({
     default: 0,
   },
   serviceCharge: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  discount: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  roundingAmt: {
     type: Number,
     min: 0,
     default: 0,
@@ -57,6 +52,11 @@ const BillSchema = mongoose.Schema({
   endTime: {
     type: Date,
   },
+  status: {
+    type: String,
+    enum: Object.values(billStatus),
+    default: billStatus.occupied,
+  },
   table: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Table',
@@ -72,15 +72,5 @@ const BillSchema = mongoose.Schema({
   },
 });
 
-const autoPopulateTable = function (next) {
-  this.populate('table');
-  next();
-};
-
-BillSchema.pre('findOne', autoPopulateTable);
-BillSchema.pre('find', autoPopulateTable);
-
-// ====================================================================================================
 // Exports
-// ====================================================================================================
 module.exports = mongoose.model('Bill', BillSchema);

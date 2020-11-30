@@ -1,0 +1,84 @@
+$activity-status-colors: 'focus', 'error', 'success', 'warning';
+
+.orderactivitydialog {
+  width: 90vw !important;
+  max-width: 320px !important;
+
+  background-color: var(--background);
+  color: var(--on-background);
+
+  border-radius: 24px;
+  padding-bottom: 24px;
+
+  display: grid;
+  grid-template-rows: auto 1fr;
+
+  .orderactivitydialog-header {
+    display: grid;
+    grid-template-columns: $icon-size 1fr $icon-size;
+
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+
+    background-color: var(--primary);
+    color: var(--on-primary);
+
+    .orderactivitydialog-header-title {
+      @include heading-3;
+      text-align: center;
+      align-self: center;
+    }
+  }
+
+  .orderactivitydialog-content {
+    overflow: auto;
+    @include custom_scrollbar;
+
+    padding: var(--padding);
+
+    display: grid;
+    row-gap: 32px;
+
+    .activity-group {
+      background-color: var(--surface1);
+      color: var(--on-surface);
+
+      @each $i in $activity-status-colors {
+        &.activity-group-#{$i} {
+          background-color: var(--#{$i});
+          color: var(--on-#{$i});
+        }
+      }
+
+      padding: var(--padding);
+      border-radius: 12px;
+
+      text-align: center;
+
+      .activity-msg {
+        @include body-1;
+        font-weight: bold;
+      }
+
+      .activity-remarks,
+      .activity-date {
+        @include body-2;
+      }
+
+      position: relative;
+      &:not(:last-child):after {
+        position: absolute;
+        content: '';
+        width: 24px;
+        height: 24px;
+        bottom: -12px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        background-color: inherit;
+        border-radius: 0 0 8px 0;
+      }
+    }
+  }
+}

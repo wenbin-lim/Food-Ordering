@@ -36,7 +36,7 @@ import queryConfig from '../queryConfig';
   }
 */
 export default function useGetOne(key, id, options = {}) {
-  const { route, enabled, params, config } = options;
+  const { route, params, enabled, config, refetchInterval } = options;
 
   return useQuery(
     id && [key, id],
@@ -47,6 +47,8 @@ export default function useGetOne(key, id, options = {}) {
     {
       ...queryConfig,
       enabled: typeof enabled === 'undefined' ? true : enabled,
+      refetchInterval:
+        typeof refetchInterval === 'number' ? refetchInterval : false,
       ...config,
     }
   );

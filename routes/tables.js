@@ -28,6 +28,8 @@ const accessLevel = config.get('accessLevel');
 // Models
 // ====================================================================================================
 const Table = require('../models/Table');
+const Bill = require('../models/Bill');
+const Order = require('../models/Order');
 
 // ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
@@ -41,11 +43,15 @@ const auth = require('../middleware/auth');
 // @route    GET api/tables
 // @desc     List all tables
 // @access   Private, admin and above only
-router.get('/', auth(true, accessLevel.admin), async (req, res) => {
+router.get('/', auth(true, accessLevel.staff), async (req, res) => {
   try {
-    const { company } = req.query;
+    const { access, company } = req;
 
-    let tables = await Table.find({ company });
+    let query = {
+      company: access < accessLevel.wawaya ? company : req.query.company,
+    };
+
+    let tables = await Table.find(query).populate('bill');
 
     res.json(tables);
   } catch (err) {
@@ -79,7 +85,7 @@ router.post(
     try {
       let table = new Table({
         name,
-        company,
+        company: req.access < accessLevel.wawaya ? req.company : company,
       });
 
       // save table to db
@@ -99,7 +105,7 @@ router.post(
 router.get(
   '/:id',
   [
-    auth(true, accessLevel.admin),
+    auth(true, accessLevel.staff),
     check(
       'id',
       'An unexpected error occured, please try again later!'
@@ -120,7 +126,7 @@ router.get(
           ? { _id: req.params.id, company }
           : { _id: req.params.id };
 
-      let table = await Table.findOne(query).populate('company', 'name');
+      let table = await Table.findOne(query);
 
       if (!table) {
         return res.status(404).send('Table not found');
@@ -176,6 +182,57 @@ router.put(
       await table.save();
 
       res.json(table);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
+
+// @route    PUT api/tables/:id/release
+// @desc     Release tables from bill
+// @access   Public/Private
+router.put(
+  '/:id/release',
+  [
+    auth(true, accessLevel.staff),
+    check(
+      'id',
+      'An unexpected error occured, please try again later!'
+    ).isMongoId(),
+  ],
+  async (req, res) => {
+    let errors = validationResult(req).array();
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    try {
+      const { access: userAccess, company } = req;
+
+      let query =
+        userAccess < accessLevel.wawaya
+          ? { _id: req.params.id, company }
+          : { _id: req.params.id };
+
+      let table = await Table.findOne(query);
+
+      if (!table) {
+        return res.status(404).send('Table not found');
+      }
+
+      const { bill } = table;
+
+      table.bill = undefined;
+      await table.save();
+      res.json(table);
+
+      if (bill) {
+        // remove all bill and orders
+        await Bill.findByIdAndRemove(bill);
+        await Order.deleteMany({ bill });
+      }
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');

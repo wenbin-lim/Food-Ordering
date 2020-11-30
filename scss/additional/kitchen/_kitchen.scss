@@ -4,27 +4,46 @@
   padding-right: 0;
 
   .kitchen-orders {
-    position: relative;
-
     height: 100%;
-    overflow: auto;
-    @include custom_scrollbar;
-    padding-left: var(--padding);
-    padding-right: var(--padding);
 
-    .kitchenitem {
-      margin-bottom: 16px;
+    @include media(portrait) {
+      overflow: auto;
+      @include custom-scrollbar;
+      padding: var(--scrollbar-size);
+
+      .kitchenitem {
+        margin-bottom: 16px;
+      }
     }
-  }
 
-  .kitchen-refresh-btn {
-    position: absolute;
-    bottom: calc(
-      var(--bottomnav-height) + env(safe-area-inset-bottom) + var(--padding)
-    );
-    right: var(--padding);
+    @include media(landscape) {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(40%, 1fr));
+      grid-auto-columns: minmax(40%, 1fr);
+      grid-auto-rows: 100%;
+      grid-auto-flow: column;
 
-    z-index: $fab-elevation;
-    @include box-shadow(2);
+      column-gap: var(--padding);
+
+      padding-left: var(--padding);
+      padding-right: var(--padding);
+      padding-bottom: var(--padding);
+
+      overflow-x: auto;
+      @include custom-scrollbar;
+
+      .kitchenitem:last-child {
+        position: relative;
+
+        &:after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 100%;
+          width: var(--padding);
+          height: 100%;
+        }
+      }
+    }
   }
 }

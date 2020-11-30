@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 // Variables
 const router = express.Router();
+const billStatus = config.get('billStatus');
 
 // Models
 const User = require('../models/User');
@@ -41,11 +42,17 @@ router.get('/', auth(true), async (req, res) => {
 
       return res.json(user);
     } else if (bill) {
-      const bill = await Bill.findById(req.bill).populate('company', 'name');
+      const bill = await Bill.findOne({
+        _id: req.bill,
+        status: { $ne: 'settled' },
+      })
+        .populate('company', 'name')
+        .populate('table', 'name');
 
       if (!bill) {
         return res.status(404).send('User not found');
       }
+
       return res.json(bill);
     }
 
@@ -124,46 +131,36 @@ router.post('/customer', async (req, res) => {
   }
 
   try {
-    let company = await Company.findById(companyId).select('name');
-
-    // check if company exists
-    if (!company) {
-      return res.status(404).json('Not Found');
-    }
-
     let table = await Table.findOne({
       _id: tableId,
       company: companyId,
-    });
+    }).populate('company', 'name');
 
     // check if table exists
     if (!table) {
-      return res.status(404).json('Not Found');
+      return res.status(404).send('Not Found');
     }
 
-    let bill = new Bill({
-      company,
-      table,
-    });
+    let { bill: foundBillId } = table;
 
-    if (table.occupied) {
-      const foundBill = await Bill.findOne({ table: tableId })
-        .populate('company', 'name')
-        .populate('table');
+    if (!foundBillId) {
+      let newBill = new Bill({
+        company: companyId,
+        table: tableId,
+        status: billStatus.occupied,
+      });
 
-      if (!foundBill) {
-        return res
-          .status(404)
-          .json('An unexpected error occured, please try again later!');
-      }
+      await newBill.save();
 
-      bill = foundBill;
-    } else {
-      table.occupied = true;
+      table.bill = newBill._id;
       await table.save();
 
-      await bill.save();
+      foundBillId = newBill._id;
     }
+
+    const bill = await Bill.findById(foundBillId)
+      .populate('company', 'name')
+      .populate('table', 'name');
 
     // return jwt back to user
     const payload = { bill };

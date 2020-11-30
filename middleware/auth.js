@@ -1,25 +1,23 @@
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const config = require('config');
 const jwt = require('jsonwebtoken');
+
+// Models
+const Bill = require('../models/Bill');
 
 const { public: publicAccess, customer: customerAccess } = config.get(
   'accessLevel'
 );
+const billStatus = config.get('billStatus');
 
-// ====================================================================================================
-// Exporting module
-// ====================================================================================================
 module.exports = (privateOnly, minAccessLevel = customerAccess) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     // Get token from header
     const token = req.header('x-auth-token');
 
     if (!token) {
       if (privateOnly) {
         // user is public trying to access private route
-        console.error('Public trying to access private route');
         return res.status(401).send('Unauthorized');
       } else {
         // user is public trying to access public and private route
@@ -41,9 +39,6 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         } = user;
 
         if (access < minAccessLevel) {
-          console.error(
-            'Authorised user trying to access a higher access level route'
-          );
           return res.status(401).send('Unauthorized');
         }
 
@@ -52,9 +47,6 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         req.user = userId;
       } else if (bill) {
         if (customerAccess < minAccessLevel) {
-          console.error(
-            'Authorised customer trying to access a higher access level route'
-          );
           return res.status(401).send('Unauthorized');
         }
 
@@ -62,6 +54,16 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
           _id: billId,
           company: { _id: companyId },
         } = bill;
+
+        const foundBill = await Bill.findById(billId);
+
+        if (!foundBill) {
+          return res.status(401).send('Unauthorized');
+        }
+
+        if (foundBill?.status === billStatus.settled) {
+          return res.status(401).send('Unauthorized');
+        }
 
         req.company = companyId;
         req.access = customerAccess;

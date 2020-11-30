@@ -1,85 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { createPortal } from 'react-dom';
 
 import Moment from 'react-moment';
 import moment from 'moment';
 
 // Misc
 import { v4 as uuid } from 'uuid';
-/* 
-  =====
-  Props
-  =====
-  @name       label 
-  @type       string
-  @desc       label of input group
-  @required   false
-  
-  @name       showRequiredInLabel 
-  @type       boolean
-  @desc       show a required label in input group
-  @required   false
-
-  @name       name
-  @type       string
-  @desc       name of this input
-  @required   true
-
-  @name       min
-  @type       Date obj
-  @desc       min date of this input
-  @required   true
-
-  @name       max
-  @type       Date obj
-  @desc       max date of this input
-  @desc       cannot be less than min date
-  @required   true
-
-  @name       value
-  @type       Date obj
-  @desc       value of this input
-  @required   true
-
-  @name       format
-  @type       string
-  @desc       Moment format for this input
-  @required   true
-
-  @name       disableDays
-  @type       array of numbers
-  @desc       days in number (0 to 6) to disable 
-  @desc       0 = sun, 1 = mon, 2 = tue, 3 = wed, 4 = thu, 5 = fri, 6 = sat
-  @required   false
-
-  @name       onChangeHandler
-  @type       function
-  @desc       to update the form data
-  @example
-
-  const onChange = ({ name, value }) => {
-    setFormData({ ...formData, [name]: value });
-  };
-
-  @required   true
-
-  @name       informationText
-  @type       string
-  @desc       information text that is displayed below input field
-  @required   false
-
-  @name       validity 
-  @type       boolean
-  @desc       shows if field is valid or invalid
-  @desc       should be passed down from Parent error checking
-  @required   true
-  @default    true
-
-  @name       errorMessage 
-  @type       string
-  @desc       displays error message below input field
-  @required   true if validity is false
-*/
 
 const convertMonthToString = month => {
   switch (month) {
@@ -112,23 +39,33 @@ const convertMonthToString = month => {
   }
 };
 
+/* 
+  disableDays
+  @type       array of numbers
+  @desc       days in number (0 to 6) to disable 
+  @desc       0 = sun, 1 = mon, 2 = tue, 3 = wed, 4 = thu, 5 = fri, 6 = sat
+  @required   false
+*/
 const DatePicker = ({
   label,
-  showRequiredInLabel,
+  required,
   name,
-  min,
-  max,
-  value,
-  format,
+  min = new Date(1940, 0, 1),
+  max = new Date(),
+  value = new Date(),
+  format = 'DD-MM-YYYY',
   disableDays,
   onChangeHandler,
   informationText,
-  validity,
-  errorMessage,
+  error,
 }) => {
   const onChange = () => {
     onChangeHandler({ name, value: selectedDate });
   };
+
+  const [datepickerScrim] = useState(document.createElement('div'));
+  datepickerScrim.id = 'datepicker-root';
+  datepickerScrim.classList.add('datepicker-scrim');
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showMonthsPicker, setShowMonthsPicker] = useState(false);
@@ -178,6 +115,18 @@ const DatePicker = ({
   }, []);
 
   useEffect(() => {
+    if (showDatePicker) {
+      document.body.style.overflow = 'hidden';
+      document.body.appendChild(datepickerScrim);
+    } else {
+      if (document.body.contains(datepickerScrim)) {
+        document.body.removeChild(datepickerScrim);
+        document.body.style.overflow = 'auto';
+      }
+    }
+  }, [showDatePicker]);
+
+  useEffect(() => {
     // finding available days in selected year and month
     var selectedMonth = moment();
     selectedMonth.set('year', selectedDate.getFullYear());
@@ -209,20 +158,20 @@ const DatePicker = ({
 
   return (
     <div className='datepicker-group'>
-      <label>
+      <label htmlFor={name}>
         <span>{label}</span>
-        {showRequiredInLabel && (
-          <small className='required-input'>* required</small>
-        )}
+        {required && <span className='required-input' />}
       </label>
+
       <div
-        className={`datepicker-input-field ${!validity ? 'invalid' : ''}`}
+        className={`datepicker-input-field ${error ? 'invalid' : ''}`}
         onClick={() => setShowDatePicker(true)}
       >
         <Moment format={format}>{value}</Moment>
       </div>
-      {showDatePicker && (
-        <div className='datepicker-scrim'>
+
+      {showDatePicker &&
+        createPortal(
           <div className='datepicker'>
             <div className='datepicker-header'>
               <div
@@ -312,37 +261,19 @@ const DatePicker = ({
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
-      {validity ? (
-        <p className='datepicker-input-message'>{informationText}</p>
-      ) : (
-        <p className='datepicker-input-message error-message'>{errorMessage}</p>
+          </div>,
+          datepickerScrim
+        )}
+
+      {(informationText || error) && (
+        <span className={`input-${error ? 'error-' : ''}message`}>
+          {error ? error : informationText}
+        </span>
       )}
     </div>
   );
 };
 
-DatePicker.propTypes = {
-  label: PropTypes.string,
-  name: PropTypes.string.isRequired,
-  showRequiredInLabel: PropTypes.bool,
-  min: PropTypes.instanceOf(Date).isRequired,
-  max: PropTypes.instanceOf(Date).isRequired,
-  value: PropTypes.instanceOf(Date).isRequired,
-  format: PropTypes.string.isRequired,
-  disableDays: PropTypes.arrayOf(PropTypes.number),
-  onChangeHandler: PropTypes.func.isRequired,
-  informationText: PropTypes.string,
-  validity: PropTypes.bool.isRequired,
-  errorMessage: (props, propName) => {
-    if (!props['validity'] && typeof props[propName] !== 'string') {
-      return new Error(
-        'errorMessage cannot be empty if validity is false. errorMessage must be a string type.'
-      );
-    }
-  },
-};
+DatePicker.propTypes = {};
 
 export default DatePicker;

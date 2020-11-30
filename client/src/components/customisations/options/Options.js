@@ -1,23 +1,29 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 // Components
 import Button from '../../layout/Button';
-import Dialog from '../../layout/Dialog';
+import FormDialog from '../../layout/FormDialog';
 import TextInput from '../../layout/TextInput';
 import SwitchInput from '../../layout/SwitchInput';
 import OptionItem from './OptionItem';
 
 // Icons
-import ArrowIcon from '../../icons/ArrowIcon';
 import PlusIcon from '../../icons/PlusIcon';
 
 // Misc
 import { v4 as uuid } from 'uuid';
 
-const Options = ({ options, editable = true, formName, onChangeHandler }) => {
+const Options = ({
+  options,
+  editable = true,
+  allowAddOption = true,
+  allowDeleteOption = true,
+  allowEditOptionNameAndPrice = true,
+  formName,
+  onChangeHandler,
+}) => {
   const [showDialog, setShowDialog] = useState(false);
-  const dialogRef = useRef(null);
 
   const initialFormData = {
     _id: uuid(),
@@ -41,8 +47,6 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
   const [errors, setErrors] = useState(initialErrors);
 
   const onSubmit = async e => {
-    e.preventDefault();
-
     let newErrors = { ...initialErrors };
     let validate = true;
 
@@ -56,40 +60,31 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
     }
 
     if (validate) {
-      const dialog = dialogRef.current;
-
       let sanitizedPrice = parseFloat(price).toFixed(2).toString();
       let newFormData = {
         ...formData,
         price: sanitizedPrice,
       };
 
-      if (dialog) {
-        const dialogTlm = dialog.tlm;
-
-        dialogTlm.eventCallback('onReverseComplete', () => {
-          setShowDialog(false);
-
-          if (options.find(option => option._id === formData._id)) {
-            onChangeHandler({
-              name: formName,
-              value: options.map(option =>
-                option._id === formData._id ? newFormData : option
-              ),
-            });
-          } else {
-            onChangeHandler({
-              name: formName,
-              value: [...options, newFormData],
-            });
-          }
+      if (options.find(option => option._id === formData._id)) {
+        onChangeHandler({
+          name: formName,
+          value: options.map(option =>
+            option._id === formData._id ? newFormData : option
+          ),
         });
-        setErrors(initialErrors);
-        dialogTlm.reverse();
+      } else {
+        onChangeHandler({
+          name: formName,
+          value: [...options, newFormData],
+        });
       }
+      setErrors(initialErrors);
     } else {
       setErrors(newErrors);
     }
+
+    return validate;
   };
 
   const showOptionForm = (option = initialFormData) => {
@@ -98,6 +93,7 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
       ...option,
       price: typeof price === 'number' ? price.toString() : price,
     });
+    setErrors(initialErrors);
     setShowDialog(true);
   };
 
@@ -110,7 +106,7 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
   return (
     <article className='list-wrapper'>
       <header className='list-header'>
-        {editable ? (
+        {editable && allowAddOption ? (
           <Button
             className={'list-header-right ml-auto'}
             fill={'contained'}
@@ -134,16 +130,23 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
               option={option}
               actions={
                 editable
-                  ? [
-                      {
-                        name: 'Edit',
-                        callback: () => showOptionForm(option),
-                      },
-                      {
-                        name: 'Delete',
-                        callback: () => deleteOption(option),
-                      },
-                    ]
+                  ? allowDeleteOption
+                    ? [
+                        {
+                          name: 'Edit',
+                          callback: () => showOptionForm(option),
+                        },
+                        {
+                          name: 'Delete',
+                          callback: () => deleteOption(option),
+                        },
+                      ]
+                    : [
+                        {
+                          name: 'Edit',
+                          callback: () => showOptionForm(option),
+                        },
+                      ]
                   : null
               }
             />
@@ -154,54 +157,41 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
       </article>
 
       {editable && showDialog && (
-        <Dialog
-          ref={dialogRef}
-          id={'optionForm'}
-          dialogElementType={'form'}
-          className={'optionform'}
-          onCloseDialog={() => setShowDialog(false)}
+        <FormDialog
+          onSubmit={onSubmit}
+          onCloseFormDialog={() => setShowDialog(false)}
         >
-          <section className='optionform-content'>
-            <TextInput
-              label={'name'}
-              required={true}
-              name={'name'}
-              type={'text'}
-              value={name}
-              onChangeHandler={onChange}
-              error={errors.name}
-            />
+          {allowEditOptionNameAndPrice && (
+            <Fragment>
+              <TextInput
+                label={'name'}
+                required={true}
+                name={'name'}
+                type={'text'}
+                value={name}
+                onChangeHandler={onChange}
+                error={errors.name}
+              />
 
-            <TextInput
-              label={'price'}
-              required={true}
-              name={'price'}
-              type={'number'}
-              value={price}
-              onChangeHandler={onChange}
-              error={errors.price}
-            />
+              <TextInput
+                label={'price'}
+                required={true}
+                name={'price'}
+                type={'number'}
+                value={price}
+                onChangeHandler={onChange}
+                error={errors.price}
+              />
+            </Fragment>
+          )}
 
-            <SwitchInput
-              label={'availability'}
-              name={'availability'}
-              value={availability}
-              onChangeHandler={onChange}
-            />
-          </section>
-
-          <Button
-            fill={'contained'}
-            type={'primary'}
-            block={true}
-            blockBtnBottom={true}
-            icon={<ArrowIcon direction={'right'} />}
-            text={'Submit'}
-            submit={true}
-            form={'optionForm'}
-            onClick={onSubmit}
+          <SwitchInput
+            label={'availability'}
+            name={'availability'}
+            value={availability}
+            onChangeHandler={onChange}
           />
-        </Dialog>
+        </FormDialog>
       )}
     </article>
   );
@@ -210,6 +200,9 @@ const Options = ({ options, editable = true, formName, onChangeHandler }) => {
 Options.propTypes = {
   options: PropTypes.array,
   editable: PropTypes.bool,
+  allowAddOption: PropTypes.bool,
+  allowDeleteOption: PropTypes.bool,
+  allowDeleteOption: PropTypes.bool,
   formName: PropTypes.string,
   onChangeHandler: PropTypes.func,
 };

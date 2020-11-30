@@ -5,14 +5,13 @@ $dropdown-border-radius: 16px;
 $dropdown-border-size: 2px;
 
 .dropdown-group {
+  position: relative;
   display: grid;
   grid-gap: 4px;
 
   @include input-label;
 
   .dropdown-wrapper {
-    position: relative;
-
     .dropdown {
       height: $dropdown-height;
       margin: $dropdown-border-size;
@@ -33,6 +32,10 @@ $dropdown-border-size: 2px;
       }
 
       .dropdown-selected-option {
+        // for the ellipsis to work
+        width: 0;
+        // for the ellipsis to work
+
         flex: 1;
         height: 100%;
         padding: 0 $dropdown-padding;

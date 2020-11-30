@@ -1,0 +1,83 @@
+$waiterorderitem-status-colors: 'focus', 'error', 'success', 'warning';
+
+.waiterorderitem {
+  .waiterorderitem-content {
+    display: grid;
+    grid-template-rows: auto auto;
+    row-gap: 8px;
+    align-items: center;
+
+    @include media(portrait) {
+      grid-template-columns: 5fr 2fr 3fr;
+    }
+
+    @include media(landscape) {
+      grid-template-columns: 7fr 1fr 2fr;
+    }
+
+    grid-template-areas:
+      'statusbar qty price'
+      'info qty price';
+
+    .waiterorderitem-statusbar {
+      grid-area: statusbar;
+
+      display: flex;
+      align-items: center;
+
+      @each $i in $waiterorderitem-status-colors {
+        .waiterorderitem-status-#{$i} {
+          background-color: var(--#{$i});
+          color: var(--on-#{$i});
+
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          margin-right: 8px;
+          flex-shrink: 0;
+        }
+      }
+
+      .waiterorderitem-info {
+        @include body-2;
+        opacity: 0.4;
+      }
+    }
+
+    .waiterorderitem-info {
+      grid-area: info;
+
+      .waiterorderitem-info-name {
+        @include body-1;
+        line-height: 100%;
+
+        margin-bottom: 6px;
+      }
+
+      .waiterorderitem-info-customisation,
+      .waiterorderitem-info-additionalinstruction {
+        @include body-2;
+        font-size: 0.8rem;
+      }
+
+      .waiterorderitem-info-additionalinstruction {
+        color: var(--error);
+      }
+    }
+
+    .waiterorderitem-qty,
+    .waiterorderitem-price {
+      @include caption;
+      font-size: 0.9rem;
+      text-transform: none;
+      text-align: right;
+    }
+
+    .waiterorderitem-qty {
+      grid-area: qty;
+    }
+    .waiterorderitem-price {
+      grid-area: price;
+    }
+  }
+}

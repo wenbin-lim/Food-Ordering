@@ -45,11 +45,13 @@ const auth = require('../middleware/auth');
 // @access   Private for staff and above
 router.get('/', auth(false, accessLevel.staff), async (req, res) => {
   try {
-    const { company } = req.query;
+    const { access, company } = req;
 
-    let customisations = await Customisation.find({
-      company,
-    });
+    let query = {
+      company: access < accessLevel.wawaya ? company : req.query.company,
+    };
+
+    let customisations = await Customisation.find(query);
 
     res.json(customisations);
   } catch (err) {
@@ -159,7 +161,7 @@ router.post(
         min: optional ? 0 : min,
         max,
         options,
-        company,
+        company: req.access < accessLevel.wawaya ? req.company : company,
       });
 
       // save customisation to db
@@ -179,7 +181,7 @@ router.post(
 router.get(
   '/:id',
   [
-    auth(true, accessLevel.customer),
+    auth(true, accessLevel.staff),
     check(
       'id',
       'An unexpected error occured, please try again later!'
@@ -220,7 +222,7 @@ router.get(
 router.put(
   '/:id',
   [
-    auth(true, accessLevel.admin),
+    auth(true, accessLevel.staff),
     check(
       'id',
       'An unexpected error occured, please try again later!'

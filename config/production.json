@@ -19,8 +19,8 @@
     "admin": 3,
     "wawaya": 99
   },
-  "foodStatus": {
-    "added": "added",
+  "orderStatus": {
+    "new": "new",
     "preparing": "preparing",
     "cooking": "cooking",
     "hold": "hold",
@@ -33,5 +33,10 @@
   "paymentMethods": "cash,visa,master",
   "ordersEditTypes": {
     "confirmingOrders": "confirmingOrders"
+  },
+  "billStatus": {
+    "occupied": "occupied",
+    "ready": "ready",
+    "settled": "settled"
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { useDispatch } from 'react-redux';
@@ -15,6 +15,8 @@ import RadioInput from '../layout/RadioInput';
 import CheckboxInput from '../layout/CheckboxInput';
 import TextInput from '../layout/TextInput';
 import Spinner from '../layout/Spinner';
+import FormDialog from '../layout/FormDialog';
+import Dropdown from '../layout/Dropdown';
 
 // Icons
 import ImageIcon from '../icons/ImageIcon';
@@ -25,6 +27,7 @@ import ArrowIcon from '../icons/ArrowIcon';
 
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
+import useGet from '../../query/hooks/useGet';
 import usePost from '../../query/hooks/usePost';
 import usePut from '../../query/hooks/usePut';
 
@@ -121,6 +124,7 @@ const CustomisationInput = ({
 const OrderDialog = ({
   foodDetails,
   order,
+  addToWhichBillId,
   onCloseOrderDialog,
   screenOrientation,
   auth: { user },
@@ -174,12 +178,10 @@ const OrderDialog = ({
     return initial;
   });
 
-  const [addOrder, { isLoading: addRequesting, error: addErrors }] = usePost(
-    'orders',
-    {
-      route: '/api/orders',
-    }
-  );
+  const [
+    addOrder,
+    { isLoading: addRequesting, error: addErrors },
+  ] = usePost('orders', { route: '/api/orders' });
 
   const [
     editOrder,
@@ -253,63 +255,58 @@ const OrderDialog = ({
     // eslint-disable-next-line
   }, [quantity, customisationsUsed]);
 
+  const sanitizeCustomisationsUsed = customisationsUsed =>
+    Object.entries(customisationsUsed).map(
+      ([customisationId, optionSelectedIds]) => {
+        const customisation = availableCustomisations.find(
+          customisation => customisation._id === customisationId
+        );
+
+        const { options: availableOptions } = { ...customisation };
+        const optionsSelected = optionSelectedIds.map(optionId =>
+          availableOptions.find(option => option._id === optionId)
+        );
+
+        return {
+          customisation,
+          optionsSelected,
+        };
+      }
+    );
+
   const addToCart = async () => {
-    const { _id: bill } = user;
+    const { access } = user;
 
-    if (user?._id) {
-      let sanitizedCustomisationsUsed = Object.entries(customisationsUsed).map(
-        ([customisationId, optionSelectedIds]) => {
-          const customisation = availableCustomisations.find(
-            customisation => customisation._id === customisationId
-          );
+    if (order) {
+      const editOrderSuccess = await editOrder({
+        food: foodId,
+        quantity,
+        customisationsUsed: sanitizeCustomisationsUsed(customisationsUsed),
+        additionalInstruction,
+        price: totalPrice.toFixed(2),
+        currentStatus: access > 1 ? 'updated' : undefined,
+        bill: access > 1 ? order.bill._id : undefined,
+      });
 
-          const { options: availableOptions } = { ...customisation };
-          const optionsSelected = optionSelectedIds.map(optionId =>
-            availableOptions.find(option => option._id === optionId)
-          );
-
-          return {
-            customisation,
-            optionsSelected,
-          };
-        }
-      );
-      if (order) {
-        const editOrderSuccess = await editOrder({
-          food: foodId,
-          quantity,
-          customisationsUsed: sanitizedCustomisationsUsed,
-          additionalInstruction,
-          price: totalPrice.toFixed(2),
-          bill,
-        });
-
-        if (editOrderSuccess) {
-          dispatch(setSnackbar('Order edited!', 'success'));
-          closeDialog();
-        }
-      } else {
-        const addOrderSuccess = await addOrder({
-          food: foodId,
-          quantity,
-          customisationsUsed: sanitizedCustomisationsUsed,
-          additionalInstruction,
-          price: totalPrice.toFixed(2),
-          bill,
-        });
-
-        if (addOrderSuccess) {
-          dispatch(setSnackbar('Order added!', 'success'));
-          closeDialog();
-        }
+      if (editOrderSuccess) {
+        dispatch(setSnackbar('Order edited!', 'success'));
+        closeDialog();
       }
     } else {
-      dispatch(
-        setSnackbar(
-          'An unexpected error occured, please try again later!',
-          'error'
-        )
-      );
+      const addOrderSuccess = await addOrder({
+        food: foodId,
+        isAdditionalItem: false,
+        quantity,
+        customisationsUsed: sanitizeCustomisationsUsed(customisationsUsed),
+        additionalInstruction,
+        price: totalPrice.toFixed(2),
+        bill: access > 1 ? addToWhichBillId : undefined,
+      });
+
+      if (addOrderSuccess) {
+        dispatch(setSnackbar('Order added!', 'success'));
+        closeDialog();
+      }
     }
   };
 
@@ -374,28 +371,39 @@ const OrderDialog = ({
                 onClickPlus={() => setQuantity(quantity + 1)}
               />
             )}
-            <Button
-              fill='contained'
-              type='primary'
-              block={true}
-              blockBtnBottom={true}
-              text={hasBackFace ? 'More' : order ? 'Edit' : 'Add'}
-              icon={
-                order ? (
-                  editRequesting ? (
+
+            {!hasBackFace && user.access > 1 && !order && !addToWhichBillId ? (
+              <div className='primary pt-1 pb-2'>
+                <p className='caption text-center'>Min Quantity: {minQty}</p>
+                <p className='caption text-center'>Max Quantity: {maxQty}</p>
+                <h3 className='heading-3 text-center mt-1'>
+                  Price: ${totalPrice.toFixed(2)}
+                </h3>
+              </div>
+            ) : (
+              <Button
+                fill='contained'
+                type='primary'
+                block={true}
+                blockBtnBottom={true}
+                text={hasBackFace ? 'More' : order ? 'Edit' : 'Add'}
+                icon={
+                  order ? (
+                    editRequesting ? (
+                      <Spinner height='1.5rem' />
+                    ) : (
+                      <ArrowIcon direction='right' />
+                    )
+                  ) : addRequesting ? (
                     <Spinner height='1.5rem' />
                   ) : (
                     <ArrowIcon direction='right' />
                   )
-                ) : addRequesting ? (
-                  <Spinner height='1.5rem' />
-                ) : (
-                  <ArrowIcon direction='right' />
-                )
-              }
-              disabled={order ? editRequesting : addRequesting}
-              onClick={() => (hasBackFace ? flipCard() : addToCart())}
-            />
+                }
+                disabled={order ? editRequesting : addRequesting}
+                onClick={() => (hasBackFace ? flipCard() : addToCart())}
+              />
+            )}
           </section>
         </Flippable.Front>
         <Flippable.Back className='orderdialog-back sidesheet'>
@@ -412,17 +420,19 @@ const OrderDialog = ({
                     error={inputErrors[customisation._id]}
                   />
                 ))}
-              {allowAdditionalInstruction && (
-                <TextInput
-                  label='Additional Instructions'
-                  name='additionalInstruction'
-                  type='text'
-                  value={additionalInstruction}
-                  onChangeHandler={({ value }) =>
-                    setAdditionalInstruction(value)
-                  }
-                />
-              )}
+              {allowAdditionalInstruction &&
+                user.access > 1 &&
+                (order || addToWhichBillId) && (
+                  <TextInput
+                    label='Additional Instructions'
+                    name='additionalInstruction'
+                    type='text'
+                    value={additionalInstruction}
+                    onChangeHandler={({ value }) =>
+                      setAdditionalInstruction(value)
+                    }
+                  />
+                )}
             </SideSheet.Content>
             <SideSheet.Footer>
               <OrderQuantity
@@ -432,30 +442,41 @@ const OrderDialog = ({
                 onClickMinus={() => setQuantity(quantity - 1)}
                 onClickPlus={() => setQuantity(quantity + 1)}
               />
-              <Button
-                fill='contained'
-                type='primary'
-                block={true}
-                blockBtnBottom={true}
-                additionalContentClassName='orderdialog-totalprice'
-                additionalContent={`$${totalPrice.toFixed(2)}`}
-                text={order ? 'Edit' : 'Add'}
-                icon={
-                  order ? (
-                    editRequesting ? (
+
+              {user.access > 1 && !order && !addToWhichBillId ? (
+                <div className='primary pt-1 pb-2'>
+                  <p className='caption text-center'>Min Quantity: {minQty}</p>
+                  <p className='caption text-center'>Max Quantity: {maxQty}</p>
+                  <h3 className='heading-3 text-center mt-1'>
+                    Price: ${totalPrice.toFixed(2)}
+                  </h3>
+                </div>
+              ) : (
+                <Button
+                  fill='contained'
+                  type='primary'
+                  block={true}
+                  blockBtnBottom={true}
+                  additionalContentClassName='orderdialog-totalprice'
+                  additionalContent={`$${totalPrice.toFixed(2)}`}
+                  text={order ? 'Edit' : 'Add'}
+                  icon={
+                    order ? (
+                      editRequesting ? (
+                        <Spinner height='1.5rem' />
+                      ) : (
+                        <ArrowIcon direction='right' />
+                      )
+                    ) : addRequesting ? (
                       <Spinner height='1.5rem' />
                     ) : (
                       <ArrowIcon direction='right' />
                     )
-                  ) : addRequesting ? (
-                    <Spinner height='1.5rem' />
-                  ) : (
-                    <ArrowIcon direction='right' />
-                  )
-                }
-                disabled={order ? editRequesting : addRequesting}
-                onClick={addToCart}
-              />
+                  }
+                  disabled={order ? editRequesting : addRequesting}
+                  onClick={addToCart}
+                />
+              )}
             </SideSheet.Footer>
           </SideSheet>
         </Flippable.Back>
@@ -467,6 +488,7 @@ const OrderDialog = ({
 OrderDialog.propTypes = {
   foodDetails: PropTypes.object,
   order: PropTypes.object,
+  addToWhichBillId: PropTypes.string,
   onCloseOrderDialog: PropTypes.func,
   screenOrientation: PropTypes.bool,
   auth: PropTypes.object,

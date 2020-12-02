@@ -1,47 +1,24 @@
-// ====================================================================================================
-// RESTful Routes
-// Name      Path              HTTP Verb
-// ----------------------------------------------------------------------------------------------------
-// Index    /foods              GET
-// New      /foods/new          GET
-// Create   /foods              POST
-// Show     /foods/:id          GET
-// Edit     /foods/:id/edit     GET
-// Update   /foods/:id          PUT
-// Delete   /foods/:id          DELETE
-// ====================================================================================================
-
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const express = require('express');
 const config = require('config');
 const { check, body, validationResult } = require('express-validator');
 const isBase64 = require('is-base64');
 
-// ====================================================================================================
 // Variables
-// ====================================================================================================
 const router = express.Router();
 const accessLevel = config.get('accessLevel');
 const { rootFolder: cloudinaryRootFolder } = config.get('cloudinary');
 
-// ====================================================================================================
 // Models
-// ====================================================================================================
 const Food = require('../models/Food');
 const Menu = require('../models/Menu');
 const Company = require('../models/Company');
 
-// ====================================================================================================
 // Miscellaneous Functions, Middlewares, Variables
-// ====================================================================================================
 const auth = require('../middleware/auth');
 const { cloudinary } = require('../config/cloudinary');
 
-// ====================================================================================================
 // Routes
-// ====================================================================================================
 // @route    GET api/foods
 // @desc     List all foods
 // @access   Private for staff and above

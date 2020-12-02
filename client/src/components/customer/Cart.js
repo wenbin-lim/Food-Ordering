@@ -21,6 +21,7 @@ import ArrowIcon from '../icons/ArrowIcon';
 // Hooks
 import useGet from '../../query/hooks/useGet';
 import usePut from '../../query/hooks/usePut';
+import usePost from '../../query/hooks/usePost';
 import useErrors from '../../hooks/useErrors';
 
 const Cart = ({ user, companyDetails }) => {
@@ -71,6 +72,11 @@ const Cart = ({ user, companyDetails }) => {
     route: `/api/bills/${user?._id}`,
   });
   const [inputErrors] = useErrors(billOrdersError, ['discountCode']);
+
+  const [sendNotification, { error: addError }] = usePost('notifications', {
+    route: `/api/notifications`,
+  });
+  useErrors(addError);
 
   useEffect(() => {
     if (orders) {
@@ -130,10 +136,19 @@ const Cart = ({ user, companyDetails }) => {
 
     if (billSuccess) {
       dispatch(setSnackbar('Bill sent!', 'success'));
+
+      await sendNotification({
+        type: 'billReady',
+        forWho: ['waiter', 'cashier', 'admin'],
+        tableName: user?.table?.name,
+        remarks: 'Ready for bill',
+      });
     }
 
     return billSuccess;
   };
+
+  /* can do feedback here after pressing bill button */
 
   return (
     <Container className='cart'>
@@ -175,6 +190,7 @@ const Cart = ({ user, companyDetails }) => {
 
       {showBillDialog && (
         <FormDialog
+          elementType='article'
           title='Bill Details'
           onCloseFormDialog={() => setShowBillDialog(false)}
           onSubmit={onSubmitBill}

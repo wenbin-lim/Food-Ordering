@@ -28,6 +28,7 @@ import DollarIcon from '../icons/DollarIcon';
 // Custom Hooks
 import useErrors from '../../hooks/useErrors';
 import usePut from '../../query/hooks/usePut';
+import usePost from '../../query/hooks/usePost';
 import useDelete from '../../query/hooks/useDelete';
 
 // Misc
@@ -85,6 +86,11 @@ const OrderItem = ({
     route: `/api/orders/${orderId}`,
   });
   useErrors(deleteError);
+
+  const [sendNotification, { error: addError }] = usePost('notifications', {
+    route: `/api/notifications`,
+  });
+  useErrors(addError);
 
   const getStatusColor = status => {
     switch (status) {
@@ -163,14 +169,50 @@ const OrderItem = ({
     }
   };
 
-  const updateOrder = async (newStatus, newRemarks = '') =>
-    await editOrder({
+  const updateOrder = async (newStatus, newRemarks = '') => {
+    const editOrderSuccess = await editOrder({
       ...data,
       food: food?._id,
       currentStatus: newStatus,
       bill: bill?._id,
       remarks: newRemarks,
     });
+
+    // send notification if on hold or ready
+    if (newStatus === 'hold' || newStatus === 'ready') {
+      let notificationType = '';
+      let notificationRemarks = '';
+
+      if (newStatus === 'hold') {
+        notificationType = 'orderOnHold';
+        notificationRemarks = newRemarks;
+      } else if (newStatus === 'ready') {
+        notificationType = 'orderReady';
+        notificationRemarks = 'Ready to be served';
+      }
+
+      let orderOptionsSelected = [];
+      customisationsUsed.forEach(({ optionsSelected }) => {
+        optionsSelected.forEach(({ name }) => {
+          orderOptionsSelected.push(name);
+        });
+      });
+
+      const sendNotificationSuccess = await sendNotification({
+        type: notificationType,
+        forWho: ['waiter', 'admin'],
+        tableName: bill?.table?.name,
+        foodName: isAdditionalItem ? additionalItemName : food?.name,
+        optionsSelected: orderOptionsSelected,
+        additionalInstruction,
+        remarks: notificationRemarks,
+      });
+
+      return sendNotificationSuccess;
+    }
+
+    return editOrderSuccess;
+  };
 
   return (
     <Fragment>

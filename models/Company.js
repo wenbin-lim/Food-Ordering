@@ -1,31 +1,10 @@
-// ====================================================================================================
 // Packages
-// ====================================================================================================
 const mongoose = require('mongoose');
 const config = require('config');
 
-// ====================================================================================================
 // Variables
-// ====================================================================================================
 const paymentMethods = config.get('paymentMethods');
 
-// ====================================================================================================
-// Define Schema
-// -------------
-// Schema Types:
-// 1. String - Options: lowercase(Boolean), uppercase(Boolean), trim(Boolean)
-// 2. Number
-// 3. Date
-// 4. Boolean
-// 5. ObjectId using {type: mongoose.Schema.Types.ObjectId, ref: 'Model'}
-// 6. Array using []
-// 7. Object using {}
-// ------------------
-// Schema Type Options
-// 1. required(Boolean)
-// 2. default
-// 3. unique(Boolean)
-// ====================================================================================================
 const CompanySchema = mongoose.Schema({
   name: {
     type: String,
@@ -40,26 +19,24 @@ const CompanySchema = mongoose.Schema({
     trim: true,
     set: name => name.replace(/\s+/g, ' '),
   },
-  logo: {
-    small: String,
-    large: String,
+  companyCode: {
+    type: String,
+    required: true,
   },
-  socialMediaLinks: {
-    facebook: String,
-    twitter: String,
-    instagram: String,
+  address: {
+    type: String,
+    required: true,
   },
-  acceptedPaymentMethods: [
-    {
-      type: String,
-      enum: paymentMethods.split(','),
-    },
-  ],
+  contact: {
+    type: String,
+    required: true,
+  },
   gstRegistered: {
     type: Boolean,
     default: true,
     required: true,
   },
+  gstRegNo: String,
   hasServiceCharge: {
     type: Boolean,
     default: true,
@@ -82,6 +59,22 @@ const CompanySchema = mongoose.Schema({
   pricesIncludesServiceCharge: {
     type: Boolean,
     default: true,
+  },
+  acceptedPaymentMethods: [
+    {
+      type: String,
+      enum: paymentMethods.split(','),
+    },
+  ],
+  assistanceReasons: [String],
+  logo: {
+    small: String,
+    large: String,
+  },
+  socialMediaLinks: {
+    facebook: String,
+    twitter: String,
+    instagram: String,
   },
   creationDate: {
     type: Date,

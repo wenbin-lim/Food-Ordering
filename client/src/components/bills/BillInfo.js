@@ -28,7 +28,7 @@ const BillInfo = () => {
   } = useGetOne('bill', id, { route: `/api/bills/${id}` });
   useErrors(billErrors);
 
-  const { status, invoiceNo } = { ...bill };
+  const { status, invoiceNo, company: { companyCode } = {} } = { ...bill };
 
   const {
     data: orders,
@@ -42,7 +42,10 @@ const BillInfo = () => {
 
   return (
     <SideSheet wrapper={false}>
-      <SideSheet.Header title={invoiceNo} closeHandler={() => navigate('../')}>
+      <SideSheet.Header
+        title={invoiceNo ? `${companyCode}${invoiceNo}` : ''}
+        closeHandler={() => navigate('../')}
+      >
         <Tabs onClickTab={onClickTab} justifyTab='center'>
           <Tab name='Receipt' />
           <Tab name='Orders' />
@@ -54,7 +57,7 @@ const BillInfo = () => {
           (billLoading ? (
             <Spinner />
           ) : status === 'settled' ? (
-            <Receipt billId={id} />
+            <Receipt billId={id} companyCode={companyCode} />
           ) : (
             <p className='caption text-center'>Bill not settled</p>
           ))}
@@ -90,7 +93,5 @@ const BillInfo = () => {
     </SideSheet>
   );
 };
-
-BillInfo.propTypes = {};
 
 export default BillInfo;

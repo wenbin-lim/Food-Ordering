@@ -41,6 +41,8 @@ app.use('/api/foods', require('./routes/foods'));
 app.use('/api/customisations', require('./routes/customisations'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/bills', require('./routes/bills'));
+app.use('/api/discounts', require('./routes/discounts'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // ====================================================================================================
 // Serve Static assets in production

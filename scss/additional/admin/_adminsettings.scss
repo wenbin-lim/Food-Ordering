@@ -1,0 +1,32 @@
+.adminsettings {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    'tabs'
+    'button';
+
+  .adminsettings-tabs {
+    grid-area: tabs;
+
+    .adminsettings-form {
+      padding-top: var(--padding);
+      padding-bottom: var(--padding);
+
+      .input-group:not(:first-child),
+      .image-input-group:not(:first-child),
+      .radio-group:not(:first-child),
+      .checkbox-group:not(:first-child),
+      .switch-group:not(:first-child),
+      .dropdown-group:not(:first-child),
+      .datepicker-group:not(:first-child),
+      .row:not(:first-child) {
+        margin-top: 1rem;
+      }
+    }
+  }
+
+  .adminsettings-footer-btn {
+    grid-area: button;
+    justify-self: end;
+  }
+}

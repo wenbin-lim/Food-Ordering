@@ -81,15 +81,23 @@ import Bills from './components/bills/Bills';
 import BillInfo from './components/bills/BillInfo';
 import BillEdit from './components/bills/BillEdit';
 
+import Discounts from './components/discounts/Discounts';
+import DiscountAdd from './components/discounts/DiscountAdd';
+import DiscountInfo from './components/discounts/DiscountInfo';
+import DiscountEdit from './components/discounts/DiscountEdit';
+
 // Company Components
 import MainMenu from './components/menus/MainMenu';
 import Menu from './components/menus/Menu';
 
 import AdminDashboard from './components/admin/AdminDashboard';
+import AdminSettings from './components/admin/AdminSettings';
 
 import Kitchen from './components/kitchen/Kitchen';
 import Waiter from './components/waiter/Waiter';
 import Cashier from './components/cashier/Cashier';
+
+import Notifications from './components/notifications/Notifications';
 
 // Customer Components
 import Cart from './components/customer/Cart';
@@ -198,6 +206,12 @@ const App = () => {
               <WawayaRoute path=':id' element={<BillInfo />} />
               <WawayaRoute path=':id/edit' element={<BillEdit />} />
             </WawayaRoute>
+
+            <WawayaRoute path='discounts' element={<Discounts />}>
+              <WawayaRoute path='add' element={<DiscountAdd />} />
+              <WawayaRoute path=':id' element={<DiscountInfo />} />
+              <WawayaRoute path=':id/edit' element={<DiscountEdit />} />
+            </WawayaRoute>
           </WawayaRoute>
 
           <CompanyRoute path='/:companyName' element={<CompanyAppWrapper />}>
@@ -205,6 +219,12 @@ const App = () => {
 
             {/* prettier-ignore */}
             <CompanyRoute path='admin' access={3} element={<AdminDashboard />} />
+
+            <CompanyRoute
+              path='settings'
+              access={3}
+              element={<AdminSettings />}
+            />
 
             <CompanyRoute path='users' access={3} element={<Users />}>
               <CompanyRoute path='add' access={3} element={<UserAdd />} />
@@ -238,9 +258,15 @@ const App = () => {
               <CompanyRoute path=':id/edit' element={<CustomisationEdit />} />
             </CompanyRoute>
 
-            <CompanyRoute path='bills' access={3} element={<Bills />}>
-              <CompanyRoute path=':id' access={3} element={<BillInfo />} />
+            <CompanyRoute path='bills' element={<Bills />}>
+              <CompanyRoute path=':id' element={<BillInfo />} />
               <CompanyRoute path=':id/edit' access={3} element={<BillEdit />} />
+            </CompanyRoute>
+
+            <CompanyRoute path='discounts' element={<Discounts />}>
+              <CompanyRoute path='add' access={3} element={<DiscountAdd />} />
+              <CompanyRoute path=':id' element={<DiscountInfo />} />
+              <CompanyRoute path=':id/edit' element={<DiscountEdit />} />
             </CompanyRoute>
 
             <CompanyRoute path='menu' element={<MainMenu />} />
@@ -256,7 +282,7 @@ const App = () => {
               <CompanyRoute path=':id' element={<BillEdit />} />
             </CompanyRoute>
 
-            {/* <CompanyRoute path='notifications' element={<Menu />} /> */}
+            <CompanyRoute path='notifications' element={<Notifications />} />
           </CompanyRoute>
 
           <Route path='*' element={<Navigate to='/' />} />

@@ -25,7 +25,7 @@ import useGet from '../../query/hooks/useGet';
 import usePut from '../../query/hooks/usePut';
 import useErrors from '../../hooks/useErrors';
 
-const BillEdit = ({ companyDetails }) => {
+const BillEdit = () => {
   const matchWaiter = useMatch('/:companyName/waiter/:id');
   const matchAdmin = useMatch('/:companyName/bills/:id/edit');
 
@@ -41,15 +41,6 @@ const BillEdit = ({ companyDetails }) => {
   ] = useState(false);
 
   let { id } = useParams();
-  const {
-    acceptedPaymentMethods,
-    hasServiceCharge,
-    gstRegistered,
-    roundTotalPrice,
-    roundDownTotalPrice,
-    pricesIncludesGst,
-    pricesIncludesServiceCharge,
-  } = companyDetails;
 
   const {
     data: bill,
@@ -57,7 +48,18 @@ const BillEdit = ({ companyDetails }) => {
     error: billErrors,
   } = useGetOne('bills', id, { route: `/api/bills/${id}` });
   useErrors(billErrors);
-  const { invoiceNo, table } = { ...bill };
+  const { invoiceNo, table, company } = { ...bill };
+  const {
+    _id: companyId,
+    acceptedPaymentMethods,
+    hasServiceCharge,
+    gstRegistered,
+    roundTotalPrice,
+    roundDownTotalPrice,
+    pricesIncludesGst,
+    pricesIncludesServiceCharge,
+    companyCode,
+  } = { ...company };
 
   const {
     data: orders,
@@ -66,15 +68,33 @@ const BillEdit = ({ companyDetails }) => {
     refetch,
   } = useGetOne('orders', id, {
     route: '/api/orders',
-    params: { type: 'cashier', bill: id },
+    params: {
+      type: 'cashier',
+      bill: id,
+      company: companyId,
+    },
+    enabled: !billLoading,
   });
   useErrors(ordersErrors);
 
-  const {
-    data: foods,
-    isLoading: foodsLoading,
-    error: foodsErrors,
-  } = useGet('foods', { route: '/api/foods' });
+  const { data: availableDiscounts, error: discountsErrors } = useGet(
+    'discounts',
+    {
+      route: '/api/discounts',
+      params: { company: companyId },
+      enabled: !billLoading,
+    }
+  );
+  useErrors(discountsErrors);
+
+  const { data: foods, isLoading: foodsLoading, error: foodsErrors } = useGet(
+    'foods',
+    {
+      route: '/api/foods',
+      params: { company: companyId },
+      enabled: !billLoading,
+    }
+  );
   useErrors(foodsErrors);
 
   const [
@@ -94,6 +114,7 @@ const BillEdit = ({ companyDetails }) => {
   const [inputErrors] = useErrors(editErrors, ['discount'], {
     snackbarActionSwitchFunc,
   });
+  const [discountCodeError, setDiscountCodeError] = useState('');
 
   const [completeOrders, setCompleteOrders] = useState([]);
   const [uncompleteOrders, setUncompleteOrders] = useState([]);
@@ -145,33 +166,61 @@ const BillEdit = ({ companyDetails }) => {
   }, [orders]);
 
   const [billData, setBillData] = useState({
-    paymentMethod: '',
+    paymentMethod: 'master',
     discountCode: '',
+  });
+
+  const { paymentMethod, discountCode } = billData;
+
+  const onChange = ({ name, value }) =>
+    setBillData({ ...billData, [name]: value });
+
+  const [billPrices, setBillPrices] = useState({
     subTotal: 0,
     total: 0,
     gst: 0,
     serviceCharge: 0,
     discount: '0',
+    discountCodeValue: 0,
     roundingAmt: 0,
   });
 
-  // eslint-disable-next-line
   const {
-    paymentMethod,
-    discountCode,
     subTotal,
     total,
     gst,
     serviceCharge,
     discount,
+    discountCodeValue,
     roundingAmt,
-  } = billData;
-
-  const onChange = ({ name, value }) =>
-    setBillData({ ...billData, [name]: value });
+  } = billPrices;
 
   useEffect(() => {
-    if (bill && Array.isArray(orders)) {
+    // initial loading of bill and orders
+    if (!billLoading) {
+      // set payment method and discountCode
+      if (bill) {
+        const {
+          paymentMethod: preferredPaymentMethod,
+          discountCode: discountCodeUsedByCustomer,
+        } = bill;
+
+        setBillData({
+          paymentMethod: preferredPaymentMethod,
+          discountCode:
+            Array.isArray(discountCodeUsedByCustomer) &&
+            discountCodeUsedByCustomer.length > 0
+              ? discountCodeUsedByCustomer[0]._id
+              : '',
+        });
+      }
+    }
+
+    // eslint-disable-next-line
+  }, [billLoading]);
+
+  useEffect(() => {
+    if (bill && Array.isArray(orders) && Array.isArray(availableDiscounts)) {
       let validOrders = orders.filter(
         ({ currentStatus }) => currentStatus === 'served'
       );
@@ -181,20 +230,72 @@ const BillEdit = ({ companyDetails }) => {
         0
       );
 
+      newSubTotal = Math.round((newSubTotal + Number.EPSILON) * 100) / 100;
       let newTotal = newSubTotal;
 
+      // account for discount code
+      const foundDiscount = availableDiscounts.find(
+        discount => discount._id === discountCode
+      );
+
+      let newDiscountCodeValue = 0;
+      let newDiscountCodeError = '';
+
+      if (foundDiscount) {
+        // validate if discount code can be used
+        const {
+          minSpending: discountCodeMinSpending,
+          type: discountCodeType,
+          value: discountCodeValue,
+          cap: discountCodeCap,
+        } = foundDiscount;
+
+        if (newTotal < discountCodeMinSpending) {
+          newDiscountCodeError = `Bill does not fulfil minimum spending of $${discountCodeMinSpending}`;
+        } else {
+          // valid discount code
+          if (discountCodeType === 'cash') {
+            if (discountCodeValue < newTotal) {
+              newDiscountCodeValue = discountCodeValue;
+            } else {
+              newDiscountCodeValue = newTotal;
+            }
+          } else if (discountCodeType === 'percentage') {
+            newDiscountCodeValue = parseFloat(
+              newTotal * (discountCodeValue / 100)
+            );
+
+            if (newDiscountCodeValue > discountCodeCap) {
+              newDiscountCodeValue = discountCodeCap;
+            }
+          }
+        }
+      }
+
+      setDiscountCodeError(newDiscountCodeError);
+      newDiscountCodeValue =
+        Math.round((newDiscountCodeValue + Number.EPSILON) * 100) / 100;
+      newTotal = parseFloat(newTotal - newDiscountCodeValue);
+      newTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
+
       // account for discount
-      newTotal -= parseFloat(discount ? discount : 0);
+      let newDiscount = parseFloat(discount ? discount : 0);
+      newDiscount = Math.round((newDiscount + Number.EPSILON) * 100) / 100;
+      newTotal = parseFloat(newTotal - newDiscount);
+      newTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
 
       // account for service charge since service charge is also gst chargeable
       let newServiceCharge = 0;
-
       if (hasServiceCharge) {
         if (pricesIncludesServiceCharge) {
           newServiceCharge = newTotal * (10 / 110);
         } else {
           newServiceCharge = newTotal * 0.1;
-          newTotal += newServiceCharge;
+
+          newServiceCharge =
+            Math.round((newServiceCharge + Number.EPSILON) * 100) / 100;
+          newTotal = parseFloat(newTotal + newServiceCharge);
+          newTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
         }
       }
 
@@ -206,7 +307,10 @@ const BillEdit = ({ companyDetails }) => {
           newGst = newTotal * (7 / 107);
         } else {
           newGst = newTotal * 0.07;
-          newTotal += newGst;
+
+          newGst = Math.round((newGst + Number.EPSILON) * 100) / 100;
+          newTotal = parseFloat(newTotal + newGst);
+          newTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
         }
       }
 
@@ -215,25 +319,26 @@ const BillEdit = ({ companyDetails }) => {
       if (roundTotalPrice) {
         if (roundDownTotalPrice) {
           let newRoundedDownTotalPrice = Math.floor(newTotal * 20) / 20;
-          newRoundingAmt = newTotal - newRoundedDownTotalPrice;
+
+          newRoundingAmt = parseFloat(newTotal - newRoundedDownTotalPrice);
+          newRoundingAmt =
+            Math.round((newRoundingAmt + Number.EPSILON) * 100) / 100;
           newTotal = newRoundedDownTotalPrice;
         } else {
           let newRoundedUpTotalPrice = Math.ceil(newTotal * 20) / 20;
-          newRoundingAmt = newRoundedUpTotalPrice - newTotal;
+
+          newRoundingAmt = parseFloat(newRoundedUpTotalPrice - newTotal);
+          newRoundingAmt =
+            Math.round((newRoundingAmt + Number.EPSILON) * 100) / 100;
           newTotal = newRoundedUpTotalPrice;
         }
       }
 
-      const {
-        paymentMethod: newPaymentMethod,
-        discountCode: newDiscountCode,
-      } = bill;
-
-      setBillData({
-        ...billData,
-        paymentMethod: newPaymentMethod ? newPaymentMethod : '',
-        discountCode: newDiscountCode ? newDiscountCode : '',
+      setBillPrices({
+        ...billPrices,
         subTotal: Math.round((newSubTotal + Number.EPSILON) * 100) / 100,
+        discountCodeValue:
+          Math.round((newDiscountCodeValue + Number.EPSILON) * 100) / 100,
         total: Math.round((newTotal + Number.EPSILON) * 100) / 100,
         serviceCharge:
           Math.round((newServiceCharge + Number.EPSILON) * 100) / 100,
@@ -243,7 +348,7 @@ const BillEdit = ({ companyDetails }) => {
     }
 
     // eslint-disable-next-line
-  }, [bill, orders, discount]);
+  }, [bill, orders, discount, availableDiscounts, discountCode]);
 
   const onSettleBill = async () => {
     // check if any orders are invalid
@@ -251,9 +356,14 @@ const BillEdit = ({ companyDetails }) => {
       dispatch(
         setSnackbar('Uncomplete orders found, please rectify!', 'error')
       );
+    } else if (discountCodeError) {
+      dispatch(
+        setSnackbar('Discount code is invalid, please rectify!', 'error')
+      );
     } else {
       const editBillSucess = await editBill({
         ...billData,
+        ...billPrices,
         status: 'settled',
       });
 
@@ -268,7 +378,15 @@ const BillEdit = ({ companyDetails }) => {
     <Fragment>
       <SideSheet wrapper={false}>
         <SideSheet.Header
-          title={matchAdmin ? invoiceNo : table?.name}
+          title={
+            matchAdmin
+              ? companyCode && invoiceNo
+                ? `${companyCode}${invoiceNo}`
+                : ''
+              : table?.name
+              ? `Table ${table.name}`
+              : ''
+          }
           closeHandler={() => navigate('../')}
           moreBtnActionHandler={() => setShowActionSheet(true)}
         >
@@ -303,6 +421,28 @@ const BillEdit = ({ companyDetails }) => {
                     />
                   )}
 
+                {Array.isArray(availableDiscounts) &&
+                  availableDiscounts.length > 0 && (
+                    <Dropdown
+                      label='Discount Code Used'
+                      name='discountCode'
+                      options={[
+                        {
+                          key: 'NIL',
+                          value: '',
+                        },
+                        ...availableDiscounts.map(({ _id, code }) => ({
+                          key: code,
+                          value: _id,
+                        })),
+                      ]}
+                      value={discountCode}
+                      onChangeHandler={onChange}
+                      error={discountCodeError}
+                      size={3}
+                    />
+                  )}
+
                 <hr className='mt-2 mb-2' />
 
                 <div className='row'>
@@ -312,6 +452,23 @@ const BillEdit = ({ companyDetails }) => {
                   )}`}</p>
                 </div>
 
+                {Array.isArray(availableDiscounts) &&
+                  availableDiscounts.length > 0 &&
+                  discountCode && (
+                    <div className='row'>
+                      <p className='col-8 body-1'>
+                        {`${
+                          availableDiscounts.find(
+                            discount => discount._id === discountCode
+                          ).code
+                        } applied`}
+                      </p>
+                      <p className='col body-1 text-right'>{`- $${discountCodeValue.toFixed(
+                        2
+                      )}`}</p>
+                    </div>
+                  )}
+
                 <div className='row'>
                   <p className='col-8 body-1'>Discount</p>
                   <div className='col'>
@@ -319,7 +476,9 @@ const BillEdit = ({ companyDetails }) => {
                       name='discount'
                       type='number'
                       value={discount}
-                      onChangeHandler={onChange}
+                      onChangeHandler={({ value }) =>
+                        setBillPrices({ ...billPrices, discount: value })
+                      }
                       error={inputErrors.discount}
                     />
                   </div>
@@ -327,7 +486,10 @@ const BillEdit = ({ companyDetails }) => {
 
                 <div className='row'>
                   <p className='col-8 body-1'>
-                    Service Charge <small>( 10% )</small>
+                    Service Charge{' '}
+                    <span className='body-2'>{`( 10% ${
+                      pricesIncludesServiceCharge ? 'inclusive' : ''
+                    })`}</span>
                   </p>
                   <span className='col body-1 text-right'>{`$${serviceCharge.toFixed(
                     2
@@ -336,7 +498,10 @@ const BillEdit = ({ companyDetails }) => {
 
                 <div className='row'>
                   <p className='col-8 body-1'>
-                    GST <small>( 7% )</small>
+                    GST{' '}
+                    <span className='body-2'>{`( 7% ${
+                      pricesIncludesGst ? 'inclusive' : ''
+                    })`}</span>
                   </p>
                   <span className='col body-1 text-right'>{`$${gst.toFixed(
                     2
@@ -450,7 +615,5 @@ const BillEdit = ({ companyDetails }) => {
     </Fragment>
   );
 };
-
-BillEdit.propTypes = {};
 
 export default BillEdit;

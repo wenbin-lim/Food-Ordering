@@ -105,7 +105,7 @@ const Options = ({
 
   return (
     <article className='list-wrapper'>
-      <header className='list-header'>
+      <header className='list-header mb-1'>
         {editable && allowAddOption ? (
           <Button
             className={'list-header-right ml-auto'}
@@ -201,7 +201,6 @@ Options.propTypes = {
   options: PropTypes.array,
   editable: PropTypes.bool,
   allowAddOption: PropTypes.bool,
-  allowDeleteOption: PropTypes.bool,
   allowDeleteOption: PropTypes.bool,
   formName: PropTypes.string,
   onChangeHandler: PropTypes.func,

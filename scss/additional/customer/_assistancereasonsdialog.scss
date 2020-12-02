@@ -1,0 +1,49 @@
+.dialog-assistance-reason {
+  background-color: var(--background);
+  color: var(--on-background);
+
+  width: 90vw !important;
+  max-width: 400px !important;
+  height: 400px !important;
+
+  border-radius: 36px;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'title'
+    'content'
+    'submit-btn';
+
+  .dialog-assistance-reason-title {
+    grid-area: title;
+    @include heading-2;
+    text-align: center;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .dialog-assistance-reason-content {
+    grid-area: content;
+
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: var(--padding);
+    padding-right: var(--padding);
+
+    .input-group:not(:first-child),
+    .image-input-group:not(:first-child),
+    .radio-group:not(:first-child),
+    .checkbox-group:not(:first-child),
+    .switch-group:not(:first-child),
+    .dropdown-group:not(:first-child),
+    .datepicker-group:not(:first-child),
+    .row:not(:first-child) {
+      margin-top: 1rem;
+    }
+  }
+
+  .dialog-assistance-reason-footer-btn {
+    grid-area: submit-btn;
+  }
+}

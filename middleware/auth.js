@@ -35,6 +35,7 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         const {
           _id: userId,
           access,
+          role,
           company: { _id: companyId },
         } = user;
 
@@ -45,6 +46,7 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
         req.company = companyId;
         req.access = access;
         req.user = userId;
+        req.userRole = role;
       } else if (bill) {
         if (customerAccess < minAccessLevel) {
           return res.status(401).send('Unauthorized');

@@ -8,13 +8,14 @@ const router = express.Router();
 const accessLevel = config.get('accessLevel');
 const orderStatus = config.get('orderStatus');
 const ordersEditTypes = config.get('ordersEditTypes');
+const userRoles = config.get('userRoles');
+const notificationTypes = config.get('notificationTypes');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 // Models
 const Order = require('../models/Order');
 const Food = require('../models/Food');
-const User = require('../models/User');
-const Bill = require('../models/Bill');
+const Notification = require('../models/Notification');
 
 // Miscellaneous Functions, Middlewares, Variables
 const auth = require('../middleware/auth');

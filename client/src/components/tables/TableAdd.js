@@ -55,19 +55,19 @@ const TableAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
   return (
     <SideSheet wrapper={false}>
       <SideSheet.Header
-        title={'Add Table'}
+        title='Add Table'
         closeHandler={() => navigate('../')}
       />
       <SideSheet.Content
-        elementType={'form'}
-        id={'tableAddForm'}
+        elementType='form'
+        id='tableAddForm'
         onSubmit={onSubmit}
       >
         {userAccess === 99 && Array.isArray(companies) && (
           <Dropdown
             required={true}
-            label={'Company'}
-            name={'company'}
+            label='Company'
+            name='company'
             options={companies.map(({ _id, displayedName }) => ({
               key: displayedName,
               value: _id,
@@ -78,19 +78,19 @@ const TableAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
         )}
 
         <TextInput
-          label={'name'}
+          label='name'
           required={true}
-          name={'name'}
-          type={'text'}
+          name='name'
+          type='text'
           value={name}
           onChangeHandler={onChange}
           error={inputErrors.name}
         />
       </SideSheet.Content>
       <SideSheet.FooterButton
-        text={'add'}
+        text='add'
         requesting={requesting}
-        form={'tableAddForm'}
+        form='tableAddForm'
       />
     </SideSheet>
   );

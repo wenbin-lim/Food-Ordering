@@ -52,7 +52,7 @@ const DatePicker = ({
   name,
   min = new Date(1940, 0, 1),
   max = new Date(),
-  value = new Date(),
+  value = new Date(new Date().setHours(0, 0, 0, 0)),
   format = 'DD-MM-YYYY',
   disableDays,
   onChangeHandler,
@@ -124,6 +124,8 @@ const DatePicker = ({
         document.body.style.overflow = 'auto';
       }
     }
+
+    // eslint-disable-next-line
   }, [showDatePicker]);
 
   useEffect(() => {
@@ -154,6 +156,8 @@ const DatePicker = ({
     var endOfMonthWeek = endOfMonth.week();
 
     setNumOfWeeksInSelectedMonth(endOfMonthWeek - startOfMonthWeek + 1);
+
+    // eslint-disable-next-line
   }, [selectedDate]);
 
   return (
@@ -251,7 +255,10 @@ const DatePicker = ({
                   key={uuid()}
                   onClick={() => {
                     if (!disableDays || disableDays.indexOf(day.day) < 0) {
-                      setSelectedDate(new Date(selectedDate.setDate(day.date)));
+                      let date = new Date(selectedDate.setDate(day.date));
+                      date = new Date(date.setHours(0, 0, 0, 0));
+
+                      setSelectedDate(date);
                       setShowDatePicker(false);
                       onChange();
                     }
@@ -274,6 +281,18 @@ const DatePicker = ({
   );
 };
 
-DatePicker.propTypes = {};
+DatePicker.propTypes = {
+  label: PropTypes.string,
+  required: PropTypes.bool,
+  name: PropTypes.string,
+  min: PropTypes.instanceOf(Date),
+  max: PropTypes.instanceOf(Date),
+  value: PropTypes.instanceOf(Date),
+  format: PropTypes.string,
+  disableDays: PropTypes.arrayOf(PropTypes.number),
+  onChangeHandler: PropTypes.func,
+  informationText: PropTypes.string,
+  error: PropTypes.string,
+};
 
 export default DatePicker;

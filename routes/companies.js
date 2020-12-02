@@ -1,7 +1,7 @@
 // Packages
 const express = require('express');
 const config = require('config');
-const { check, validationResult } = require('express-validator');
+const { check, body, validationResult } = require('express-validator');
 const isBase64 = require('is-base64');
 
 // Variables
@@ -50,13 +50,59 @@ router.post(
       .withMessage(
         'Please enter a valid company name with a minimum of 4 characters'
       ),
+    check('companyCode')
+      .exists({ checkFalsy: true })
+      .withMessage('Please enter a code')
+      .bail()
+      .custom(value => /^\w(?:\w\s*(?:[.-]\w+)?)*(?<=^.{1,4})$/g.test(value))
+      .withMessage('Please enter a valid code between 1 to 4 character'),
+    check('address', 'Please enter an address').exists({ checkFalsy: true }),
+    check('contact', 'Please enter a contact').exists({ checkFalsy: true }),
     check('facebook', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
     check('twitter', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
     check('instagram', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
+    check(
+      'gstRegistered',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'hasServiceCharge',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'roundTotalPrice',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'roundDownTotalPrice',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'pricesIncludesGst',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'pricesIncludesServiceCharge',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    body('acceptedPaymentMethods').toArray(),
+    body('assistanceReasons').toArray(),
   ],
   async (req, res) => {
     const {
       name,
+      companyCode,
+      address,
+      contact,
+      gstRegistered,
+      gstRegNo,
+      hasServiceCharge,
+      roundTotalPrice,
+      roundDownTotalPrice,
+      pricesIncludesGst,
+      pricesIncludesServiceCharge,
+      acceptedPaymentMethods,
+      assistanceReasons,
       facebook,
       twitter,
       instagram,
@@ -77,6 +123,22 @@ router.post(
           location: 'body',
           msg: 'Company name is taken',
           param: 'name',
+        });
+      }
+
+      if (gstRegistered && !gstRegNo) {
+        errors.push({
+          location: 'body',
+          msg: 'Please enter your GST Registration No',
+          param: 'gstRegNo',
+        });
+      }
+
+      if (acceptedPaymentMethods.length === 0) {
+        errors.push({
+          location: 'body',
+          msg: 'Please select at least one payment method',
+          param: 'acceptedPaymentMethods',
         });
       }
 
@@ -122,6 +184,20 @@ router.post(
       company = new Company({
         name: companyName,
         displayedName: name,
+        companyCode,
+        address,
+        contact,
+        gstRegistered,
+        gstRegNo: gstRegistered ? gstRegNo : undefined,
+        pricesIncludesGst: gstRegistered ? pricesIncludesGst : false,
+        hasServiceCharge,
+        pricesIncludesServiceCharge: hasServiceCharge
+          ? pricesIncludesServiceCharge
+          : false,
+        roundTotalPrice,
+        roundDownTotalPrice,
+        acceptedPaymentMethods,
+        assistanceReasons,
         socialMediaLinks: {
           facebook,
           twitter,
@@ -130,7 +206,6 @@ router.post(
         logo,
       });
 
-      // save company to db
       await company.save();
 
       res.json(company);
@@ -195,13 +270,59 @@ router.put(
       .withMessage(
         'Please enter a valid company name with a minimum of 4 characters'
       ),
+    check('companyCode')
+      .exists({ checkFalsy: true })
+      .withMessage('Please enter a code')
+      .bail()
+      .custom(value => /^\w(?:\w\s*(?:[.-]\w+)?)*(?<=^.{1,4})$/g.test(value))
+      .withMessage('Please enter a valid code between 1 to 4 character'),
+    check('address', 'Please enter an address').exists({ checkFalsy: true }),
+    check('contact', 'Please enter a contact').exists({ checkFalsy: true }),
     check('facebook', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
     check('twitter', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
     check('instagram', 'Invalid URL').optional({ checkFalsy: true }).isURL(),
+    check(
+      'gstRegistered',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'hasServiceCharge',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'roundTotalPrice',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'roundDownTotalPrice',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'pricesIncludesGst',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    check(
+      'pricesIncludesServiceCharge',
+      'An unexpected error occured, please try again later!'
+    ).isBoolean(),
+    body('acceptedPaymentMethods').toArray(),
+    body('assistanceReasons').toArray(),
   ],
   async (req, res) => {
     const {
       name,
+      companyCode,
+      address,
+      contact,
+      gstRegistered,
+      gstRegNo,
+      hasServiceCharge,
+      roundTotalPrice,
+      roundDownTotalPrice,
+      pricesIncludesGst,
+      pricesIncludesServiceCharge,
+      acceptedPaymentMethods,
+      assistanceReasons,
       facebook,
       twitter,
       instagram,
@@ -230,6 +351,22 @@ router.put(
             param: 'name',
           });
         }
+      }
+
+      if (gstRegistered && !gstRegNo) {
+        errors.push({
+          location: 'body',
+          msg: 'Please enter your GST Registration No',
+          param: 'gstRegNo',
+        });
+      }
+
+      if (acceptedPaymentMethods.length === 0) {
+        errors.push({
+          location: 'body',
+          msg: 'Please select at least one payment method',
+          param: 'acceptedPaymentMethods',
+        });
       }
 
       if (logoLarge) {
@@ -285,6 +422,25 @@ router.put(
 
       company.name = companyName;
       company.displayedName = name;
+      company.companyCode = companyCode;
+      company.address = address;
+      company.contact = contact;
+
+      company.gstRegistered = gstRegistered;
+      company.gstRegNo = gstRegistered ? gstRegNo : undefined;
+      company.pricesIncludesGst = gstRegistered ? pricesIncludesGst : false;
+
+      company.hasServiceCharge = hasServiceCharge;
+      company.pricesIncludesServiceCharge = hasServiceCharge
+        ? pricesIncludesServiceCharge
+        : false;
+
+      company.roundTotalPrice = roundTotalPrice;
+      company.roundDownTotalPrice = roundDownTotalPrice;
+
+      company.acceptedPaymentMethods = acceptedPaymentMethods;
+      company.assistanceReasons = assistanceReasons;
+
       company.socialMediaLinks = {
         facebook,
         twitter,

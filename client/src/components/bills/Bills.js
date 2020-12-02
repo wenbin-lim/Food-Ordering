@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 // Components
 import Container from '../layout/Container';
@@ -8,12 +8,10 @@ import Dropdown from '../layout/Dropdown';
 import List from '../layout/List';
 import DatePicker from '../layout/DatePicker';
 import Button from '../layout/Button';
-import FixedActionButtons from '../layout/FixedActionButtons';
 
 import BillItem from './BillItem';
 
 // Icons
-import PlusIcon from '../icons/PlusIcon';
 import ArrowIcon from '../icons/ArrowIcon';
 
 // Hooks
@@ -21,7 +19,6 @@ import useGet from '../../query/hooks/useGet';
 import useErrors from '../../hooks/useErrors';
 
 const Bills = ({ user: { access: userAccess }, company: userCompanyId }) => {
-  const navigate = useNavigate();
   const [searchDate, setSearchDate] = useState(new Date());
 
   const [company, setCompany] = useState(userCompanyId);
@@ -110,7 +107,12 @@ const Bills = ({ user: { access: userAccess }, company: userCompanyId }) => {
                   })
                 : []
             }
-            itemElement={<BillItem />}
+            itemElement={
+              <BillItem
+                allowEdit={userAccess < 3 ? false : true}
+                allowDelete={userAccess < 3 ? false : true}
+              />
+            }
           />
         </List>
       </Container.Parent>

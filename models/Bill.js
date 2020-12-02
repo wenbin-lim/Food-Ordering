@@ -6,7 +6,11 @@ const config = require('config');
 const paymentMethods = config.get('paymentMethods');
 const billStatus = config.get('billStatus');
 
+const Discount = require('./Discount');
+const DiscountSchema = mongoose.model('Discount').schema;
+
 const BillSchema = mongoose.Schema({
+  invoiceNo: Number,
   subTotal: {
     type: Number,
     min: 0,
@@ -41,9 +45,11 @@ const BillSchema = mongoose.Schema({
     type: String,
     enum: paymentMethods.split(','),
   },
-  discountCode: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'DiscountCode',
+  discountCode: [DiscountSchema],
+  discountCodeValue: {
+    type: Number,
+    min: 0,
+    default: 0,
   },
   startTime: {
     type: Date,

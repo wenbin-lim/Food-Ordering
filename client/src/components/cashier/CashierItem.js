@@ -36,7 +36,11 @@ const CashierItem = ({ bill }) => {
         </div>
         <div className='cashieritem-discountcode'>
           <span>Discount Code</span>
-          <span>{discountCode ? discountCode.toUpperCase() : '-'}</span>
+          <span>
+            {Array.isArray(discountCode) && discountCode.length > 0
+              ? discountCode[0].code
+              : '-'}
+          </span>
         </div>
       </ListItem.Content>
     </ListItem>

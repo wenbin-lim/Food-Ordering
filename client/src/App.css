@@ -2057,7 +2057,7 @@ img {
 
 .dialog-form .dialog-form-title {
   -ms-grid-row: 1;
-  -ms-grid-column: 1;
+  -ms-grid-column: 2;
   grid-area: title;
   padding-left: var(--padding);
   padding-right: var(--padding);
@@ -3638,6 +3638,7 @@ img {
 .sidesheet .sidesheet-content .checkbox-group:not(:first-child),
 .sidesheet .sidesheet-content .switch-group:not(:first-child),
 .sidesheet .sidesheet-content .dropdown-group:not(:first-child),
+.sidesheet .sidesheet-content .datepicker-group:not(:first-child),
 .sidesheet .sidesheet-content .row:not(:first-child) {
   margin-top: 1rem;
 }
@@ -4367,6 +4368,65 @@ img {
   font-size: 1.5rem;
 }
 
+.dialog-assistance-reason {
+  background-color: var(--background);
+  color: var(--on-background);
+  width: 90vw !important;
+  max-width: 400px !important;
+  height: 400px !important;
+  border-radius: 36px;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas: 'title' 'content' 'submit-btn';
+}
+
+.dialog-assistance-reason .dialog-assistance-reason-title {
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: title;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 110%;
+  text-align: center;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+@media only screen and (orientation: landscape) {
+  .dialog-assistance-reason .dialog-assistance-reason-title {
+    font-size: 2.5rem;
+  }
+}
+
+.dialog-assistance-reason .dialog-assistance-reason-content {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: content;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: var(--padding);
+  padding-right: var(--padding);
+}
+
+.dialog-assistance-reason .dialog-assistance-reason-content .input-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .image-input-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .radio-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .checkbox-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .switch-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .dropdown-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .datepicker-group:not(:first-child),
+.dialog-assistance-reason .dialog-assistance-reason-content .row:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.dialog-assistance-reason .dialog-assistance-reason-footer-btn {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: submit-btn;
+}
+
 .orderitem {
   display: -ms-grid;
   display: grid;
@@ -4622,8 +4682,8 @@ img {
     grid-area: image;
   }
   .orderdialog .orderdialog-front .orderdialog-front-content {
-    -ms-grid-row: 1;
-    -ms-grid-column: 2;
+    -ms-grid-row: 2;
+    -ms-grid-column: 1;
     grid-area: content;
   }
   .orderdialog .orderdialog-front .orderdialog-front-footer {
@@ -5062,6 +5122,44 @@ img {
   }
 }
 
+.adminsettings {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: 1fr auto;
+      grid-template-rows: 1fr auto;
+      grid-template-areas: 'tabs' 'button';
+}
+
+.adminsettings .adminsettings-tabs {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: tabs;
+}
+
+.adminsettings .adminsettings-tabs .adminsettings-form {
+  padding-top: var(--padding);
+  padding-bottom: var(--padding);
+}
+
+.adminsettings .adminsettings-tabs .adminsettings-form .input-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .image-input-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .radio-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .checkbox-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .switch-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .dropdown-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .datepicker-group:not(:first-child),
+.adminsettings .adminsettings-tabs .adminsettings-form .row:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.adminsettings .adminsettings-footer-btn {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: button;
+  -ms-grid-column-align: end;
+      justify-self: end;
+}
+
 .kitchen {
   height: calc(var(--vh) * 100);
   padding-left: 0;
@@ -5466,4 +5564,92 @@ img {
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.25px;
+}
+
+.notification {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto;
+  row-gap: 8px;
+      grid-template-areas: 'header' 'content' 'time';
+}
+
+.notification .notification-header {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: header;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 36px 1fr;
+      grid-template-columns: 36px 1fr;
+  -webkit-column-gap: 8px;
+          column-gap: 8px;
+      grid-template-areas: 'type title';
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.notification .notification-header .notification-type {
+  -ms-grid-row: 1;
+  -ms-grid-column: 1;
+  grid-area: type;
+  width: 36px;
+  height: 36px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border-radius: 50%;
+  background-color: var(--secondary);
+  color: var(--on-secondary);
+}
+
+.notification .notification-header .notification-title {
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: title;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.notification .notification-content {
+  -ms-grid-row: 2;
+  -ms-grid-column: 1;
+  grid-area: content;
+}
+
+.notification .notification-content .notification-content-title {
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.notification .notification-content .notification-content-body .body-1 {
+  font-size: 0.7rem;
+}
+
+.notification .notification-content .notification-content-body .body-2 {
+  font-size: 0.6rem;
+}
+
+.notification .notification-time {
+  -ms-grid-row: 3;
+  -ms-grid-column: 1;
+  grid-area: time;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.25px;
+  opacity: 0.7;
 }

@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 
 // Components
 import Container from '../layout/Container';
-import Button from '../layout/Button';
 import ListPreloader from '../preloaders/ListPreloader';
 import CashierItem from './CashierItem';
-
-// Icons
-import PlusIcon from '../icons/PlusIcon';
 
 // Hooks
 import useGet from '../../query/hooks/useGet';
@@ -69,13 +65,6 @@ const Cashier = () => {
             )}
           </article>
         )}
-
-        <Button
-          className='cashier-add-btn'
-          fill='contained'
-          type='primary'
-          icon={<PlusIcon />}
-        />
       </Container.Parent>
 
       <Container.Child className='sidesheet'>

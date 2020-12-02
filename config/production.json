@@ -19,11 +19,18 @@
     "admin": 3,
     "wawaya": 99
   },
+  "userRoles": {
+    "waiter": "waiter",
+    "kitchen": "kitchen",
+    "cashier": "cashier",
+    "admin": "admin"
+  },
   "orderStatus": {
     "new": "new",
     "preparing": "preparing",
     "cooking": "cooking",
     "hold": "hold",
+    "updated": "updated",
     "ready": "ready",
     "served": "served",
     "cancelled": "cancelled",
@@ -38,5 +45,15 @@
     "occupied": "occupied",
     "ready": "ready",
     "settled": "settled"
+  },
+  "discountTypes": {
+    "percentage": "percentage",
+    "cash": "cash"
+  },
+  "notificationTypes": {
+    "orderOnHold": "orderOnHold",
+    "orderReady": "orderReady",
+    "customerHelp": "customerHelp",
+    "billReady": "billReady"
   }
 }

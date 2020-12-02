@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useNavigate, matchPath, useLocation } from 'react-router-dom';
 
-import Moment from 'react-moment';
-
 // Actions
 import { setSnackbar } from '../../actions/app';
 
@@ -16,12 +14,18 @@ import AlertDialog from '../layout/AlertDialog';
 import useErrors from '../../hooks/useErrors';
 import useDelete from '../../query/hooks/useDelete';
 
-const BillItem = ({ index, data }) => {
+const BillItem = ({ index, data, allowEdit, allowDelete }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { _id: billId, invoiceNo, status, total } = { ...data };
+  const {
+    _id: billId,
+    invoiceNo,
+    status,
+    total,
+    company: { companyCode } = {},
+  } = { ...data };
 
   const [deleteBill, { error }] = useDelete('bills', {
     route: `/api/bills/${billId}`,
@@ -53,7 +57,11 @@ const BillItem = ({ index, data }) => {
           <h2 className='list-index'>{index}</h2>
         </ListItem.Before>
         <ListItem.Content>
-          <p className='body-1 text-bold'>{invoiceNo}</p>
+          {invoiceNo ? (
+            <p className='body-1 text-bold'>{`${companyCode}${invoiceNo}`}</p>
+          ) : (
+            <p className='body-2'>Invoice not generated yet</p>
+          )}
           {status === 'settled' ? (
             <span className='badge badge-success'>Settled</span>
           ) : (
@@ -67,8 +75,10 @@ const BillItem = ({ index, data }) => {
         )}
         <ListItem.Actions>
           <Action name='View' onClick={() => navigate(billId)} />
-          <Action name='Edit' onClick={() => navigate(`${billId}/edit`)} />
-          {status === 'settled' && (
+          {allowEdit && (
+            <Action name='Edit' onClick={() => navigate(`${billId}/edit`)} />
+          )}
+          {allowDelete && status === 'settled' && (
             <Action
               name='Delete'
               onClick={() => setShowDeleteBillAlert(true)}

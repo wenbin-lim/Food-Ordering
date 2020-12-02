@@ -1,0 +1,67 @@
+.notification {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  row-gap: 8px;
+  grid-template-areas:
+    'header'
+    'content'
+    'time';
+
+  .notification-header {
+    grid-area: header;
+
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    column-gap: 8px;
+    grid-template-areas: 'type title';
+    align-items: center;
+
+    .notification-type {
+      grid-area: type;
+
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+
+      background-color: var(--secondary);
+      color: var(--on-secondary);
+    }
+
+    .notification-title {
+      grid-area: title;
+
+      @include caption;
+      font-size: 1rem;
+    }
+  }
+
+  .notification-content {
+    grid-area: content;
+
+    .notification-content-title {
+      @include body-1;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    .notification-content-body {
+      .body-1 {
+        font-size: 0.7rem;
+      }
+
+      .body-2 {
+        font-size: 0.6rem;
+      }
+    }
+  }
+
+  .notification-time {
+    grid-area: time;
+
+    @include body-2;
+    opacity: 0.7;
+  }
+}

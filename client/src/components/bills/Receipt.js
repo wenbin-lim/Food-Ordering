@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 // Components
@@ -36,6 +36,8 @@ const Receipt = ({ billId }) => {
     invoiceNo,
     subTotal,
     discount,
+    discountCode,
+    discountCodeValue,
     total,
     gst,
     serviceCharge,
@@ -46,9 +48,10 @@ const Receipt = ({ billId }) => {
 
   const {
     displayedName,
+    companyCode,
     address,
     contact,
-    gstRegistrationNumber,
+    gstRegNo,
     roundDownTotalPrice,
   } = {
     ...company,
@@ -150,14 +153,11 @@ const Receipt = ({ billId }) => {
         <Fragment>
           <section className='receipt-companyinfo'>
             <h1 className='receipt-companyname'>{displayedName}</h1>
-            {/* <p className='receipt-companyaddress'>{address}</p> */}
-            <p className='receipt-companyaddress'>
-              123 Ang Mo Kio Ave 1, Singapore 123123
-            </p>
-            <p className='receipt-companycontact'>Tel: +65 1234 5678</p>
-            {/* <p className='receipt-companycontact'>{contact}</p> */}
-            <p className='receipt-gstregnumber'>GST No. 202012345A</p>
-            {/* <p className='receipt-gstregnumber'>GST No. {gstRegistrationNumber}</p> */}
+            <p className='receipt-companyaddress'>{address}</p>
+            <p className='receipt-companycontact'>{contact}</p>
+            {gstRegNo && (
+              <p className='receipt-gstregnumber'>GST No. {gstRegNo}</p>
+            )}
           </section>
 
           <hr />
@@ -167,7 +167,7 @@ const Receipt = ({ billId }) => {
 
             <div className='receipt-billinfo-row'>
               <p className='receipt-billinfo-row-key'>Invoice No</p>
-              <p className='receipt-billinfo-row-value'>{invoiceNo}</p>
+              <p className='receipt-billinfo-row-value'>{`${companyCode}${invoiceNo}`}</p>
             </div>
 
             <div className='receipt-billinfo-row'>
@@ -226,6 +226,18 @@ const Receipt = ({ billId }) => {
                 ${typeof subTotal === 'number' ? subTotal.toFixed(2) : '0.00'}
               </p>
             </div>
+
+            {Array.isArray(discountCode) && discountCode.length > 0 && (
+              <div className='receipt-priceinfo-row'>
+                <p className='receipt-priceinfo-row-key'>{`${discountCode[0].code} applied`}</p>
+                <p className='receipt-priceinfo-row-value'>
+                  - $
+                  {typeof discountCodeValue === 'number'
+                    ? discountCodeValue.toFixed(2)
+                    : '0.00'}
+                </p>
+              </div>
+            )}
 
             <div className='receipt-priceinfo-row'>
               <p className='receipt-priceinfo-row-key'>Discount</p>

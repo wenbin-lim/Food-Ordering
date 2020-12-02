@@ -141,6 +141,7 @@ body {
 
 @import 'additional/customer/_qrlanding.scss';
 @import 'additional/customer/_cart.scss';
+@import 'additional/customer/_assistancereasonsdialog.scss';
 
 @import 'additional/orders/_orderitem.scss';
 @import 'additional/orders/_orderdialog.scss';
@@ -150,6 +151,8 @@ body {
 
 @import 'additional/cart/_cart.scss';
 
+@import 'additional/admin/_adminsettings.scss';
+
 @import 'additional/kitchen/_kitchen.scss';
 @import 'additional/kitchen/_kitchenitem.scss';
 
@@ -158,3 +161,5 @@ body {
 
 @import 'additional/cashier/_cashier.scss';
 @import 'additional/cashier/_cashieritem.scss';
+
+@import 'additional/notification/_notificationitem.scss';

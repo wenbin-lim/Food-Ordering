@@ -4,6 +4,7 @@ const config = require('config');
 const { check, body, validationResult } = require('express-validator');
 const endOfDayfrom = require('date-fns/endOfDay');
 const startOfDay = require('date-fns/startOfDay');
+const isValidObjectId = require('mongoose').isValidObjectId;
 
 // Variables
 const router = express.Router();
@@ -15,6 +16,7 @@ const orderStatus = config.get('orderStatus');
 const Bill = require('../models/Bill');
 const Order = require('../models/Order');
 const Table = require('../models/Table');
+const Discount = require('../models/Discount');
 
 // Miscellaneous Functions, Middlewares, Variables
 const auth = require('../middleware/auth');
@@ -45,6 +47,8 @@ router.get('/', [auth(true, accessLevel.staff)], async (req, res) => {
 
     let bills = await Bill.find(query)
       .populate('table', 'name')
+      .populate('company', 'companyCode')
+      .populate('discountCode')
       .sort({ startTime: 1 });
 
     res.json(bills);
@@ -82,12 +86,16 @@ router.get(
       const { access, company, bill: customerBillId } = req;
 
       let query = {
-        company: access < accessLevel.wawaya ? company : req.query.company,
         _id: access > accessLevel.customer ? req.params.id : customerBillId,
       };
 
+      if (access < accessLevel.wawaya) {
+        query.company = company;
+      }
+
       const bill = await Bill.findOne(query)
         .populate('table', 'name')
+        .populate('discountCode')
         .populate('company')
         .populate('user');
 
@@ -144,7 +152,7 @@ router.put(
       .withMessage('Discount can only accept up to 2 decimal places'),
   ],
   async (req, res) => {
-    const {
+    let {
       paymentMethod,
       discountCode,
       subTotal,
@@ -152,6 +160,7 @@ router.put(
       gst,
       serviceCharge,
       discount,
+      discountCodeValue,
       roundingAmt,
       status,
     } = req.body;
@@ -168,7 +177,7 @@ router.put(
 
       const bill = await Bill.findOne(query).populate(
         'company',
-        'acceptedPaymentMethods'
+        'acceptedPaymentMethods companyCode'
       );
 
       if (!bill) {
@@ -178,6 +187,7 @@ router.put(
       // validate payment methods
       const {
         company: { acceptedPaymentMethods },
+        status: currentBillStatus,
       } = bill;
 
       if (acceptedPaymentMethods.indexOf(paymentMethod) < 0) {
@@ -188,13 +198,54 @@ router.put(
         });
       }
 
-      // validate discount code
-      if (discountCode && discountCode !== 'discount') {
-        errors.push({
-          location: 'body',
-          msg: `Invalid Discount Code`,
-          param: 'discountCode',
-        });
+      // validate discount code for customer
+      if (discountCode) {
+        // check if from customer or cashier
+        let discountQuery = {
+          company: access < accessLevel.wawaya ? company : req.query.company,
+        };
+
+        if (isValidObjectId(discountCode)) {
+          discountQuery._id = discountCode;
+        } else {
+          discountQuery.code = { $regex: new RegExp(`^${discountCode}$`, 'i') };
+        }
+
+        const validDiscount = await Discount.findOne(discountQuery);
+
+        if (!validDiscount) {
+          errors.push({
+            location: 'body',
+            msg: `Invalid Discount Code`,
+            param: 'discountCode',
+          });
+        } else {
+          // check if min spending fulfils
+          const servedOrders = await Order.find({
+            currentStatus: orderStatus.served,
+            bill: req.params.id,
+          });
+
+          let servedOrdersTotalPrice = servedOrders.reduce(
+            (result, item) => (result += item.price),
+            0
+          );
+
+          // brief checking of price only, this price will not be final
+          const { minSpending } = validDiscount;
+
+          if (servedOrdersTotalPrice < minSpending) {
+            errors.push({
+              location: 'body',
+              msg: `You do not fulfil the minimum spending of $${minSpending.toFixed(
+                2
+              )}`,
+              param: 'discountCode',
+            });
+          } else {
+            discountCode = [validDiscount];
+          }
+        }
       }
 
       // validate status
@@ -256,12 +307,26 @@ router.put(
       bill.subTotal = subTotal ? subTotal : 0;
       bill.total = total ? total : 0;
       bill.discount = discount ? discount : 0;
+      bill.discountCodeValue = discountCodeValue ? discountCodeValue : 0;
       bill.serviceCharge = serviceCharge ? serviceCharge : 0;
       bill.gst = gst ? gst : 0;
       bill.roundingAmt = roundingAmt ? roundingAmt : 0;
       bill.paymentMethod = paymentMethod;
-      bill.discountCode = discountCode ? discountCode : null;
+      bill.discountCode = discountCode ? discountCode : undefined;
       bill.status = status;
+
+      if (
+        currentBillStatus !== billStatus.settled &&
+        status === billStatus.settled
+      ) {
+        // add new invoice no
+        const companySettledBills = await Bill.find({
+          company: access < accessLevel.wawaya ? company : req.query.company,
+          status: billStatus.settled,
+        });
+
+        bill.invoiceNo = companySettledBills.length + 1;
+      }
 
       await bill.save();
 
@@ -304,6 +369,18 @@ router.delete(
 
       if (!deletedBill) {
         return res.status(404).send('Bill not found');
+      }
+
+      if (deletedBill.invoiceNo) {
+        await Bill.updateMany(
+          {
+            company: deletedBill.company,
+            invoiceNo: { $gt: deletedBill.invoiceNo },
+          },
+          {
+            $inc: { invoiceNo: -1 },
+          }
+        );
       }
 
       res.json(deletedBill);

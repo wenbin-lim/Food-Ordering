@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 // Components
 import Container from '../layout/Container';
-import Button from '../layout/Button';
 import Spinner from '../layout/Spinner';
 import KitchenItem from './KitchenItem';
 
@@ -29,7 +28,7 @@ const Kitchen = () => {
           ))}
         </article>
       ) : (
-        <p className='caption text-center'>No orders found</p>
+        <p className='caption text-center'>No occupied tables found</p>
       )}
     </Container>
   );

@@ -191,7 +191,6 @@ const FoodEdit = ({ user }) => {
           <SwitchInput
             label={'Availability'}
             name={'availability'}
-            type={'text'}
             value={availability}
             onChangeHandler={onChange}
           />
@@ -202,7 +201,6 @@ const FoodEdit = ({ user }) => {
             <SwitchInput
               label={'Availability'}
               name={'availability'}
-              type={'text'}
               value={availability}
               onChangeHandler={onChange}
             />

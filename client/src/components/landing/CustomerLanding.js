@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,9 +6,15 @@ import { useNavigate } from 'react-router-dom';
 import Container from '../layout/Container';
 import Button from '../layout/Button';
 
-const CustomerLanding = ({ user }) => {
+import AssistanceReasonsDialog from '../customer/AssistanceReasonsDialog';
+
+const CustomerLanding = ({ user, companyDetails: { assistanceReasons } }) => {
   const navigate = useNavigate();
   const tableInfoNameRef = useRef(null);
+  const [
+    showAssistanceReasonsDialog,
+    setShowAssistanceReasonsDialog,
+  ] = useState(false);
 
   useEffect(() => {
     const tableInfoName = tableInfoNameRef.current;
@@ -23,7 +29,7 @@ const CustomerLanding = ({ user }) => {
       } else if (tableNameLength > 3) {
         tableInfoName.style.fontSize = '5rem';
       } else {
-        tableInfoName.style.fontSize = '10rem';
+        tableInfoName.style.fontSize = '8rem';
       }
     }
   }, [user]);
@@ -50,16 +56,26 @@ const CustomerLanding = ({ user }) => {
           fill={'contained'}
           type={'primary'}
           block={true}
-          // onClick={() => navigate(`/${company.name}/table/menu`)}
+          onClick={() => setShowAssistanceReasonsDialog(true)}
         />
         <Button
-          text={'PAY BILL'}
+          text={'VIEW CART'}
           fill={'contained'}
           type={'primary'}
           block={true}
-          // onClick={() => navigate(`/${company.name}/table/menu`)}
+          onClick={() => navigate('cart')}
         />
       </section>
+
+      {showAssistanceReasonsDialog && (
+        <AssistanceReasonsDialog
+          assistanceReasons={assistanceReasons}
+          tableName={user?.table?.name}
+          onCloseAssistanceReasonsDialog={() =>
+            setShowAssistanceReasonsDialog(false)
+          }
+        />
+      )}
     </Container>
   );
 };

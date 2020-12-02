@@ -1,7 +1,7 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 // Components
 import Navbar from '../../components/layout/Navbar';
@@ -19,6 +19,7 @@ import MenuIcon from '../../components/icons/MenuIcon';
 import BellIcon from '../../components/icons/BellIcon';
 import HomeIcon from '../../components/icons/HomeIcon';
 import LogoutIcon from '../../components/icons/LogoutIcon';
+import SettingIcon from '../../components/icons/SettingIcon';
 
 import UsersIcon from '../../components/icons/UsersIcon';
 import TableIcon from '../../components/icons/TableIcon';
@@ -46,6 +47,7 @@ const CompanyAppWrapper = ({
   screenOrientation,
   logout,
 }) => {
+  const navigate = useNavigate();
   const { socialMediaLinks, logo: companyLogos } = companyDetails;
   const { small: companyLogoSmall, large: companyLogoLarge } = {
     ...companyLogos,
@@ -55,6 +57,17 @@ const CompanyAppWrapper = ({
     route: '/api/menus',
     params: { company },
     enabled: company,
+  });
+
+  const { data: notifications } = useGet('notifications', {
+    route: '/api/notifications',
+    params: { company },
+    refetchInterval: 10000,
+    enabled:
+      company &&
+      (userAccess === 3 ||
+        userRole.indexOf('waiter') >= 0 ||
+        userRole.indexOf('cashier') >= 0),
   });
 
   const [showSidebar, setShowSidebar] = useState(false);
@@ -95,11 +108,11 @@ const CompanyAppWrapper = ({
       path: 'discounts',
       icon: <DiscountIcon />,
     },
-    {
-      name: 'feedbacks',
-      path: 'feedbacks',
-      icon: <MessageIcon />,
-    },
+    // {
+    //   name: 'feedbacks',
+    //   path: 'feedbacks',
+    //   icon: <MessageIcon />,
+    // },
   ];
 
   const kitchenNavLinks = [
@@ -112,6 +125,14 @@ const CompanyAppWrapper = ({
       name: 'customisations',
       path: 'customisations',
       icon: <FoodCustomisationIcon />,
+    },
+  ];
+
+  const cashierNavLinks = [
+    {
+      name: 'bills',
+      path: 'bills',
+      icon: <ReceiptIcon />,
     },
   ];
 
@@ -133,6 +154,7 @@ const CompanyAppWrapper = ({
               </NavLink>
             ))}
           {!screenOrientation &&
+            userAccess < 3 &&
             userRole.indexOf('kitchen') >= 0 &&
             kitchenNavLinks.map(({ name, path }, index) => (
               <NavLink
@@ -144,9 +166,36 @@ const CompanyAppWrapper = ({
                 {name}
               </NavLink>
             ))}
+          {!screenOrientation &&
+            userAccess < 3 &&
+            userRole.indexOf('cashier') >= 0 &&
+            cashierNavLinks.map(({ name, path }, index) => (
+              <NavLink
+                key={`cashiernavlink_to_${name}_${index}`}
+                to={path}
+                className='navbar-link'
+                activeClassName='active'
+              >
+                {name}
+              </NavLink>
+            ))}
         </Navbar.Left>
         <Navbar.Right>
           <Button icon={<LogoutIcon />} onClick={logout} />
+          {(userAccess === 3 ||
+            userRole.indexOf('waiter') >= 0 ||
+            userRole.indexOf('cashier') >= 0) && (
+            <Button
+              icon={
+                <BellIcon
+                  showAlert={
+                    Array.isArray(notifications) && notifications.length > 0
+                  }
+                />
+              }
+              onClick={() => navigate('notifications')}
+            />
+          )}
         </Navbar.Right>
       </Navbar>
 
@@ -162,7 +211,9 @@ const CompanyAppWrapper = ({
           </Sidebar.Header>
           <Sidebar.Content
             justifyContent={
-              userAccess === 3 || userRole.indexOf('kitchen') >= 0
+              userAccess === 3 ||
+              userRole.indexOf('kitchen') >= 0 ||
+              userRole.indexOf('cashier') >= 0
                 ? 'start'
                 : 'center'
             }
@@ -176,7 +227,8 @@ const CompanyAppWrapper = ({
                   icon={icon}
                 />
               ))}
-            {userRole.indexOf('kitchen') >= 0 &&
+            {userAccess < 3 &&
+              userRole.indexOf('kitchen') >= 0 &&
               kitchenNavLinks.map(({ name, icon, path }, index) => (
                 <SidebarLink
                   key={`sidebarkitchenlink_to_${name}_${index}`}
@@ -185,9 +237,19 @@ const CompanyAppWrapper = ({
                   icon={icon}
                 />
               ))}
-            {(userAccess === 3 || userRole.indexOf('kitchen') >= 0) && (
-              <SideBarDivider />
-            )}
+            {userAccess < 3 &&
+              userRole.indexOf('cashier') >= 0 &&
+              cashierNavLinks.map(({ name, icon, path }, index) => (
+                <SidebarLink
+                  key={`sidebarcashierlink_to_${name}_${index}`}
+                  to={path}
+                  name={name}
+                  icon={icon}
+                />
+              ))}
+            {(userAccess === 3 ||
+              userRole.indexOf('kitchen') >= 0 ||
+              userRole.indexOf('cashier') >= 0) && <SideBarDivider />}
             <SidebarLink to='menu' name={'Main Menu'} />
             {Array.isArray(menus) &&
               menus.map(({ _id: menuId, name }) => (
@@ -213,7 +275,9 @@ const CompanyAppWrapper = ({
         {(userAccess === 3 || userRole.indexOf('cashier') >= 0) && (
           <BottomNavLink to='cashier' icon={<CashierIcon />} />
         )}
-        <BottomNavLink to='notifications' icon={<BellIcon />} />
+        {userAccess === 3 && (
+          <BottomNavLink to='settings' icon={<SettingIcon />} />
+        )}
       </BottomNav>
     </Fragment>
   );

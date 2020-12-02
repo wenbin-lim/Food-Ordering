@@ -27,7 +27,7 @@ const WawayaAppWrapper = ({ screenOrientation, logout }) => {
     'customisations',
     'bills',
     'discounts',
-    'feedbacks',
+    // 'feedbacks',
   ];
 
   return (

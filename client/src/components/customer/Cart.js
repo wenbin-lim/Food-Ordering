@@ -96,10 +96,10 @@ const Cart = ({ user, companyDetails }) => {
         0
       );
 
-      const newAllOrdersPrice = newConfirmedOrders.reduce(
-        (result, item) => (result += item.price),
-        0
-      );
+      // bill price should only show served
+      const newAllOrdersPrice = newConfirmedOrders
+        .filter(({ currentStatus }) => currentStatus === 'served')
+        .reduce((result, item) => (result += item.price), 0);
 
       if (activeTab === 0) {
         setCartPrice(newCurrentCartPrice);

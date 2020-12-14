@@ -73,7 +73,7 @@ const Users = ({ user: { access: userAccess }, company: userCompanyId }) => {
             loading={usersLoading}
             error={usersError}
             array={users}
-            itemElement={<UserItem />}
+            itemElement={<UserItem canDeleteAdmin={userAccess === 99} />}
           />
 
           <FixedActionButtons>

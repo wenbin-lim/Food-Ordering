@@ -91,7 +91,7 @@ const CompanyAdd = () => {
     const addCompanySuccess = await addCompany({
       ...formData,
       assistanceReasons: assistanceReasons
-        ? assistanceReasons.split(',').filter(reason => reason !== '')
+        ? assistanceReasons.split(',').filter(reason => reason.trim().length)
         : [],
     });
 

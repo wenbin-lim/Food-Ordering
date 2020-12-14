@@ -155,7 +155,7 @@ const CompanyEdit = () => {
     const editCompanySuccess = await editCompany({
       ...formData,
       assistanceReasons: assistanceReasons
-        ? assistanceReasons.split(',').filter(reason => reason !== '')
+        ? assistanceReasons.split(',').filter(reason => reason.trim().length)
         : [],
     });
 

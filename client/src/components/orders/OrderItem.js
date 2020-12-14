@@ -271,7 +271,7 @@ const OrderItem = ({
               name='Cook'
               onClick={() => updateOrder('cooking')}
             />
-            <ListItemAction name='Serve' onClick={() => updateOrder('ready')} />
+            <ListItemAction name='Done' onClick={() => updateOrder('ready')} />
           </ListItem.Actions>
         )}
 
@@ -316,14 +316,14 @@ const OrderItem = ({
           </ListItem.Actions>
         )}
 
-        {editable && (accessRole === 'cashier' || accessRole === 'admin') && (
+        {(accessRole === 'cashier' || accessRole === 'admin') && (
           <ListItem.Actions>
             <ListItemAction
               icon={<InfoIcon />}
               onClick={() => setShowOrderActivityDialog(true)}
             />
 
-            {showEditAndCancelBtn(currentStatus) && (
+            {editable && showEditAndCancelBtn(currentStatus) && (
               <ListItemAction
                 icon={<EditIcon />}
                 onClick={() =>
@@ -334,14 +334,14 @@ const OrderItem = ({
               />
             )}
 
-            {showEditAndCancelBtn(currentStatus) && (
+            {editable && showEditAndCancelBtn(currentStatus) && (
               <ListItemAction
                 icon={<RemoveIcon />}
                 onClick={() => setShowCancelOrderDialog(true)}
               />
             )}
 
-            {showRemoveBtn(currentStatus) && (
+            {editable && showRemoveBtn(currentStatus) && (
               <ListItemAction
                 icon={<RemoveIcon />}
                 onClick={() => setShowRemoveOrderDialog(true)}

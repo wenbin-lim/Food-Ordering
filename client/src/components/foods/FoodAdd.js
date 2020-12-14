@@ -91,9 +91,9 @@ const FoodAdd = ({ user: { access: userAccess }, company: userCompanyId }) => {
     const addFoodSuccess = await addFood({
       ...formData,
       allergics: allergics
-        ? allergics.split(',').filter(allergy => allergy !== '')
+        ? allergics.split(',').filter(allergy => allergy.trim().length)
         : [],
-      tags: tags ? tags.split(',').filter(tag => tag !== '') : [],
+      tags: tags ? tags.split(',').filter(tag => tag.trim().length) : [],
     });
 
     return (

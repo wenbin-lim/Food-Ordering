@@ -17,7 +17,7 @@ import AvatarIcon from '../icons/AvatarIcon';
 import useErrors from '../../hooks/useErrors';
 import useDelete from '../../query/hooks/useDelete';
 
-const UserItem = ({ data }) => {
+const UserItem = ({ data, canDeleteAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -69,7 +69,7 @@ const UserItem = ({ data }) => {
         <ListItem.Actions>
           <Action name='View' onClick={() => navigate(userId)} />
           <Action name='Edit' onClick={() => navigate(`${userId}/edit`)} />
-          {access < 3 && (
+          {(canDeleteAdmin || access < 3) && (
             <Action
               name='Delete'
               onClick={() => setShowDeleteUserAlert(true)}
@@ -95,6 +95,7 @@ const UserItem = ({ data }) => {
 
 UserItem.propTypes = {
   data: PropTypes.object,
+  canDeleteAdmin: PropTypes.bool,
 };
 
 export default UserItem;

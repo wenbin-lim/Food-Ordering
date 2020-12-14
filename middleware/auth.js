@@ -63,10 +63,9 @@ module.exports = (privateOnly, minAccessLevel = customerAccess) => {
           return res.status(401).send('Unauthorized');
         }
 
-        /* temp removal */
-        // if (foundBill?.status && foundBill.status === billStatus.settled) {
-        //   return res.status(401).send('Unauthorized');
-        // }
+        if (foundBill.status === billStatus.settled) {
+          return res.status(401).send('Unauthorized');
+        }
 
         req.company = companyId;
         req.access = customerAccess;

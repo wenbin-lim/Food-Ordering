@@ -73,6 +73,7 @@ const BillEdit = () => {
       bill: id,
       company: companyId,
     },
+    refetchInterval: 30000,
     enabled: !billLoading,
   });
   useErrors(ordersErrors);
@@ -391,7 +392,7 @@ const BillEdit = () => {
           moreBtnActionHandler={() => setShowActionSheet(true)}
         >
           <Tabs
-            initialActive={matchWaiter ? 2 : 0}
+            initialActive={matchWaiter ? 1 : 0}
             onClickTab={onClickTab}
             justifyTab='center'
           >

@@ -10,7 +10,7 @@ const Landing = ({}) => {
     <Container>
       <h1 className='heading-1 text-center'>Wawaya</h1>
 
-      {/* <p className='body-1 text-center'>This is the landing page</p>
+      <p className='body-1 text-center'>This is the landing page</p>
       <a
         href={`${locationOrigin}/dinein?company=5f7e27a70374c240fc1e1a76&table=5f7e29d80374c240fc1e1a80`}
       >
@@ -39,7 +39,7 @@ const Landing = ({}) => {
         href={`${locationOrigin}/dinein?company=5f7e27b40374c240fc1e1a77&asddsa=5f9c07e10ccd664fc43dbab3`}
       >
         no tableId
-      </a> */}
+      </a>
     </Container>
   );
 };

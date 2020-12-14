@@ -1,0 +1,46 @@
+.admindashboard {
+  display: grid;
+  grid-gap: var(--padding);
+
+  @include media(portrait) {
+    grid-template-columns: repeat(auto-fit, 1fr);
+    grid-auto-rows: 200px;
+  }
+
+  @include media(landscape) {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    grid-auto-rows: 250px;
+  }
+
+  .admindashboard-card {
+    padding: 12px;
+    border-radius: 12px;
+
+    background-color: var(--surface1);
+    color: var(--on-surface);
+
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: 'title' 'content';
+
+    .admindashboard-card-title {
+      grid-area: title;
+      @include heading-2;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .admindashboard-card-content {
+      grid-area: content;
+    }
+  }
+
+  .sales {
+    .sales-today,
+    .sales-alltime {
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+  }
+}

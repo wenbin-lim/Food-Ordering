@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
@@ -28,7 +28,7 @@ import FoodIcon from '../../components/icons/FoodIcon';
 import FoodCustomisationIcon from '../../components/icons/FoodCustomisationIcon';
 import ReceiptIcon from '../../components/icons/ReceiptIcon';
 import DiscountIcon from '../../components/icons/DiscountIcon';
-import MessageIcon from '../../components/icons/MessageIcon';
+// import MessageIcon from '../../components/icons/MessageIcon';
 
 import WaiterIcon from '../../components/icons/WaiterIcon';
 import KitchenIcon from '../../components/icons/KitchenIcon';
@@ -62,7 +62,7 @@ const CompanyAppWrapper = ({
   const { data: notifications } = useGet('notifications', {
     route: '/api/notifications',
     params: { company },
-    refetchInterval: 10000,
+    // refetchInterval: 10000,
     enabled:
       company &&
       (userAccess === 3 ||

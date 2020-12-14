@@ -152,7 +152,7 @@ const AdminSettings = ({ company: companyId }) => {
     const editCompanySuccess = await editCompany({
       ...formData,
       assistanceReasons: assistanceReasons
-        ? assistanceReasons.split(',').filter(reason => reason !== '')
+        ? assistanceReasons.split(',').filter(reason => reason.trim().length)
         : [],
     });
 
@@ -288,6 +288,7 @@ const AdminSettings = ({ company: companyId }) => {
             value={logoLarge}
             onChangeHandler={onChange}
             error={inputErrors.logoLarge}
+            informationText='Please choose an image of .png with no background'
           />
 
           <ImageInput
@@ -296,6 +297,7 @@ const AdminSettings = ({ company: companyId }) => {
             value={logoSmall}
             onChangeHandler={onChange}
             error={inputErrors.logoSmall}
+            informationText='Please choose an image of .png with no background'
           />
 
           <TextInput

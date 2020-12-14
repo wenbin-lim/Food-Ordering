@@ -140,9 +140,9 @@ const FoodEdit = ({ user }) => {
     const editFoodSuccess = await editFood({
       ...formData,
       allergics: allergics
-        ? allergics.split(',').filter(allergy => allergy !== '')
+        ? allergics.split(',').filter(allergy => allergy.trim().length)
         : [],
-      tags: tags ? tags.split(',').filter(tag => tag !== '') : [],
+      tags: tags ? tags.split(',').filter(tag => tag.trim().length) : [],
     });
 
     return (

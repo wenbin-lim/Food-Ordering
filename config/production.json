@@ -1,16 +1,4 @@
 {
-  "mongoURI": "REDACTED",
-  "jwtSecret": "REDACTED",
-  "cloudinary": {
-    "name": "wawaya",
-    "apiKey": "REDACTED",
-    "apiSecret": "REDACTED",
-    "rootFolder": "wawayaFoodApp/"
-  },
-  "cloudinaryName": "wawaya",
-  "cloudinaryApiKey": "REDACTED",
-  "cloudinaryApiSecret": "REDACTED",
-  "cloudinaryRootFolder": "wawayaFoodApp/",
   "accessLevel": {
     "public": 0,
     "private": 1,
